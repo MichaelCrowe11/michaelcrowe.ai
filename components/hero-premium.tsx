@@ -35,42 +35,6 @@ export function HeroPremium() {
       id="hero"
       className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20"
     >
-      {/* Animated gradient orbs */}
-      <motion.div
-        className="absolute top-1/4 -left-48 w-[500px] h-[500px] rounded-full opacity-20"
-        style={{
-          background: "radial-gradient(circle, rgba(218, 165, 32, 0.4), transparent 70%)",
-        }}
-        animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.2, 0.4, 0.2],
-          x: [0, 50, 0],
-        }}
-        transition={{
-          duration: 8,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      />
-
-      <motion.div
-        className="absolute bottom-1/4 -right-48 w-[500px] h-[500px] rounded-full opacity-20"
-        style={{
-          background: "radial-gradient(circle, rgba(65, 105, 225, 0.4), transparent 70%)",
-        }}
-        animate={{
-          scale: [1.2, 1, 1.2],
-          opacity: [0.4, 0.2, 0.4],
-          x: [0, -50, 0],
-        }}
-        transition={{
-          duration: 8,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 1,
-        }}
-      />
-
       <div className="container-wide relative z-10 py-12">
         <motion.div
           variants={container}

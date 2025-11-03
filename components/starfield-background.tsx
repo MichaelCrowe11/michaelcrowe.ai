@@ -164,7 +164,7 @@ export function StarfieldBackground() {
     <div
       ref={containerRef}
       className="fixed inset-0 z-0 pointer-events-none"
-      style={{ opacity: isLoaded ? 0.6 : 0 }}
+      style={{ opacity: isLoaded ? 1 : 0, transition: 'opacity 2s ease-in' }}
     />
   )
 }

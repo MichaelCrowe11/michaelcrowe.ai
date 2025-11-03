@@ -1,13 +1,12 @@
 "use client"
 
-import { useState, useEffect, lazy, Suspense } from "react"
+import { lazy, Suspense } from "react"
 import { ErrorBoundary } from "@/components/error-boundary"
 import { HeroPremium } from "@/components/hero-premium"
 import { WhyWorkSection } from "@/components/why-work-section"
 import { ServicesPricing } from "@/components/services-pricing"
 
 // Lazy load heavy components
-const CosmosIntro = lazy(() => import("@/components/cosmos-intro-enhanced").then(m => ({ default: m.CosmosIntro })))
 const SideNavModern = lazy(() => import("@/components/side-nav-modern").then(m => ({ default: m.SideNavModern })))
 const PortfolioShowcase = lazy(() => import("@/components/portfolio-showcase").then(m => ({ default: m.PortfolioShowcase })))
 const SkillsConstellation = lazy(() => import("@/components/skills-constellation").then(m => ({ default: m.SkillsConstellation })))
@@ -18,7 +17,6 @@ const WhoThisIsForSection = lazy(() => import("@/components/who-this-is-for-sect
 const TestimonialsSection = lazy(() => import("@/components/testimonials-section").then(m => ({ default: m.TestimonialsSection })))
 const FinalCTASection = lazy(() => import("@/components/final-cta-section").then(m => ({ default: m.FinalCTASection })))
 const ChatAvatar = lazy(() => import("@/components/chat-avatar").then(m => ({ default: m.ChatAvatar })))
-const FloatingParticles = lazy(() => import("@/components/floating-particles").then(m => ({ default: m.FloatingParticles })))
 
 // Loading fallback component
 function SectionLoader() {
@@ -30,65 +28,15 @@ function SectionLoader() {
 }
 
 export default function Home() {
-  const [showIntro, setShowIntro] = useState(true)
-  const [introComplete, setIntroComplete] = useState(false)
-
-  useEffect(() => {
-    // Check if user has seen intro in this session
-    const hasSeenIntro = sessionStorage.getItem("hasSeenCosmosIntro")
-    if (hasSeenIntro) {
-      setShowIntro(false)
-      setIntroComplete(true)
-    }
-
-    // Safety fallback: Force show main content after 15 seconds if intro hasn't completed
-    const safetyTimeout = setTimeout(() => {
-      if (!introComplete) {
-        sessionStorage.setItem("hasSeenCosmosIntro", "true")
-        setIntroComplete(true)
-        setShowIntro(false)
-      }
-    }, 15000)
-
-    return () => clearTimeout(safetyTimeout)
-  }, [])
-
-  const handleIntroComplete = () => {
-    sessionStorage.setItem("hasSeenCosmosIntro", "true")
-    setIntroComplete(true)
-    setTimeout(() => {
-      setShowIntro(false)
-    }, 500)
-  }
-
   return (
     <ErrorBoundary>
-      {showIntro && (
-        <Suspense fallback={<div className="fixed inset-0 bg-black flex items-center justify-center"><div className="text-white">Loading...</div></div>}>
-          <CosmosIntro onComplete={handleIntroComplete} />
-        </Suspense>
-      )}
+      {/* Modern Side Navigation - floating in cosmos */}
+      <Suspense fallback={null}>
+        <SideNavModern />
+      </Suspense>
 
-      {/* Floating Particles - Always visible */}
-      {introComplete && (
-        <Suspense fallback={null}>
-          <FloatingParticles />
-        </Suspense>
-      )}
-
-      {/* Modern Side Navigation */}
-      {introComplete && (
-        <Suspense fallback={null}>
-          <SideNavModern />
-        </Suspense>
-      )}
-
-      <main
-        className={`min-h-screen transition-opacity duration-1000 ${
-          introComplete ? "opacity-100" : "opacity-0"
-        }`}
-      >
-        {/* Above-the-fold content - not lazy loaded */}
+      <main className="min-h-screen">
+        {/* All sections now float in the cosmic starfield */}
         <HeroPremium />
         <WhyWorkSection />
         <ServicesPricing />

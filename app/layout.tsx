@@ -84,14 +84,11 @@ export default function RootLayout({
       <head>
         <StructuredData />
       </head>
-      <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased minimal-bg`}>
-        {/* 10,088 Stars Background */}
+      <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased bg-black`}>
+        {/* 10,088 Interactive Stars Background - Always visible */}
         <StarfieldBackground />
 
-        {/* Firework Star Explosions */}
-        <FireworkStars />
-
-        {/* Main Content */}
+        {/* Main Content - Floating in cosmos */}
         <div className="relative z-10">
           <Header />
           {children}
