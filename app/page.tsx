@@ -4,6 +4,8 @@ import { useState, useEffect, lazy, Suspense } from "react"
 import { ErrorBoundary } from "@/components/error-boundary"
 import { HeroClean } from "@/components/hero-clean"
 import { ServicesClean } from "@/components/services-clean"
+import { PortfolioClean } from "@/components/portfolio-clean"
+import { ContactClean } from "@/components/contact-clean"
 
 // Lazy load heavy components
 const CosmosIntro = lazy(() => import("@/components/cosmos-intro-enhanced").then(m => ({ default: m.CosmosIntro })))
@@ -44,6 +46,8 @@ export default function Home() {
           {/* Clean, minimal, beautiful sections */}
           <HeroClean />
           <ServicesClean />
+          <PortfolioClean />
+          <ContactClean />
         </main>
       )}
     </ErrorBoundary>
