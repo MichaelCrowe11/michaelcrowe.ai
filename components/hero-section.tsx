@@ -4,7 +4,7 @@ import Link from "next/link"
 
 export function HeroSection() {
   return (
-    <section className="min-h-screen flex items-center pt-20 pb-12 px-4 sm:px-6 lg:px-8 section-gradient-subtle">
+    <section id="hero" className="min-h-screen flex items-center pt-20 pb-12 px-4 sm:px-6 lg:px-8 section-gradient-subtle ml-0 lg:ml-24">
       <div className="container mx-auto">
         <div className="grid lg:grid-cols-5 gap-12 lg:gap-16 items-center">
           {/* Left Column - 60% */}

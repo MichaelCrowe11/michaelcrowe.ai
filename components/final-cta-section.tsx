@@ -3,7 +3,7 @@ import Link from "next/link"
 
 export function FinalCTASection() {
   return (
-    <section id="contact" className="py-20 px-4 sm:px-6 lg:px-8 bg-primary text-primary-foreground">
+    <section id="contact" className="py-20 px-4 sm:px-6 lg:px-8 bg-primary text-primary-foreground ml-0 lg:ml-24">
       <div className="container mx-auto max-w-3xl text-center">
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-balance">Ready to Get Your Time Back?</h2>
         <p className="text-lg sm:text-xl text-primary-foreground/80 mb-8 leading-relaxed text-pretty">

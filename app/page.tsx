@@ -12,6 +12,9 @@ import { TestimonialsSection } from "@/components/testimonials-section"
 import { FinalCTASection } from "@/components/final-cta-section"
 import { ChatAvatar } from "@/components/chat-avatar"
 import { CosmosIntro } from "@/components/cosmos-intro-enhanced"
+import { NeuralNav } from "@/components/neural-nav"
+import { PortfolioShowcase } from "@/components/portfolio-showcase"
+import { SkillsConstellation } from "@/components/skills-constellation"
 
 export default function Home() {
   const [showIntro, setShowIntro] = useState(true)
@@ -38,6 +41,9 @@ export default function Home() {
     <>
       {showIntro && <CosmosIntro onComplete={handleIntroComplete} />}
 
+      {/* Neural Navigation - Fixed Side Nav */}
+      {introComplete && <NeuralNav />}
+
       <main
         className={`min-h-screen transition-opacity duration-1000 ${
           introComplete ? "opacity-100" : "opacity-0"
@@ -45,8 +51,10 @@ export default function Home() {
       >
         <Header />
         <HeroSection />
-        <DifferenceSection />
         <ServicesSection />
+        <PortfolioShowcase />
+        <SkillsConstellation />
+        <DifferenceSection />
         <StorySection />
         <ProcessSection />
         <WhoThisIsForSection />
