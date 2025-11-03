@@ -1,13 +1,14 @@
 "use client"
 
-import { lazy, Suspense } from "react"
+import { useState, useEffect, lazy, Suspense } from "react"
 import { ErrorBoundary } from "@/components/error-boundary"
 import { CosmicScrollController } from "@/components/cosmic-scroll-controller"
-import { HeroPremium } from "@/components/hero-premium"
+import { CosmicHeroEnhanced } from "@/components/cosmic-hero-enhanced"
 import { WhyWorkSection } from "@/components/why-work-section"
 import { ServicesPricing } from "@/components/services-pricing"
 
 // Lazy load heavy components
+const CosmosIntro = lazy(() => import("@/components/cosmos-intro-enhanced").then(m => ({ default: m.CosmosIntro })))
 const SideNavModern = lazy(() => import("@/components/side-nav-modern").then(m => ({ default: m.SideNavModern })))
 const PortfolioShowcase = lazy(() => import("@/components/portfolio-showcase").then(m => ({ default: m.PortfolioShowcase })))
 const SkillsConstellation = lazy(() => import("@/components/skills-constellation").then(m => ({ default: m.SkillsConstellation })))
@@ -29,21 +30,51 @@ function SectionLoader() {
 }
 
 export default function Home() {
+  const [showIntro, setShowIntro] = useState(true)
+  const [introComplete, setIntroComplete] = useState(false)
+
+  useEffect(() => {
+    // Check if user has seen intro in this session
+    const hasSeenIntro = sessionStorage.getItem("hasSeenCosmosIntro")
+    if (hasSeenIntro) {
+      setShowIntro(false)
+      setIntroComplete(true)
+    }
+  }, [])
+
+  const handleIntroComplete = () => {
+    sessionStorage.setItem("hasSeenCosmosIntro", "true")
+    setIntroComplete(true)
+    setTimeout(() => {
+      setShowIntro(false)
+    }, 500)
+  }
+
   return (
     <ErrorBoundary>
-      {/* GSAP Cinematic Scroll Controller */}
-      <CosmicScrollController />
+      {/* Cosmic Intro - First time only */}
+      {showIntro && (
+        <Suspense fallback={<div className="fixed inset-0 bg-black flex items-center justify-center"><div className="text-white">Initializing...</div></div>}>
+          <CosmosIntro onComplete={handleIntroComplete} />
+        </Suspense>
+      )}
 
-      {/* Modern Side Navigation - floating in cosmos */}
-      <Suspense fallback={null}>
-        <SideNavModern />
-      </Suspense>
+      {/* Main site content - shown after intro */}
+      {introComplete && (
+        <>
+          {/* GSAP Cinematic Scroll Controller */}
+          <CosmicScrollController />
 
-      <main className="min-h-screen">
-        {/* All sections now float in the cosmic starfield with GSAP animations */}
-        <HeroPremium />
-        <WhyWorkSection />
-        <ServicesPricing />
+          {/* Modern Side Navigation - floating in cosmos */}
+          <Suspense fallback={null}>
+            <SideNavModern />
+          </Suspense>
+
+          <main className="min-h-screen">
+            {/* Enhanced Cosmic Hero with pixel dissolve effects */}
+            <CosmicHeroEnhanced />
+            <WhyWorkSection />
+            <ServicesPricing />
 
         {/* Below-the-fold content - lazy loaded */}
         <Suspense fallback={<SectionLoader />}>
@@ -78,10 +109,12 @@ export default function Home() {
           <FinalCTASection />
         </Suspense>
 
-        <Suspense fallback={null}>
+        <Suspense fallback={<SectionLoader />}>
           <ChatAvatar />
         </Suspense>
       </main>
+    </>
+      )}
     </ErrorBoundary>
   )
 }
