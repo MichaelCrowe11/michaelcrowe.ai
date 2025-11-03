@@ -11,7 +11,7 @@ import { WhoThisIsForSection } from "@/components/who-this-is-for-section"
 import { TestimonialsSection } from "@/components/testimonials-section"
 import { FinalCTASection } from "@/components/final-cta-section"
 import { ChatAvatar } from "@/components/chat-avatar"
-import { CosmosIntro } from "@/components/cosmos-intro"
+import { CosmosIntro } from "@/components/cosmos-intro-enhanced"
 
 export default function Home() {
   const [showIntro, setShowIntro] = useState(true)
