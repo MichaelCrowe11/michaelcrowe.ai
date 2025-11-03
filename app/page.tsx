@@ -10,12 +10,13 @@ import { FinalCTASection } from "@/components/final-cta-section"
 import { ChatAvatar } from "@/components/chat-avatar"
 import { CosmosIntro } from "@/components/cosmos-intro-enhanced"
 import { SideNavModern } from "@/components/side-nav-modern"
-import { HeroModern } from "@/components/hero-modern"
+import { HeroPremium } from "@/components/hero-premium"
 import { ServicesModern } from "@/components/services-modern"
 import { PortfolioShowcase } from "@/components/portfolio-showcase"
 import { SkillsConstellation } from "@/components/skills-constellation"
 import { WhyWorkSection } from "@/components/why-work-section"
 import { ServicesPricing } from "@/components/services-pricing"
+import { FloatingParticles } from "@/components/floating-particles"
 
 export default function Home() {
   const [showIntro, setShowIntro] = useState(true)
@@ -50,7 +51,8 @@ export default function Home() {
           introComplete ? "opacity-100" : "opacity-0"
         }`}
       >
-        <HeroModern />
+        <FloatingParticles />
+        <HeroPremium />
         <WhyWorkSection />
         <ServicesPricing />
         <PortfolioShowcase />
