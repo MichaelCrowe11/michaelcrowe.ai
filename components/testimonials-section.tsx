@@ -30,15 +30,17 @@ export function TestimonialsSection() {
   ]
 
   return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-background">
+    <section className="py-20 px-4 sm:px-6 lg:px-8 section-gradient-subtle">
       <div className="container mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-balance">What Business Owners Say</h2>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-balance">
+            What <span className="gradient-text-gold">Business Owners</span> Say
+          </h2>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {testimonials.map((testimonial, index) => (
-            <Card key={index} className="border-border bg-card">
+            <Card key={index} className="premium-card">
               <CardContent className="pt-8 pb-8 px-6">
                 {/* Stars */}
                 <div className="flex gap-1 mb-4">

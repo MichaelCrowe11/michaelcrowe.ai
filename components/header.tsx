@@ -33,29 +33,29 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-8">
-            <Link href="/" className="text-sm font-medium text-foreground hover:text-accent transition-colors">
+            <Link href="/" className="nav-link text-sm font-medium text-foreground hover:text-gold">
               Home
             </Link>
-            <Link href="/about" className="text-sm font-medium text-foreground hover:text-accent transition-colors">
+            <Link href="/about" className="nav-link text-sm font-medium text-foreground hover:text-gold">
               About
             </Link>
-            <Link href="/services" className="text-sm font-medium text-foreground hover:text-accent transition-colors">
+            <Link href="/services" className="nav-link text-sm font-medium text-foreground hover:text-gold">
               Services
             </Link>
-            <Link href="/portfolio" className="text-sm font-medium text-foreground hover:text-accent transition-colors">
+            <Link href="/portfolio" className="nav-link text-sm font-medium text-foreground hover:text-gold">
               Portfolio
             </Link>
-            <Link href="/blog" className="text-sm font-medium text-foreground hover:text-accent transition-colors">
+            <Link href="/blog" className="nav-link text-sm font-medium text-foreground hover:text-gold">
               Blog
             </Link>
-            <Link href="/contact" className="text-sm font-medium text-foreground hover:text-accent transition-colors">
+            <Link href="/contact" className="nav-link text-sm font-medium text-foreground hover:text-gold">
               Contact
             </Link>
           </nav>
 
           {/* CTA Button */}
           <div className="hidden lg:block">
-            <Button asChild className="bg-gold text-gold-foreground hover:bg-gold/90">
+            <Button asChild className="btn-gradient-gold text-gold-foreground shadow-lg hover:shadow-xl hover:scale-105 transition-all">
               <Link href="/contact">Let&apos;s Talk</Link>
             </Button>
           </div>

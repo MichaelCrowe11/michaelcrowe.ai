@@ -43,11 +43,11 @@ export function ServicesSection() {
   ]
 
   return (
-    <section id="services" className="py-20 px-4 sm:px-6 lg:px-8 bg-background">
+    <section id="services" className="py-20 px-4 sm:px-6 lg:px-8 section-gradient-subtle">
       <div className="container mx-auto">
         <div className="text-center mb-16 max-w-3xl mx-auto">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-balance">
-            AI Systems That Save You 20+ Hours Per Week
+            AI Systems That <span className="gradient-text-gold">Save You 20+ Hours</span> Per Week
           </h2>
           <p className="text-lg text-muted-foreground text-pretty">
             Here&apos;s what I build for small businesses like yours
@@ -57,7 +57,7 @@ export function ServicesSection() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map((service, index) => (
             <Link key={index} href={`/services/${service.slug}`}>
-              <Card className="border-border hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-card h-full cursor-pointer">
+              <Card className="premium-card h-full cursor-pointer">
                 <CardContent className="pt-8 pb-8 px-6">
                   <div className="w-14 h-14 rounded-full bg-gold/10 flex items-center justify-center mb-6">
                     <service.icon className="w-7 h-7 text-gold" />

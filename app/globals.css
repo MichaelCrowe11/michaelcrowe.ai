@@ -231,3 +231,116 @@
 .animate-fade-out {
   animation: fade-out 0.5s ease-out forwards;
 }
+
+/* Premium Design Enhancements */
+
+/* Gradient text utilities */
+.gradient-text-gold {
+  background: linear-gradient(135deg, oklch(0.72 0.09 75), oklch(0.82 0.12 60));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-text-accent {
+  background: linear-gradient(135deg, oklch(0.62 0.19 235), oklch(0.72 0.15 250));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Premium card enhancements */
+.premium-card {
+  background: linear-gradient(to bottom, oklch(1 0 0), oklch(0.99 0.01 75 / 0.3));
+  border: 1px solid oklch(0.92 0.005 265);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  transition: all 0.3s ease;
+}
+
+.premium-card:hover {
+  border-color: oklch(0.72 0.09 75 / 0.3);
+  box-shadow: 0 10px 15px -3px oklch(0.72 0.09 75 / 0.1), 0 4px 6px -4px oklch(0.72 0.09 75 / 0.1);
+  transform: translateY(-2px);
+}
+
+.dark .premium-card {
+  background: linear-gradient(to bottom, oklch(0.22 0.02 265), oklch(0.20 0.03 265 / 0.8));
+  border-color: oklch(0.28 0.02 265);
+}
+
+.dark .premium-card:hover {
+  border-color: oklch(0.72 0.09 75 / 0.4);
+  box-shadow: 0 10px 15px -3px oklch(0.72 0.09 75 / 0.2), 0 4px 6px -4px oklch(0.72 0.09 75 / 0.15);
+}
+
+/* Button gradient enhancement */
+.btn-gradient-gold {
+  background: linear-gradient(135deg, oklch(0.72 0.09 75), oklch(0.68 0.11 70));
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-gradient-gold::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, oklch(0.82 0.12 80), oklch(0.78 0.13 75));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.btn-gradient-gold:hover::before {
+  opacity: 1;
+}
+
+.btn-gradient-gold > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Navigation link hover effect */
+.nav-link {
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, oklch(0.72 0.09 75), oklch(0.62 0.19 235));
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* Section background gradients */
+.section-gradient-subtle {
+  background: linear-gradient(to bottom,
+    oklch(1 0 0),
+    oklch(0.99 0.005 75 / 0.2),
+    oklch(1 0 0)
+  );
+}
+
+.dark .section-gradient-subtle {
+  background: linear-gradient(to bottom,
+    oklch(0.18 0.02 265),
+    oklch(0.20 0.03 265 / 0.5),
+    oklch(0.18 0.02 265)
+  );
+}
+
+/* Glow effects */
+.glow-gold {
+  box-shadow: 0 0 20px oklch(0.72 0.09 75 / 0.3);
+}
+
+.glow-accent {
+  box-shadow: 0 0 20px oklch(0.62 0.19 235 / 0.3);
+}
