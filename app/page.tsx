@@ -14,6 +14,8 @@ import { HeroModern } from "@/components/hero-modern"
 import { ServicesModern } from "@/components/services-modern"
 import { PortfolioShowcase } from "@/components/portfolio-showcase"
 import { SkillsConstellation } from "@/components/skills-constellation"
+import { WhyWorkSection } from "@/components/why-work-section"
+import { ServicesPricing } from "@/components/services-pricing"
 
 export default function Home() {
   const [showIntro, setShowIntro] = useState(true)
@@ -49,7 +51,8 @@ export default function Home() {
         }`}
       >
         <HeroModern />
-        <ServicesModern />
+        <WhyWorkSection />
+        <ServicesPricing />
         <PortfolioShowcase />
         <SkillsConstellation />
         <DifferenceSection />

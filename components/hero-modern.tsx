@@ -107,10 +107,11 @@ export function HeroModern() {
           {/* Main Heading */}
           <motion.div variants={item} className="space-y-4">
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight">
-              <span className="block">Transform Your Business</span>
+              <span className="block">I Build AI Systems</span>
               <span className="block mt-2 bg-gradient-to-r from-gold via-gold to-accent bg-clip-text text-transparent">
-                With AI That Actually Works
+                That Actually Work.
               </span>
+              <span className="block mt-2">Now I'll Build Yours.</span>
             </h1>
           </motion.div>
 
@@ -119,9 +120,12 @@ export function HeroModern() {
             variants={item}
             className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
           >
-            Self-taught developer who scaled a business from zero to{" "}
-            <span className="text-foreground font-semibold">$470K annually</span> serving millions globally.
-            Now I help small businesses do the same—but faster, with AI.
+            I'm <span className="text-foreground font-semibold">Michael Crowe</span> - founder of{" "}
+            <span className="text-gold font-semibold">Crowe Logic AI</span> and{" "}
+            <span className="text-accent font-semibold">CriOS Nova</span>. I scaled Southwest Mushrooms from my garage to serving millions across 7 continents, generating{" "}
+            <span className="text-foreground font-semibold">$470K annually</span>. I built{" "}
+            <span className="text-foreground font-semibold">150+ specialized AI agents</span> for pharmaceutical research.
+            I've automated real businesses with real revenue. Now I help you do the same.
           </motion.p>
 
           {/* CTA Buttons */}
