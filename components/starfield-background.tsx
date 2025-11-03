@@ -53,10 +53,18 @@ export function StarfieldBackground() {
       camera.position.set(0, 0, 50)
 
       // Renderer
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+      renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+        premultipliedAlpha: false
+      })
       renderer.setSize(window.innerWidth, window.innerHeight)
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-      containerRef.current?.appendChild(renderer.domElement)
+      renderer.setClearColor(0x000000, 0) // Fully transparent background
+
+      if (containerRef.current) {
+        containerRef.current.appendChild(renderer.domElement)
+      }
 
       // Load star data
       try {
@@ -86,14 +94,15 @@ export function StarfieldBackground() {
         geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3))
         geometry.setAttribute("size", new THREE.Float32BufferAttribute(sizes, 1))
 
-        // Star material
+        // Star material - same as intro
         const material = new THREE.PointsMaterial({
-          size: 1.5,
+          size: 2.5,
           vertexColors: true,
           transparent: true,
-          opacity: 0.8,
+          opacity: 1.0,
           sizeAttenuation: true,
           blending: THREE.AdditiveBlending,
+          depthWrite: false,
         })
 
         stars = new THREE.Points(geometry, material)
@@ -151,8 +160,12 @@ export function StarfieldBackground() {
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 z-0 pointer-events-none"
-      style={{ opacity: isLoaded ? 0.6 : 0 }}
+      className="fixed inset-0 pointer-events-none"
+      style={{
+        zIndex: 0,
+        opacity: isLoaded ? 1 : 0,
+        transition: "opacity 1s ease-in",
+      }}
     />
   )
 }
