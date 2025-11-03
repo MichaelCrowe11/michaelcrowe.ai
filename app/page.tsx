@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Header } from "@/components/header"
-import { HeroSection } from "@/components/hero-section"
 import { DifferenceSection } from "@/components/difference-section"
-import { ServicesSection } from "@/components/services-section"
 import { StorySection } from "@/components/story-section"
 import { ProcessSection } from "@/components/process-section"
 import { WhoThisIsForSection } from "@/components/who-this-is-for-section"
@@ -12,7 +10,9 @@ import { TestimonialsSection } from "@/components/testimonials-section"
 import { FinalCTASection } from "@/components/final-cta-section"
 import { ChatAvatar } from "@/components/chat-avatar"
 import { CosmosIntro } from "@/components/cosmos-intro-enhanced"
-import { NeuralNav } from "@/components/neural-nav"
+import { SideNavModern } from "@/components/side-nav-modern"
+import { HeroModern } from "@/components/hero-modern"
+import { ServicesModern } from "@/components/services-modern"
 import { PortfolioShowcase } from "@/components/portfolio-showcase"
 import { SkillsConstellation } from "@/components/skills-constellation"
 
@@ -41,8 +41,8 @@ export default function Home() {
     <>
       {showIntro && <CosmosIntro onComplete={handleIntroComplete} />}
 
-      {/* Neural Navigation - Fixed Side Nav */}
-      {introComplete && <NeuralNav />}
+      {/* Modern Side Navigation */}
+      {introComplete && <SideNavModern />}
 
       <main
         className={`min-h-screen transition-opacity duration-1000 ${
@@ -50,8 +50,8 @@ export default function Home() {
         }`}
       >
         <Header />
-        <HeroSection />
-        <ServicesSection />
+        <HeroModern />
+        <ServicesModern />
         <PortfolioShowcase />
         <SkillsConstellation />
         <DifferenceSection />
