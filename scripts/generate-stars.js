@@ -118,8 +118,8 @@ function generateStarCatalog(totalStars = 5044) {
   return catalog;
 }
 
-// Generate and save
-const catalog = generateStarCatalog(5044);
+// Generate and save - DOUBLED for more awe-inspiring effect!
+const catalog = generateStarCatalog(10088);
 const outputPath = path.join(__dirname, '..', 'public', 'data.json');
 fs.writeFileSync(outputPath, JSON.stringify(catalog, null, 2));
 

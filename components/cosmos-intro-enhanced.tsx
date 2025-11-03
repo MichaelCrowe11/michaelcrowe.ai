@@ -109,7 +109,7 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
         geometry.setAttribute("size", new THREE.Float32BufferAttribute(sizes, 1))
         geometry.setAttribute("targetPosition", new THREE.Float32BufferAttribute(velocities, 3))
 
-        // Custom shader material
+        // Enhanced shader material with better glow and twinkle
         const material = new THREE.ShaderMaterial({
           uniforms: {
             time: { value: 0 },
@@ -121,8 +121,10 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
             attribute vec3 color;
             attribute vec3 targetPosition;
             varying vec3 vColor;
+            varying float vDistance;
             uniform float opacity;
             uniform float explosionFactor;
+            uniform float time;
 
             void main() {
               vColor = color;
@@ -130,14 +132,22 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
               // Interpolate between center (0,0,0) and target position
               vec3 pos = mix(vec3(0.0), targetPosition, explosionFactor);
 
+              // Add subtle twinkle during expansion
+              float twinkle = sin(time * 2.0 + length(targetPosition) * 0.5) * 0.2 + 0.8;
+
               vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-              gl_PointSize = size * (300.0 / -mvPosition.z) * opacity;
+              vDistance = -mvPosition.z;
+
+              // Larger stars with better scaling
+              gl_PointSize = size * (400.0 / -mvPosition.z) * opacity * twinkle;
               gl_Position = projectionMatrix * mvPosition;
             }
           `,
           fragmentShader: `
             varying vec3 vColor;
+            varying float vDistance;
             uniform float opacity;
+            uniform float time;
 
             void main() {
               vec2 center = gl_PointCoord - vec2(0.5);
@@ -145,10 +155,23 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
 
               if (dist > 0.5) discard;
 
-              float intensity = 1.0 - (dist * 2.0);
-              intensity = pow(intensity, 2.0);
+              // Enhanced glow with multiple layers
+              float innerGlow = 1.0 - (dist * 2.0);
+              innerGlow = pow(innerGlow, 1.5);
 
-              gl_FragColor = vec4(vColor * intensity, intensity * opacity);
+              float outerGlow = 1.0 - smoothstep(0.0, 0.5, dist);
+              outerGlow = pow(outerGlow, 3.0);
+
+              float finalGlow = mix(outerGlow, innerGlow, 0.6);
+
+              // Add chromatic shimmer
+              vec3 shimmer = vColor + vec3(
+                sin(time * 3.0 + vDistance * 0.1) * 0.1,
+                sin(time * 2.0 + vDistance * 0.1) * 0.1,
+                sin(time * 4.0 + vDistance * 0.1) * 0.1
+              );
+
+              gl_FragColor = vec4(shimmer * finalGlow, finalGlow * opacity);
             }
           `,
           transparent: true,
@@ -186,29 +209,50 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
           if (elapsed < 3) {
             // Phase 1: "Age of Possibilities" (0-3s)
             setPhase("age-of-possibilities")
-          } else if (elapsed < 4) {
-            // Phase 2: Big Bang explosion (3-4s)
+          } else if (elapsed < 4.5) {
+            // Phase 2: Big Bang explosion (3-4.5s) - Extended for more drama
             setPhase("big-bang")
-            const explosionProgress = (elapsed - 3) / 1
-            material.uniforms.explosionFactor.value = explosionProgress
+            const explosionProgress = (elapsed - 3) / 1.5
+
+            // Eased explosion with acceleration
+            const easedProgress = explosionProgress < 0.5
+              ? 2 * explosionProgress * explosionProgress
+              : 1 - Math.pow(-2 * explosionProgress + 2, 2) / 2
+
+            material.uniforms.explosionFactor.value = easedProgress
             material.uniforms.opacity.value = 1
 
-            // Flash effect at start of explosion
-            if (elapsed < 3.2) {
+            // Enhanced flash effect with color gradation
+            if (elapsed < 3.15) {
               scene.background = new THREE.Color(0xffffff)
+            } else if (elapsed < 3.4) {
+              const flashFade = (elapsed - 3.15) / 0.25
+              scene.background = new THREE.Color().lerpColors(
+                new THREE.Color(0xffffff),
+                new THREE.Color(0x1a1a2e),
+                flashFade
+              )
             } else {
               scene.background = new THREE.Color(0x000000)
             }
-          } else if (elapsed < 7) {
-            // Phase 3: Cosmos expansion (4-7s)
+
+            // Camera shake effect during explosion
+            camera.position.x = Math.sin(elapsed * 20) * 0.5
+            camera.position.y = Math.cos(elapsed * 20) * 0.5
+          } else if (elapsed < 7.5) {
+            // Phase 3: Cosmos expansion (4.5-7.5s)
             setPhase("cosmos-expand")
             material.uniforms.explosionFactor.value = 1
             material.uniforms.opacity.value = 1
             controls.enabled = true
 
-            // Zoom in camera
-            if (camera.position.z > 30) {
-              camera.position.z -= 0.15
+            // Reset camera shake
+            camera.position.x = 0
+            camera.position.y = 0
+
+            // Smoother zoom in
+            if (camera.position.z > 25) {
+              camera.position.z -= 0.12
             }
           } else if (elapsed < 9) {
             // Phase 4: Avatar reveal (7-9s)
@@ -287,10 +331,15 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
             {/* Phase 3: Cosmos Expansion */}
             {phase === "cosmos-expand" && (
               <div className="text-center space-y-6 px-4 animate-fade-in">
-                <p className="text-2xl md:text-3xl text-white/80">
-                  {starCount.toLocaleString()} possibilities
-                </p>
-                <p className="text-xl md:text-2xl text-white/60">
+                <div className="space-y-3">
+                  <h2 className="text-3xl md:text-5xl font-bold text-white">
+                    {starCount.toLocaleString()} Stars
+                  </h2>
+                  <p className="text-2xl md:text-3xl text-gold/90 font-light">
+                    Infinite Possibilities
+                  </p>
+                </div>
+                <p className="text-lg md:text-xl text-white/60 mt-8">
                   Drag to explore • Scroll to zoom
                 </p>
               </div>
