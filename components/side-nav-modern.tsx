@@ -64,12 +64,12 @@ export function SideNavModern() {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <nav className="relative">
+      <nav className="relative" role="navigation" aria-label="Page sections">
         {/* Background pill */}
         <div className="absolute -inset-2 rounded-full bg-background/80 backdrop-blur-xl border border-border/50 shadow-2xl" />
 
         {/* Navigation items */}
-        <div className="relative flex flex-col gap-1 p-2">
+        <div className="relative flex flex-col gap-1 p-2" role="list">
           {navItems.map((item) => {
             const Icon = item.icon
             const isActive = activeSection === item.section
@@ -78,9 +78,12 @@ export function SideNavModern() {
               <motion.button
                 key={item.id}
                 onClick={() => scrollToSection(item.section)}
-                className="relative group"
+                className="relative group focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background rounded-full"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
+                aria-label={`Navigate to ${item.label} section`}
+                aria-current={isActive ? "location" : undefined}
+                role="listitem"
               >
                 {/* Active indicator */}
                 {isActive && (

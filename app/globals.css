@@ -459,23 +459,7 @@
   border: 1px solid oklch(0.28 0.02 265 / 0.3);
 }
 
-.glass-card {
-  background: linear-gradient(135deg, oklch(1 0 0 / 0.1), oklch(0.99 0.01 75 / 0.05));
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid oklch(0.92 0.005 265 / 0.5);
-  box-shadow:
-    0 8px 32px oklch(0 0 0 / 0.08),
-    inset 0 1px 0 oklch(1 0 0 / 0.1);
-}
-
-.dark .glass-card {
-  background: linear-gradient(135deg, oklch(0.24 0.02 265 / 0.8), oklch(0.20 0.03 265 / 0.6));
-  border: 1px solid oklch(0.28 0.02 265 / 0.8);
-  box-shadow:
-    0 8px 32px oklch(0 0 0 / 0.4),
-    inset 0 1px 0 oklch(0.99 0 0 / 0.05);
-}
+/* Removed duplicate - see unified .glass-card definition below */
 
 /* Magnetic Button Effect */
 @keyframes magnetic-pull {
@@ -847,10 +831,10 @@
 /* ==================================== */
 
 /* ==================================== */
-/*  SIMPLE GLASS COMPONENTS ✨         */
+/*  UNIFIED GLASS COMPONENTS ✨        */
 /* ==================================== */
 
-/* Glass Card - Primary Component */
+/* Single Unified Glass Card - Replaces all duplicates */
 .glass-card {
   background: linear-gradient(
     135deg,
@@ -863,7 +847,8 @@
   box-shadow:
     0 8px 32px oklch(0 0 0 / 0.3),
     inset 0 1px 0 oklch(1 0 0 / 0.08);
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
 }
 
 .glass-card:hover {
@@ -873,6 +858,17 @@
     0 0 30px oklch(0.72 0.09 75 / 0.15),
     inset 0 1px 0 oklch(1 0 0 / 0.12);
   transform: translateY(-4px);
+}
+
+/* Performance optimization for mobile */
+@media (prefers-reduced-motion: reduce) {
+  .glass-card {
+    transition: none;
+    will-change: auto;
+  }
+  .glass-card:hover {
+    transform: none;
+  }
 }
 
 /* Glass Header */

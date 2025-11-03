@@ -81,7 +81,7 @@ export function HeroPremium() {
           {/* Badge */}
           <motion.div variants={item} className="flex justify-center mb-8">
             <motion.div
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full backdrop-blur-xl bg-white/5 border border-gold/20 shadow-2xl"
               whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(218, 165, 32, 0.3)" }}
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
@@ -92,7 +92,7 @@ export function HeroPremium() {
                 <Sparkles className="w-4 h-4 text-gold" />
               </motion.div>
               <span className="text-sm font-semibold bg-gradient-to-r from-gold to-accent bg-clip-text text-transparent">
-                AI Systems Architect
+                Production AI Systems That Actually Work
               </span>
             </motion.div>
           </motion.div>
@@ -135,7 +135,7 @@ export function HeroPremium() {
           {/* Subheading */}
           <motion.p
             variants={item}
-            className="text-lg sm:text-xl lg:text-2xl text-center text-muted-foreground max-w-4xl mx-auto leading-relaxed mb-12"
+            className="text-lg sm:text-xl lg:text-2xl text-center text-muted-foreground max-w-4xl mx-auto leading-relaxed mb-8"
           >
             I'm <span className="text-foreground font-bold">Michael Crowe</span> - founder of{" "}
             <span className="text-gold font-bold">Crowe Logic AI</span> and{" "}
@@ -143,6 +143,7 @@ export function HeroPremium() {
             <span className="text-foreground font-bold">$470K annually</span>. I built{" "}
             <span className="text-foreground font-bold">150+ specialized AI agents</span> for pharmaceutical research.
           </motion.p>
+
 
           {/* CTA Buttons */}
           <motion.div

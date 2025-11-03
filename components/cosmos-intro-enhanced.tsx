@@ -33,9 +33,13 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [phase, setPhase] = useState<IntroPhase>("age-of-possibilities")
+  const [canSkip, setCanSkip] = useState(false)
 
   useEffect(() => {
     if (!containerRef.current) return
+
+    // Enable skip button after 2 seconds
+    const skipTimer = setTimeout(() => setCanSkip(true), 2000)
 
     let scene: THREE.Scene
     let camera: THREE.PerspectiveCamera
@@ -289,6 +293,7 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
     init()
 
     return () => {
+      clearTimeout(skipTimer)
       if (animationId) cancelAnimationFrame(animationId)
     }
   }, [onComplete])
@@ -296,6 +301,17 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
   return (
     <div className="fixed inset-0 z-50 bg-black">
       <div ref={containerRef} className="w-full h-full" />
+
+      {/* Skip Button - Accessible */}
+      {canSkip && phase !== "complete" && (
+        <button
+          onClick={onComplete}
+          className="fixed top-4 right-4 z-[60] px-6 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-full text-white font-medium transition-all pointer-events-auto focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-black"
+          aria-label="Skip introduction animation"
+        >
+          Skip Intro
+        </button>
+      )}
 
       {/* Phase overlays */}
       <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center">
