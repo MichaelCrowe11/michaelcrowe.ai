@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { config } from "@/lib/config"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
@@ -26,12 +27,20 @@ export function ContactForm() {
     setIsSubmitting(true)
     setSubmitStatus("idle")
 
-    // Simulate form submission
     try {
-      // In a real implementation, you would send this to an API endpoint
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
 
-      console.log("[v0] Form submitted:", formData)
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to submit form')
+      }
 
       setSubmitStatus("success")
       setFormData({
@@ -43,7 +52,7 @@ export function ContactForm() {
         message: "",
       })
     } catch (error) {
-      console.log("[v0] Form submission error:", error)
+      // TODO: Implement proper error tracking (e.g., Sentry)
       setSubmitStatus("error")
     } finally {
       setIsSubmitting(false)
@@ -158,7 +167,7 @@ export function ContactForm() {
 
       {submitStatus === "error" && (
         <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-md text-destructive">
-          Something went wrong. Please try again or email me directly at hello@michaelcrowe.ai
+          Something went wrong. Please try again or email me directly at {config.contact.email}
         </div>
       )}
 

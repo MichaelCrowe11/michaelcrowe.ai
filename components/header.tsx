@@ -5,19 +5,20 @@ import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { config } from "@/lib/config"
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
+    <header className="fixed top-0 left-0 right-0 z-50 cosmic-glass border-b border-gold/20 animate-cosmic-border">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo & Brand */}
           <Link href="/" className="flex-shrink-0 flex items-center gap-3 group">
             <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-gold/20 group-hover:ring-gold/40 transition-all">
               <Image
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/crowe-logic-logo-87FZNrbBWYjPIm7AaAVgQ2TQIx435b.png"
+                src={config.branding.logoUrl}
                 alt="Michael Crowe"
                 width={48}
                 height={48}

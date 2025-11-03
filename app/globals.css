@@ -4,27 +4,28 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.18 0.02 265);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0.02 265);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.02 265);
-  --primary: oklch(0.18 0.02 265);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.97 0.005 265);
-  --secondary-foreground: oklch(0.18 0.02 265);
-  --muted: oklch(0.97 0.005 265);
-  --muted-foreground: oklch(0.55 0.01 265);
-  --accent: oklch(0.62 0.19 235);
-  --accent-foreground: oklch(0.99 0 0);
-  --gold: oklch(0.72 0.09 75);
-  --gold-foreground: oklch(0.18 0.02 265);
+  /* 🌌 COSMIC DEEP SPACE THEME 🌌 */
+  --background: oklch(0.10 0.01 265); /* Deep space black */
+  --foreground: oklch(0.95 0.01 265); /* Bright starlight white */
+  --card: oklch(0.15 0.02 265 / 0.85); /* Dark translucent cards */
+  --card-foreground: oklch(0.95 0.01 265);
+  --popover: oklch(0.12 0.02 265 / 0.95);
+  --popover-foreground: oklch(0.95 0.01 265);
+  --primary: oklch(0.72 0.09 75); /* Cosmic gold */
+  --primary-foreground: oklch(0.10 0.01 265);
+  --secondary: oklch(0.20 0.03 265); /* Deep nebula purple */
+  --secondary-foreground: oklch(0.95 0.01 265);
+  --muted: oklch(0.25 0.02 265);
+  --muted-foreground: oklch(0.65 0.01 265);
+  --accent: oklch(0.62 0.19 235); /* Cosmic accent blue */
+  --accent-foreground: oklch(0.95 0.01 265);
+  --gold: oklch(0.72 0.09 75); /* Star gold */
+  --gold-foreground: oklch(0.10 0.01 265);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.92 0.005 265);
-  --input: oklch(0.92 0.005 265);
-  --ring: oklch(0.62 0.19 235);
+  --border: oklch(0.25 0.02 265 / 0.4); /* Subtle cosmic borders */
+  --input: oklch(0.18 0.02 265 / 0.8);
+  --ring: oklch(0.72 0.09 75);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -126,7 +127,26 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Enhanced smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+
+  /* Better text rendering */
+  h1, h2, h3, h4, h5, h6 {
+    text-rendering: optimizeLegibility;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  /* Improved link accessibility */
+  a {
+    text-decoration-skip-ink: auto;
   }
 }
 
@@ -421,3 +441,684 @@
 .hover\:scale-102:hover {
   transform: scale(1.02);
 }
+
+/* ==================================== */
+/*  PREMIUM UI/UX ENHANCEMENTS         */
+/* ==================================== */
+
+/* Glassmorphism Effects */
+.glass {
+  background: oklch(1 0 0 / 0.7);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid oklch(1 0 0 / 0.18);
+}
+
+.dark .glass {
+  background: oklch(0.22 0.02 265 / 0.7);
+  border: 1px solid oklch(0.28 0.02 265 / 0.3);
+}
+
+.glass-card {
+  background: linear-gradient(135deg, oklch(1 0 0 / 0.1), oklch(0.99 0.01 75 / 0.05));
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid oklch(0.92 0.005 265 / 0.5);
+  box-shadow:
+    0 8px 32px oklch(0 0 0 / 0.08),
+    inset 0 1px 0 oklch(1 0 0 / 0.1);
+}
+
+.dark .glass-card {
+  background: linear-gradient(135deg, oklch(0.24 0.02 265 / 0.8), oklch(0.20 0.03 265 / 0.6));
+  border: 1px solid oklch(0.28 0.02 265 / 0.8);
+  box-shadow:
+    0 8px 32px oklch(0 0 0 / 0.4),
+    inset 0 1px 0 oklch(0.99 0 0 / 0.05);
+}
+
+/* Magnetic Button Effect */
+@keyframes magnetic-pull {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.magnetic-hover {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.magnetic-hover:hover {
+  animation: magnetic-pull 0.6s ease-in-out;
+}
+
+/* Improved Shadow System */
+.shadow-elegant {
+  box-shadow:
+    0 1px 3px oklch(0 0 0 / 0.05),
+    0 10px 15px -3px oklch(0 0 0 / 0.07),
+    0 4px 6px -4px oklch(0 0 0 / 0.05);
+}
+
+.shadow-elegant-lg {
+  box-shadow:
+    0 4px 6px -1px oklch(0 0 0 / 0.05),
+    0 20px 25px -5px oklch(0 0 0 / 0.08),
+    0 10px 10px -5px oklch(0 0 0 / 0.04);
+}
+
+.shadow-glow-gold {
+  box-shadow:
+    0 0 30px oklch(0.72 0.09 75 / 0.25),
+    0 0 60px oklch(0.72 0.09 75 / 0.15),
+    0 10px 20px oklch(0 0 0 / 0.1);
+}
+
+.shadow-glow-accent {
+  box-shadow:
+    0 0 30px oklch(0.62 0.19 235 / 0.25),
+    0 0 60px oklch(0.62 0.19 235 / 0.15),
+    0 10px 20px oklch(0 0 0 / 0.1);
+}
+
+/* Advanced Gradient Backgrounds */
+.gradient-mesh {
+  background:
+    radial-gradient(at 0% 0%, oklch(0.72 0.09 75 / 0.2) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, oklch(0.62 0.19 235 / 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, oklch(0.72 0.09 75 / 0.1) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, oklch(0.62 0.19 235 / 0.2) 0px, transparent 50%);
+}
+
+.gradient-radial-gold {
+  background: radial-gradient(circle at center, oklch(0.72 0.09 75 / 0.1) 0%, transparent 70%);
+}
+
+/* Premium Card States */
+.card-premium {
+  background: oklch(1 0 0);
+  border: 1px solid oklch(0.92 0.005 265);
+  border-radius: calc(var(--radius) + 4px);
+  box-shadow: 0 2px 8px oklch(0 0 0 / 0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-premium::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, oklch(0.72 0.09 75 / 0.03), oklch(0.62 0.19 235 / 0.02));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card-premium:hover {
+  border-color: oklch(0.72 0.09 75 / 0.3);
+  box-shadow:
+    0 12px 24px oklch(0 0 0 / 0.08),
+    0 0 0 1px oklch(0.72 0.09 75 / 0.1);
+  transform: translateY(-4px);
+}
+
+.card-premium:hover::before {
+  opacity: 1;
+}
+
+.dark .card-premium {
+  background: oklch(0.22 0.02 265);
+  border-color: oklch(0.28 0.02 265);
+  box-shadow: 0 2px 8px oklch(0 0 0 / 0.3);
+}
+
+.dark .card-premium:hover {
+  border-color: oklch(0.72 0.09 75 / 0.4);
+  box-shadow:
+    0 12px 24px oklch(0 0 0 / 0.5),
+    0 0 0 1px oklch(0.72 0.09 75 / 0.2);
+}
+
+/* Interactive Borders */
+.border-gradient {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(oklch(1 0 0), oklch(1 0 0)) padding-box,
+    linear-gradient(135deg, oklch(0.72 0.09 75), oklch(0.62 0.19 235)) border-box;
+}
+
+.dark .border-gradient {
+  background:
+    linear-gradient(oklch(0.22 0.02 265), oklch(0.22 0.02 265)) padding-box,
+    linear-gradient(135deg, oklch(0.72 0.09 75), oklch(0.62 0.19 235)) border-box;
+}
+
+/* Smooth Reveal Animations */
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes reveal-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes reveal-blur {
+  from {
+    opacity: 0;
+    filter: blur(10px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+.animate-reveal-up {
+  animation: reveal-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+.animate-reveal-scale {
+  animation: reveal-scale 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+.animate-reveal-blur {
+  animation: reveal-blur 0.8s ease-out forwards;
+  opacity: 0;
+}
+
+/* Staggered Animation Delays */
+.animation-delay-100 { animation-delay: 100ms; }
+.animation-delay-200 { animation-delay: 200ms; }
+.animation-delay-400 { animation-delay: 400ms; }
+.animation-delay-600 { animation-delay: 600ms; }
+.animation-delay-800 { animation-delay: 800ms; }
+
+/* Enhanced Focus States */
+.focus-elegant:focus-visible {
+  outline: 2px solid oklch(0.72 0.09 75);
+  outline-offset: 4px;
+  border-radius: calc(var(--radius) + 2px);
+}
+
+/* Text Shimmer Effect */
+@keyframes text-shimmer {
+  0% {
+    background-position: -500%;
+  }
+  100% {
+    background-position: 500%;
+  }
+}
+
+.text-shimmer {
+  background: linear-gradient(
+    90deg,
+    oklch(0.72 0.09 75) 0%,
+    oklch(0.82 0.12 80) 50%,
+    oklch(0.72 0.09 75) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: text-shimmer 3s linear infinite;
+}
+
+/* Premium Button Variants */
+.btn-premium {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.btn-premium::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, oklch(0.82 0.12 80), oklch(0.72 0.09 75));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.btn-premium:hover::before {
+  opacity: 1;
+}
+
+.btn-premium::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(135deg, oklch(0.72 0.09 75), oklch(0.62 0.19 235));
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -2;
+  filter: blur(8px);
+}
+
+.btn-premium:hover::after {
+  opacity: 0.5;
+}
+
+/* Scroll Progress Indicator */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, oklch(0.72 0.09 75), oklch(0.62 0.19 235));
+  transform-origin: left;
+  z-index: 100;
+}
+
+/* Selection Styling */
+::selection {
+  background: oklch(0.72 0.09 75 / 0.3);
+  color: oklch(0.18 0.02 265);
+}
+
+.dark ::selection {
+  background: oklch(0.72 0.09 75 / 0.4);
+  color: oklch(0.99 0 0);
+}
+
+/* Improved Scroll Shadows */
+.scroll-shadow {
+  background:
+    linear-gradient(oklch(1 0 0) 30%, transparent),
+    linear-gradient(transparent, oklch(1 0 0) 70%) 0 100%,
+    radial-gradient(farthest-side at 50% 0, oklch(0 0 0 / 0.2), transparent),
+    radial-gradient(farthest-side at 50% 100%, oklch(0 0 0 / 0.2), transparent) 0 100%;
+  background-repeat: no-repeat;
+  background-size: 100% 40px, 100% 40px, 100% 14px, 100% 14px;
+  background-attachment: local, local, scroll, scroll;
+}
+
+/* Loading Skeleton */
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    oklch(0.92 0.005 265) 25%,
+    oklch(0.95 0.005 265) 50%,
+    oklch(0.92 0.005 265) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+.dark .skeleton {
+  background: linear-gradient(
+    90deg,
+    oklch(0.28 0.02 265) 25%,
+    oklch(0.32 0.02 265) 50%,
+    oklch(0.28 0.02 265) 75%
+  );
+  background-size: 200% 100%;
+}
+
+/* Micro-interactions */
+.bounce-on-hover {
+  transition: transform 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.bounce-on-hover:hover {
+  transform: scale(1.05);
+}
+
+.bounce-on-hover:active {
+  transform: scale(0.98);
+}
+
+/* Parallax Section Backgrounds */
+.parallax-section {
+  position: relative;
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+/* Utility Classes for Spacing Rhythm */
+.section-spacing {
+  @apply py-16 md:py-24 lg:py-32;
+}
+
+.section-spacing-sm {
+  @apply py-12 md:py-16 lg:py-20;
+}
+
+.container-narrow {
+  @apply container max-w-4xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+.container-wide {
+  @apply container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+/* Responsive Typography */
+.text-display {
+  @apply text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight;
+}
+
+.text-headline {
+  @apply text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight;
+}
+
+.text-title {
+  @apply text-2xl md:text-3xl lg:text-4xl font-semibold;
+}
+
+.text-body-lg {
+  @apply text-lg md:text-xl leading-relaxed;
+}
+
+/* ==================================== */
+/*  END PREMIUM UI/UX ENHANCEMENTS     */
+/* ==================================== */
+
+/* ==================================== */
+/*  COSMIC THEME ENHANCEMENTS  🌌      */
+/* ==================================== */
+
+/* Cosmic Nebula Background */
+.cosmic-nebula {
+  background:
+    radial-gradient(ellipse at 10% 20%, oklch(0.62 0.19 235 / 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, oklch(0.72 0.09 75 / 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 40% 90%, oklch(0.55 0.15 300 / 0.1) 0%, transparent 50%),
+    oklch(0.10 0.01 265);
+}
+
+/* Cosmic Card with Nebula Glow */
+.cosmic-card {
+  background: linear-gradient(135deg, oklch(0.15 0.02 265 / 0.9), oklch(0.12 0.02 270 / 0.85));
+  border: 1px solid oklch(0.72 0.09 75 / 0.2);
+  box-shadow:
+    0 8px 32px oklch(0 0 0 / 0.6),
+    inset 0 1px 0 oklch(0.72 0.09 75 / 0.1),
+    0 0 20px oklch(0.72 0.09 75 / 0.05);
+  backdrop-filter: blur(12px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cosmic-card:hover {
+  border-color: oklch(0.72 0.09 75 / 0.5);
+  box-shadow:
+    0 12px 48px oklch(0 0 0 / 0.8),
+    0 0 40px oklch(0.72 0.09 75 / 0.15),
+    inset 0 1px 0 oklch(0.72 0.09 75 / 0.2);
+  transform: translateY(-6px);
+}
+
+/* Starlight Text Effect */
+.starlight-text {
+  color: oklch(0.95 0.01 265);
+  text-shadow:
+    0 0 10px oklch(0.72 0.09 75 / 0.5),
+    0 0 20px oklch(0.72 0.09 75 / 0.3),
+    0 0 30px oklch(0.62 0.19 235 / 0.2);
+}
+
+/* Cosmic Heading */
+.cosmic-heading {
+  background: linear-gradient(
+    135deg,
+    oklch(0.72 0.09 75) 0%,
+    oklch(0.82 0.12 80) 25%,
+    oklch(0.95 0.01 265) 50%,
+    oklch(0.62 0.19 235) 75%,
+    oklch(0.72 0.09 75) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: cosmic-shimmer 8s linear infinite;
+}
+
+@keyframes cosmic-shimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Floating Particles */
+@keyframes float-particle {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+    opacity: 0.3;
+  }
+  25% {
+    transform: translateY(-20px) translateX(10px);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-10px) translateX(-10px);
+    opacity: 0.8;
+  }
+  75% {
+    transform: translateY(-30px) translateX(5px);
+    opacity: 0.5;
+  }
+}
+
+.floating-particle {
+  animation: float-particle 8s ease-in-out infinite;
+}
+
+/* Cosmic Button */
+.cosmic-button {
+  position: relative;
+  background: linear-gradient(135deg, oklch(0.72 0.09 75), oklch(0.62 0.19 235));
+  border: 1px solid oklch(0.72 0.09 75 / 0.5);
+  box-shadow:
+    0 4px 15px oklch(0.72 0.09 75 / 0.4),
+    0 0 20px oklch(0.72 0.09 75 / 0.2),
+    inset 0 1px 0 oklch(1 0 0 / 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.cosmic-button::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(45deg, oklch(0.72 0.09 75), oklch(0.62 0.19 235), oklch(0.72 0.09 75));
+  background-size: 200% 200%;
+  opacity: 0;
+  z-index: -1;
+  filter: blur(8px);
+  transition: opacity 0.3s ease;
+  animation: cosmic-glow-rotate 3s linear infinite;
+}
+
+.cosmic-button:hover::before {
+  opacity: 1;
+}
+
+.cosmic-button:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 30px oklch(0.72 0.09 75 / 0.6),
+    0 0 40px oklch(0.72 0.09 75 / 0.3),
+    inset 0 1px 0 oklch(1 0 0 / 0.2);
+}
+
+@keyframes cosmic-glow-rotate {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Star Pulse Effect */
+@keyframes star-pulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+.star-pulse {
+  animation: star-pulse 2s ease-in-out infinite;
+}
+
+/* Constellation Line Effect */
+.constellation-line {
+  stroke: oklch(0.72 0.09 75 / 0.3);
+  stroke-width: 1;
+  stroke-dasharray: 5, 5;
+  animation: constellation-draw 2s ease-in-out infinite;
+}
+
+@keyframes constellation-draw {
+  0%, 100% {
+    stroke-dashoffset: 0;
+    opacity: 0.3;
+  }
+  50% {
+    stroke-dashoffset: 10;
+    opacity: 0.7;
+  }
+}
+
+/* Cosmic Section Background */
+.cosmic-section {
+  position: relative;
+  background: oklch(0.10 0.01 265);
+}
+
+.cosmic-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 50%, oklch(0.62 0.19 235 / 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 50%, oklch(0.72 0.09 75 / 0.06) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Deep Space Gradient */
+.deep-space {
+  background: linear-gradient(
+    180deg,
+    oklch(0.10 0.01 265) 0%,
+    oklch(0.08 0.02 270) 50%,
+    oklch(0.10 0.01 265) 100%
+  );
+}
+
+/* Cosmic Glassmorphism */
+.cosmic-glass {
+  background: linear-gradient(
+    135deg,
+    oklch(0.15 0.02 265 / 0.7),
+    oklch(0.12 0.02 270 / 0.6)
+  );
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid oklch(0.72 0.09 75 / 0.15);
+  box-shadow:
+    0 8px 32px oklch(0 0 0 / 0.5),
+    inset 0 1px 0 oklch(0.72 0.09 75 / 0.1);
+}
+
+/* Starfield Overlay */
+.starfield-overlay {
+  position: relative;
+}
+
+.starfield-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(2px 2px at 20% 30%, oklch(0.95 0.01 265), transparent),
+    radial-gradient(2px 2px at 60% 70%, oklch(0.95 0.01 265), transparent),
+    radial-gradient(1px 1px at 50% 50%, oklch(0.95 0.01 265), transparent),
+    radial-gradient(1px 1px at 80% 10%, oklch(0.95 0.01 265), transparent),
+    radial-gradient(2px 2px at 90% 60%, oklch(0.95 0.01 265), transparent),
+    radial-gradient(1px 1px at 33% 90%, oklch(0.95 0.01 265), transparent),
+    radial-gradient(1px 1px at 10% 85%, oklch(0.95 0.01 265), transparent);
+  background-size: 200% 200%;
+  background-position: 50% 50%;
+  animation: starfield-twinkle 4s ease-in-out infinite;
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+@keyframes starfield-twinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+/* Cosmic Border Animation */
+@keyframes cosmic-border {
+  0% {
+    border-color: oklch(0.72 0.09 75 / 0.3);
+    box-shadow: 0 0 10px oklch(0.72 0.09 75 / 0.2);
+  }
+  50% {
+    border-color: oklch(0.62 0.19 235 / 0.5);
+    box-shadow: 0 0 20px oklch(0.62 0.19 235 / 0.3);
+  }
+  100% {
+    border-color: oklch(0.72 0.09 75 / 0.3);
+    box-shadow: 0 0 10px oklch(0.72 0.09 75 / 0.2);
+  }
+}
+
+.animate-cosmic-border {
+  animation: cosmic-border 3s ease-in-out infinite;
+}
+
+/* Orbital Animation */
+@keyframes orbit-cosmic {
+  0% {
+    transform: rotate(0deg) translateX(100px) rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg) translateX(100px) rotate(-360deg);
+  }
+}
+
+.orbit-cosmic {
+  animation: orbit-cosmic 20s linear infinite;
+}
+
+/* ==================================== */
+/*  END COSMIC THEME 🌌                */
+/* ==================================== */

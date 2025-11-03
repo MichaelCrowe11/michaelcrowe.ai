@@ -23,21 +23,22 @@ interface Neuron {
   connections: number[]
 }
 
+// Move navItems outside component to prevent re-renders
+const NAV_ITEMS: NavItem[] = [
+  { id: "hero", label: "Home", icon: Home, section: "hero", color: "218, 165, 32" },
+  { id: "services", label: "Services", icon: Briefcase, section: "services", color: "139, 92, 246" },
+  { id: "portfolio", label: "Portfolio", icon: Code, section: "portfolio", color: "59, 130, 246" },
+  { id: "skills", label: "Skills", icon: Sparkles, section: "skills", color: "236, 72, 153" },
+  { id: "about", label: "About", icon: User, section: "about", color: "34, 197, 94" },
+  { id: "contact", label: "Contact", icon: Mail, section: "contact", color: "239, 68, 68" },
+]
+
 export function NeuralNav() {
   const [activeSection, setActiveSection] = useState("hero")
   const [isExpanded, setIsExpanded] = useState(false)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const neuronsRef = useRef<Neuron[]>([])
-
-  const navItems: NavItem[] = [
-    { id: "hero", label: "Home", icon: Home, section: "hero", color: "218, 165, 32" },
-    { id: "services", label: "Services", icon: Briefcase, section: "services", color: "139, 92, 246" },
-    { id: "portfolio", label: "Portfolio", icon: Code, section: "portfolio", color: "59, 130, 246" },
-    { id: "skills", label: "Skills", icon: Sparkles, section: "skills", color: "236, 72, 153" },
-    { id: "about", label: "About", icon: User, section: "about", color: "34, 197, 94" },
-    { id: "contact", label: "Contact", icon: Mail, section: "contact", color: "239, 68, 68" },
-  ]
 
   // Neural network animation
   useEffect(() => {
@@ -204,13 +205,13 @@ export function NeuralNav() {
       { threshold: 0.3 }
     )
 
-    navItems.forEach((item) => {
+    NAV_ITEMS.forEach((item) => {
       const element = document.getElementById(item.section)
       if (element) observer.observe(element)
     })
 
     return () => observer.disconnect()
-  }, [navItems])
+  }, []) // Empty dependency array - NAV_ITEMS is constant
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId)
@@ -262,7 +263,7 @@ export function NeuralNav() {
 
         {/* Navigation Items */}
         <nav className="relative flex flex-col items-start justify-center flex-1 py-8 px-3 space-y-1">
-          {navItems.map((item, index) => {
+          {NAV_ITEMS.map((item, index) => {
             const Icon = item.icon
             const isActive = activeSection === item.section
 
@@ -270,7 +271,15 @@ export function NeuralNav() {
               <button
                 key={item.id}
                 onClick={() => scrollToSection(item.section)}
-                className={`w-full flex items-center gap-4 px-4 py-4 rounded-xl transition-all duration-500 group/item relative overflow-hidden ${
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    scrollToSection(item.section)
+                  }
+                }}
+                aria-label={`Navigate to ${item.label} section`}
+                aria-current={isActive ? 'page' : undefined}
+                className={`w-full flex items-center gap-4 px-4 py-4 rounded-xl transition-all duration-500 group/item relative overflow-hidden focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background ${
                   isActive
                     ? "bg-gradient-to-r from-gold/20 via-purple-500/10 to-transparent text-gold shadow-2xl shadow-gold/20 scale-105"
                     : "text-muted-foreground hover:text-white hover:bg-white/5 hover:scale-102"

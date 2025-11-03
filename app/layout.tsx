@@ -5,6 +5,8 @@ import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { CosmicBackground } from "@/components/cosmic-background"
+import { ShootingStars } from "@/components/shooting-stars"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk" })
@@ -23,10 +25,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased`}>
-        <Header />
-        {children}
-        <Footer />
+      <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased cosmic-nebula`}>
+        {/* Cosmic Background Effects */}
+        <CosmicBackground />
+        <ShootingStars />
+
+        {/* Main Content with relative positioning */}
+        <div className="relative z-10">
+          <Header />
+          {children}
+          <Footer />
+        </div>
+
         <Analytics />
       </body>
     </html>

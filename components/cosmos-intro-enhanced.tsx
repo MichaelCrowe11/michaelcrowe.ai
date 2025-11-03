@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import * as THREE from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
 import Image from "next/image"
+import { config } from "@/lib/config"
 
 interface Star {
   id: number
@@ -78,7 +79,7 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
 
       // Load star data
       try {
-        const response = await fetch("/data.json")
+        const response = await fetch(config.site.starDataUrl)
         const data: StarCatalog = await response.json()
 
         // Create star field
@@ -182,7 +183,9 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
 
         setIsLoading(false)
       } catch (error) {
-        console.error("Error loading star data:", error)
+        // TODO: Implement proper error tracking (e.g., Sentry)
+        // Fallback: Set loading to false to prevent infinite loading state
+        setIsLoading(false)
       }
 
       // Handle window resize
@@ -354,7 +357,7 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
                   <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gold/20 via-accent/20 to-gold/20 animate-pulse" />
                   <div className="absolute inset-2 rounded-full overflow-hidden border-4 border-gold shadow-2xl shadow-gold/50">
                     <Image
-                      src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/crowe-logic-logo-87FZNrbBWYjPIm7AaAVgQ2TQIx435b.png"
+                      src={config.branding.logoUrl}
                       alt="Michael Crowe"
                       width={192}
                       height={192}
@@ -388,7 +391,14 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
                 </p>
                 <button
                   onClick={onComplete}
-                  className="mt-8 px-8 py-4 bg-gold hover:bg-gold/90 text-gold-foreground font-semibold rounded-full transition-all pointer-events-auto transform hover:scale-105 shadow-lg shadow-gold/50"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      onComplete()
+                    }
+                  }}
+                  aria-label="Enter website and skip cosmos introduction"
+                  className="mt-8 px-8 py-4 bg-gold hover:bg-gold/90 text-gold-foreground font-semibold rounded-full transition-all pointer-events-auto transform hover:scale-105 shadow-lg shadow-gold/50 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-black"
                 >
                   Enter
                 </button>

@@ -1,6 +1,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Linkedin, Mail, Phone } from "lucide-react"
+import { config } from "@/lib/config"
 
 export function Footer() {
   return (
@@ -12,7 +13,7 @@ export function Footer() {
             <Link href="/" className="inline-block mb-4">
               <div className="w-16 h-16 rounded-full overflow-hidden">
                 <Image
-                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/crowe-logic-logo-87FZNrbBWYjPIm7AaAVgQ2TQIx435b.png"
+                  src={config.branding.logoUrl}
                   alt="Michael Crowe - Crowe Logic"
                   width={64}
                   height={64}
@@ -25,7 +26,7 @@ export function Footer() {
             </p>
             <div className="flex gap-4">
               <a
-                href="https://linkedin.com/in/michaelcrowe"
+                href={config.contact.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-gold transition-colors"
@@ -34,14 +35,14 @@ export function Footer() {
                 <Linkedin className="w-5 h-5" />
               </a>
               <a
-                href="mailto:hello@michaelcrowe.ai"
+                href={`mailto:${config.contact.email}`}
                 className="text-muted-foreground hover:text-gold transition-colors"
                 aria-label="Email"
               >
                 <Mail className="w-5 h-5" />
               </a>
               <a
-                href="tel:+1234567890"
+                href={`tel:${config.contact.phone}`}
                 className="text-muted-foreground hover:text-gold transition-colors"
                 aria-label="Phone"
               >

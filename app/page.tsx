@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Header } from "@/components/header"
 import { DifferenceSection } from "@/components/difference-section"
 import { StorySection } from "@/components/story-section"
 import { ProcessSection } from "@/components/process-section"
@@ -49,7 +48,6 @@ export default function Home() {
           introComplete ? "opacity-100" : "opacity-0"
         }`}
       >
-        <Header />
         <HeroModern />
         <ServicesModern />
         <PortfolioShowcase />
