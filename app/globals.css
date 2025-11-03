@@ -4,27 +4,27 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* 🌌 COSMIC DEEP SPACE THEME 🌌 */
-  --background: oklch(0.10 0.01 265); /* Deep space black */
-  --foreground: oklch(0.95 0.01 265); /* Bright starlight white */
-  --card: oklch(0.15 0.02 265 / 0.85); /* Dark translucent cards */
-  --card-foreground: oklch(0.95 0.01 265);
-  --popover: oklch(0.12 0.02 265 / 0.95);
-  --popover-foreground: oklch(0.95 0.01 265);
-  --primary: oklch(0.72 0.09 75); /* Cosmic gold */
-  --primary-foreground: oklch(0.10 0.01 265);
-  --secondary: oklch(0.20 0.03 265); /* Deep nebula purple */
-  --secondary-foreground: oklch(0.95 0.01 265);
-  --muted: oklch(0.25 0.02 265);
-  --muted-foreground: oklch(0.65 0.01 265);
-  --accent: oklch(0.62 0.19 235); /* Cosmic accent blue */
-  --accent-foreground: oklch(0.95 0.01 265);
-  --gold: oklch(0.72 0.09 75); /* Star gold */
-  --gold-foreground: oklch(0.10 0.01 265);
+  /* ✨ SIMPLE & POWERFUL THEME ✨ */
+  --background: oklch(0.20 0.01 265); /* Subtle dark background */
+  --foreground: oklch(0.98 0.005 265); /* Clean white text */
+  --card: oklch(0.24 0.01 265 / 0.95); /* Subtle glass cards */
+  --card-foreground: oklch(0.98 0.005 265);
+  --popover: oklch(0.22 0.01 265 / 0.98);
+  --popover-foreground: oklch(0.98 0.005 265);
+  --primary: oklch(0.72 0.09 75); /* Gold accent */
+  --primary-foreground: oklch(0.15 0.01 265);
+  --secondary: oklch(0.30 0.02 265); /* Subtle secondary */
+  --secondary-foreground: oklch(0.98 0.005 265);
+  --muted: oklch(0.35 0.01 265);
+  --muted-foreground: oklch(0.70 0.01 265);
+  --accent: oklch(0.62 0.19 235); /* Blue accent */
+  --accent-foreground: oklch(0.98 0.005 265);
+  --gold: oklch(0.72 0.09 75); /* Gold for CTAs */
+  --gold-foreground: oklch(0.15 0.01 265);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.25 0.02 265 / 0.4); /* Subtle cosmic borders */
-  --input: oklch(0.18 0.02 265 / 0.8);
+  --border: oklch(0.30 0.01 265 / 0.3); /* Minimal borders */
+  --input: oklch(0.26 0.01 265 / 0.9);
   --ring: oklch(0.72 0.09 75);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -847,278 +847,118 @@
 /* ==================================== */
 
 /* ==================================== */
-/*  COSMIC THEME ENHANCEMENTS  🌌      */
+/*  SIMPLE GLASS COMPONENTS ✨         */
 /* ==================================== */
 
-/* Cosmic Nebula Background */
-.cosmic-nebula {
-  background:
-    radial-gradient(ellipse at 10% 20%, oklch(0.62 0.19 235 / 0.15) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 70%, oklch(0.72 0.09 75 / 0.12) 0%, transparent 50%),
-    radial-gradient(ellipse at 40% 90%, oklch(0.55 0.15 300 / 0.1) 0%, transparent 50%),
-    oklch(0.10 0.01 265);
-}
-
-/* Cosmic Card with Nebula Glow */
-.cosmic-card {
-  background: linear-gradient(135deg, oklch(0.15 0.02 265 / 0.9), oklch(0.12 0.02 270 / 0.85));
-  border: 1px solid oklch(0.72 0.09 75 / 0.2);
-  box-shadow:
-    0 8px 32px oklch(0 0 0 / 0.6),
-    inset 0 1px 0 oklch(0.72 0.09 75 / 0.1),
-    0 0 20px oklch(0.72 0.09 75 / 0.05);
-  backdrop-filter: blur(12px);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.cosmic-card:hover {
-  border-color: oklch(0.72 0.09 75 / 0.5);
-  box-shadow:
-    0 12px 48px oklch(0 0 0 / 0.8),
-    0 0 40px oklch(0.72 0.09 75 / 0.15),
-    inset 0 1px 0 oklch(0.72 0.09 75 / 0.2);
-  transform: translateY(-6px);
-}
-
-/* Starlight Text Effect */
-.starlight-text {
-  color: oklch(0.95 0.01 265);
-  text-shadow:
-    0 0 10px oklch(0.72 0.09 75 / 0.5),
-    0 0 20px oklch(0.72 0.09 75 / 0.3),
-    0 0 30px oklch(0.62 0.19 235 / 0.2);
-}
-
-/* Cosmic Heading */
-.cosmic-heading {
+/* Glass Card - Primary Component */
+.glass-card {
   background: linear-gradient(
     135deg,
-    oklch(0.72 0.09 75) 0%,
-    oklch(0.82 0.12 80) 25%,
-    oklch(0.95 0.01 265) 50%,
-    oklch(0.62 0.19 235) 75%,
-    oklch(0.72 0.09 75) 100%
+    oklch(0.26 0.01 265 / 0.8),
+    oklch(0.24 0.01 265 / 0.7)
   );
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: cosmic-shimmer 8s linear infinite;
-}
-
-@keyframes cosmic-shimmer {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-/* Floating Particles */
-@keyframes float-particle {
-  0%, 100% {
-    transform: translateY(0) translateX(0);
-    opacity: 0.3;
-  }
-  25% {
-    transform: translateY(-20px) translateX(10px);
-    opacity: 0.6;
-  }
-  50% {
-    transform: translateY(-10px) translateX(-10px);
-    opacity: 0.8;
-  }
-  75% {
-    transform: translateY(-30px) translateX(5px);
-    opacity: 0.5;
-  }
-}
-
-.floating-particle {
-  animation: float-particle 8s ease-in-out infinite;
-}
-
-/* Cosmic Button */
-.cosmic-button {
-  position: relative;
-  background: linear-gradient(135deg, oklch(0.72 0.09 75), oklch(0.62 0.19 235));
-  border: 1px solid oklch(0.72 0.09 75 / 0.5);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  border: 1px solid oklch(0.35 0.01 265 / 0.4);
   box-shadow:
-    0 4px 15px oklch(0.72 0.09 75 / 0.4),
-    0 0 20px oklch(0.72 0.09 75 / 0.2),
-    inset 0 1px 0 oklch(1 0 0 / 0.1);
-  overflow: hidden;
+    0 8px 32px oklch(0 0 0 / 0.3),
+    inset 0 1px 0 oklch(1 0 0 / 0.08);
   transition: all 0.3s ease;
 }
 
-.cosmic-button::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  background: linear-gradient(45deg, oklch(0.72 0.09 75), oklch(0.62 0.19 235), oklch(0.72 0.09 75));
-  background-size: 200% 200%;
-  opacity: 0;
-  z-index: -1;
-  filter: blur(8px);
-  transition: opacity 0.3s ease;
-  animation: cosmic-glow-rotate 3s linear infinite;
-}
-
-.cosmic-button:hover::before {
-  opacity: 1;
-}
-
-.cosmic-button:hover {
-  transform: translateY(-2px);
+.glass-card:hover {
+  border-color: oklch(0.72 0.09 75 / 0.6);
   box-shadow:
-    0 8px 30px oklch(0.72 0.09 75 / 0.6),
-    0 0 40px oklch(0.72 0.09 75 / 0.3),
-    inset 0 1px 0 oklch(1 0 0 / 0.2);
+    0 12px 40px oklch(0 0 0 / 0.4),
+    0 0 30px oklch(0.72 0.09 75 / 0.15),
+    inset 0 1px 0 oklch(1 0 0 / 0.12);
+  transform: translateY(-4px);
 }
 
-@keyframes cosmic-glow-rotate {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-/* Star Pulse Effect */
-@keyframes star-pulse {
-  0%, 100% {
-    opacity: 0.3;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.2);
-  }
-}
-
-.star-pulse {
-  animation: star-pulse 2s ease-in-out infinite;
-}
-
-/* Constellation Line Effect */
-.constellation-line {
-  stroke: oklch(0.72 0.09 75 / 0.3);
-  stroke-width: 1;
-  stroke-dasharray: 5, 5;
-  animation: constellation-draw 2s ease-in-out infinite;
-}
-
-@keyframes constellation-draw {
-  0%, 100% {
-    stroke-dashoffset: 0;
-    opacity: 0.3;
-  }
-  50% {
-    stroke-dashoffset: 10;
-    opacity: 0.7;
-  }
-}
-
-/* Cosmic Section Background */
-.cosmic-section {
-  position: relative;
-  background: oklch(0.10 0.01 265);
-}
-
-.cosmic-section::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 20% 50%, oklch(0.62 0.19 235 / 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 80% 50%, oklch(0.72 0.09 75 / 0.06) 0%, transparent 50%);
-  pointer-events: none;
-}
-
-/* Deep Space Gradient */
-.deep-space {
-  background: linear-gradient(
-    180deg,
-    oklch(0.10 0.01 265) 0%,
-    oklch(0.08 0.02 270) 50%,
-    oklch(0.10 0.01 265) 100%
-  );
-}
-
-/* Cosmic Glassmorphism */
-.cosmic-glass {
+/* Glass Header */
+.glass-header {
   background: linear-gradient(
     135deg,
-    oklch(0.15 0.02 265 / 0.7),
-    oklch(0.12 0.02 270 / 0.6)
+    oklch(0.22 0.01 265 / 0.85),
+    oklch(0.20 0.01 265 / 0.75)
   );
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid oklch(0.72 0.09 75 / 0.15);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border-bottom: 1px solid oklch(0.35 0.01 265 / 0.3);
   box-shadow:
-    0 8px 32px oklch(0 0 0 / 0.5),
-    inset 0 1px 0 oklch(0.72 0.09 75 / 0.1);
+    0 4px 24px oklch(0 0 0 / 0.2),
+    inset 0 1px 0 oklch(1 0 0 / 0.06);
 }
 
-/* Starfield Overlay */
-.starfield-overlay {
+/* Simple Gradient Text */
+.gradient-text-simple {
+  background: linear-gradient(
+    135deg,
+    oklch(0.72 0.09 75),
+    oklch(0.82 0.12 80),
+    oklch(0.98 0.005 265)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Subtle Glow Text */
+.glow-text {
+  color: oklch(0.98 0.005 265);
+  text-shadow:
+    0 0 10px oklch(0.72 0.09 75 / 0.3),
+    0 0 20px oklch(0.72 0.09 75 / 0.15);
+}
+
+/* Glass Button */
+.glass-button {
   position: relative;
+  background: linear-gradient(
+    135deg,
+    oklch(0.72 0.09 75 / 0.9),
+    oklch(0.68 0.11 70 / 0.8)
+  );
+  border: 1px solid oklch(0.82 0.12 80 / 0.5);
+  box-shadow:
+    0 4px 16px oklch(0.72 0.09 75 / 0.3),
+    inset 0 1px 0 oklch(1 0 0 / 0.2);
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
 }
 
-.starfield-overlay::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    radial-gradient(2px 2px at 20% 30%, oklch(0.95 0.01 265), transparent),
-    radial-gradient(2px 2px at 60% 70%, oklch(0.95 0.01 265), transparent),
-    radial-gradient(1px 1px at 50% 50%, oklch(0.95 0.01 265), transparent),
-    radial-gradient(1px 1px at 80% 10%, oklch(0.95 0.01 265), transparent),
-    radial-gradient(2px 2px at 90% 60%, oklch(0.95 0.01 265), transparent),
-    radial-gradient(1px 1px at 33% 90%, oklch(0.95 0.01 265), transparent),
-    radial-gradient(1px 1px at 10% 85%, oklch(0.95 0.01 265), transparent);
-  background-size: 200% 200%;
-  background-position: 50% 50%;
-  animation: starfield-twinkle 4s ease-in-out infinite;
-  pointer-events: none;
-  opacity: 0.4;
+.glass-button:hover {
+  background: linear-gradient(
+    135deg,
+    oklch(0.78 0.11 75),
+    oklch(0.74 0.13 72)
+  );
+  box-shadow:
+    0 6px 24px oklch(0.72 0.09 75 / 0.5),
+    0 0 20px oklch(0.72 0.09 75 / 0.3),
+    inset 0 1px 0 oklch(1 0 0 / 0.3);
+  transform: translateY(-2px);
 }
 
-@keyframes starfield-twinkle {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.6; }
+/* Minimal Background */
+.minimal-bg {
+  background: linear-gradient(
+    180deg,
+    oklch(0.20 0.01 265) 0%,
+    oklch(0.18 0.01 268) 50%,
+    oklch(0.20 0.01 265) 100%
+  );
 }
 
-/* Cosmic Border Animation */
-@keyframes cosmic-border {
-  0% {
-    border-color: oklch(0.72 0.09 75 / 0.3);
-    box-shadow: 0 0 10px oklch(0.72 0.09 75 / 0.2);
-  }
-  50% {
-    border-color: oklch(0.62 0.19 235 / 0.5);
-    box-shadow: 0 0 20px oklch(0.62 0.19 235 / 0.3);
-  }
-  100% {
-    border-color: oklch(0.72 0.09 75 / 0.3);
-    box-shadow: 0 0 10px oklch(0.72 0.09 75 / 0.2);
-  }
+/* Subtle Accent Glow */
+.accent-glow {
+  box-shadow: 0 0 20px oklch(0.72 0.09 75 / 0.2);
 }
 
-.animate-cosmic-border {
-  animation: cosmic-border 3s ease-in-out infinite;
-}
-
-/* Orbital Animation */
-@keyframes orbit-cosmic {
-  0% {
-    transform: rotate(0deg) translateX(100px) rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg) translateX(100px) rotate(-360deg);
-  }
-}
-
-.orbit-cosmic {
-  animation: orbit-cosmic 20s linear infinite;
+.accent-glow:hover {
+  box-shadow: 0 0 30px oklch(0.72 0.09 75 / 0.35);
 }
 
 /* ==================================== */
-/*  END COSMIC THEME 🌌                */
+/*  END SIMPLE GLASS COMPONENTS ✨     */
 /* ==================================== */
