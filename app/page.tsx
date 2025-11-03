@@ -43,6 +43,9 @@ export default function Home() {
     <>
       {showIntro && <CosmosIntro onComplete={handleIntroComplete} />}
 
+      {/* Floating Particles - Always visible */}
+      {introComplete && <FloatingParticles />}
+
       {/* Modern Side Navigation */}
       {introComplete && <SideNavModern />}
 
@@ -51,7 +54,6 @@ export default function Home() {
           introComplete ? "opacity-100" : "opacity-0"
         }`}
       >
-        <FloatingParticles />
         <HeroPremium />
         <WhyWorkSection />
         <ServicesPricing />
