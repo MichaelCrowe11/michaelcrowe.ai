@@ -1,3 +1,6 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import { Header } from "@/components/header"
 import { HeroSection } from "@/components/hero-section"
 import { DifferenceSection } from "@/components/difference-section"
@@ -8,20 +11,49 @@ import { WhoThisIsForSection } from "@/components/who-this-is-for-section"
 import { TestimonialsSection } from "@/components/testimonials-section"
 import { FinalCTASection } from "@/components/final-cta-section"
 import { ChatAvatar } from "@/components/chat-avatar"
+import { CosmosIntro } from "@/components/cosmos-intro"
 
 export default function Home() {
+  const [showIntro, setShowIntro] = useState(true)
+  const [introComplete, setIntroComplete] = useState(false)
+
+  useEffect(() => {
+    // Check if user has seen intro in this session
+    const hasSeenIntro = sessionStorage.getItem("hasSeenCosmosIntro")
+    if (hasSeenIntro) {
+      setShowIntro(false)
+      setIntroComplete(true)
+    }
+  }, [])
+
+  const handleIntroComplete = () => {
+    sessionStorage.setItem("hasSeenCosmosIntro", "true")
+    setIntroComplete(true)
+    setTimeout(() => {
+      setShowIntro(false)
+    }, 500)
+  }
+
   return (
-    <main className="min-h-screen">
-      <Header />
-      <HeroSection />
-      <DifferenceSection />
-      <ServicesSection />
-      <StorySection />
-      <ProcessSection />
-      <WhoThisIsForSection />
-      <TestimonialsSection />
-      <FinalCTASection />
-      <ChatAvatar />
-    </main>
+    <>
+      {showIntro && <CosmosIntro onComplete={handleIntroComplete} />}
+
+      <main
+        className={`min-h-screen transition-opacity duration-1000 ${
+          introComplete ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        <Header />
+        <HeroSection />
+        <DifferenceSection />
+        <ServicesSection />
+        <StorySection />
+        <ProcessSection />
+        <WhoThisIsForSection />
+        <TestimonialsSection />
+        <FinalCTASection />
+        <ChatAvatar />
+      </main>
+    </>
   )
 }
