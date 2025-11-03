@@ -60,8 +60,19 @@ export function StarfieldBackground() {
 
       // Load star data
       try {
-        const response = await fetch(config.site.starDataUrl)
+        const response = await fetch(config.site.starDataUrl, {
+          signal: AbortSignal.timeout(5000) // 5 second timeout
+        })
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch star data: ${response.status}`)
+        }
+
         const data: StarCatalog = await response.json()
+
+        if (!data?.stars || !Array.isArray(data.stars)) {
+          throw new Error('Invalid star data format')
+        }
 
         // Create star field with all 10,088 stars
         const geometry = new THREE.BufferGeometry()
@@ -116,8 +127,9 @@ export function StarfieldBackground() {
 
         animate()
       } catch (error) {
-        // TODO: Add proper error tracking service integration
-        console.error("Failed to load star data:", error)
+        // Silently fail - starfield is decorative, not critical for functionality
+        // TODO: Add proper error tracking service integration (e.g., Sentry)
+        setIsLoaded(false)
       }
     }
 

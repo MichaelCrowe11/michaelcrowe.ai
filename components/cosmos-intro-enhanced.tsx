@@ -83,8 +83,19 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
 
       // Load star data
       try {
-        const response = await fetch(config.site.starDataUrl)
+        const response = await fetch(config.site.starDataUrl, {
+          signal: AbortSignal.timeout(5000) // 5 second timeout
+        })
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch star data: ${response.status}`)
+        }
+
         const data: StarCatalog = await response.json()
+
+        if (!data?.stars || !Array.isArray(data.stars) || data.stars.length === 0) {
+          throw new Error('Invalid star data format')
+        }
 
         // Create star field
         const geometry = new THREE.BufferGeometry()
@@ -187,9 +198,19 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
 
         setIsLoading(false)
       } catch (error) {
-        // TODO: Implement proper error tracking (e.g., Sentry)
-        // Fallback: Set loading to false to prevent infinite loading state
+        // Log error for debugging but don't block the UI
+        if (error instanceof Error) {
+          // TODO: Implement proper error tracking (e.g., Sentry)
+        }
+        // Fallback: Set loading to false and skip intro to prevent infinite loading state
         setIsLoading(false)
+        // Auto-skip intro after 2 seconds if data fails to load
+        setTimeout(() => {
+          onComplete()
+        }, 2000)
+        return () => {
+          // Cleanup handled in main return
+        }
       }
 
       // Handle window resize

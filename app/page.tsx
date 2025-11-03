@@ -40,6 +40,17 @@ export default function Home() {
       setShowIntro(false)
       setIntroComplete(true)
     }
+
+    // Safety fallback: Force show main content after 15 seconds if intro hasn't completed
+    const safetyTimeout = setTimeout(() => {
+      if (!introComplete) {
+        sessionStorage.setItem("hasSeenCosmosIntro", "true")
+        setIntroComplete(true)
+        setShowIntro(false)
+      }
+    }, 15000)
+
+    return () => clearTimeout(safetyTimeout)
   }, [])
 
   const handleIntroComplete = () => {
