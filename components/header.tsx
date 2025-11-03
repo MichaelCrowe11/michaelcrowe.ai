@@ -13,16 +13,21 @@ export function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
-          {/* Logo */}
-          <Link href="/" className="flex-shrink-0">
-            <div className="w-12 h-12 rounded-full overflow-hidden">
+          {/* Logo & Brand */}
+          <Link href="/" className="flex-shrink-0 flex items-center gap-3 group">
+            <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-gold/20 group-hover:ring-gold/40 transition-all">
               <Image
                 src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/crowe-logic-logo-87FZNrbBWYjPIm7AaAVgQ2TQIx435b.png"
-                alt="Michael Crowe - Crowe Logic"
+                alt="Michael Crowe"
                 width={48}
                 height={48}
                 className="w-full h-full object-cover"
               />
+            </div>
+            <div className="hidden sm:block">
+              <span className="text-xl font-bold tracking-tight">
+                MichaelCrowe<span className="text-gold">.ai</span>
+              </span>
             </div>
           </Link>
 

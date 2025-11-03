@@ -32,7 +32,6 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [phase, setPhase] = useState<IntroPhase>("age-of-possibilities")
-  const [starCount, setStarCount] = useState(0)
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -81,7 +80,6 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
       try {
         const response = await fetch("/data.json")
         const data: StarCatalog = await response.json()
-        setStarCount(data.stars.length)
 
         // Create star field
         const geometry = new THREE.BufferGeometry()
@@ -331,15 +329,19 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
             {/* Phase 3: Cosmos Expansion */}
             {phase === "cosmos-expand" && (
               <div className="text-center space-y-6 px-4 animate-fade-in">
-                <div className="space-y-3">
-                  <h2 className="text-3xl md:text-5xl font-bold text-white">
-                    {starCount.toLocaleString()} Stars
+                <div className="space-y-4">
+                  <h2 className="text-3xl md:text-5xl font-bold text-white leading-tight">
+                    Every Data Point
+                    <span className="block text-gold/90">Tells a Story</span>
                   </h2>
-                  <p className="text-2xl md:text-3xl text-gold/90 font-light">
-                    Infinite Possibilities
+                  <p className="text-xl md:text-2xl text-white/70 font-light max-w-2xl mx-auto">
+                    From patterns in the cosmos to insights in your business—
+                    <span className="block text-white/90 mt-2">
+                      I transform complexity into clarity
+                    </span>
                   </p>
                 </div>
-                <p className="text-lg md:text-xl text-white/60 mt-8">
+                <p className="text-sm md:text-base text-white/50 mt-8">
                   Drag to explore • Scroll to zoom
                 </p>
               </div>
