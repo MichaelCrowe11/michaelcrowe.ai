@@ -2,6 +2,7 @@
 
 import { lazy, Suspense } from "react"
 import { ErrorBoundary } from "@/components/error-boundary"
+import { CosmicScrollController } from "@/components/cosmic-scroll-controller"
 import { HeroPremium } from "@/components/hero-premium"
 import { WhyWorkSection } from "@/components/why-work-section"
 import { ServicesPricing } from "@/components/services-pricing"
@@ -30,13 +31,16 @@ function SectionLoader() {
 export default function Home() {
   return (
     <ErrorBoundary>
+      {/* GSAP Cinematic Scroll Controller */}
+      <CosmicScrollController />
+
       {/* Modern Side Navigation - floating in cosmos */}
       <Suspense fallback={null}>
         <SideNavModern />
       </Suspense>
 
       <main className="min-h-screen">
-        {/* All sections now float in the cosmic starfield */}
+        {/* All sections now float in the cosmic starfield with GSAP animations */}
         <HeroPremium />
         <WhyWorkSection />
         <ServicesPricing />
