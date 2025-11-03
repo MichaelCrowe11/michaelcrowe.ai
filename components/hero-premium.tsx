@@ -50,7 +50,7 @@ export function HeroPremium() {
             <span className="text-accent font-bold">CriOS Nova</span>. I scaled Southwest Mushrooms from my garage to serving millions across 7 continents, generating{" "}
             <span className="text-foreground font-bold">$470K annually</span>. I built{" "}
             <span className="text-foreground font-bold">150+ specialized AI agents</span> for pharmaceutical research.
-          </motion.p>
+          </p>
 
 
           {/* CTA Buttons */}
