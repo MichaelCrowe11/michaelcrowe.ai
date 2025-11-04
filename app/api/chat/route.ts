@@ -208,8 +208,9 @@ function executeToolCall(toolName: string, args: any): any {
 export async function POST(req: NextRequest) {
   try {
     if (!DEEPSEEK_API_KEY) {
+      console.error("DEEPSEEK_API_KEY environment variable not found in key vault")
       return NextResponse.json(
-        { error: "DeepSeek API key not configured" },
+        { error: "DeepSeek API key not configured. Please add DEEPSEEK_API_KEY to Vercel environment variables." },
         { status: 500 }
       )
     }
