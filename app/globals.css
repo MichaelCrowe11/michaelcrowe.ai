@@ -958,3 +958,165 @@
 /* ==================================== */
 /*  END SIMPLE GLASS COMPONENTS ✨     */
 /* ==================================== */
+
+/* ==================================== */
+/*  DIAMOND SPARKLE EFFECTS 💎         */
+/* ==================================== */
+
+/* Enhanced Glowing Text */
+.text-glow-gold {
+  color: oklch(0.72 0.09 75);
+  text-shadow:
+    0 0 10px oklch(0.72 0.09 75 / 0.6),
+    0 0 20px oklch(0.72 0.09 75 / 0.4),
+    0 0 30px oklch(0.72 0.09 75 / 0.2),
+    0 0 40px oklch(0.72 0.09 75 / 0.1);
+  animation: text-pulse 3s ease-in-out infinite;
+}
+
+.text-glow-accent {
+  color: oklch(0.62 0.19 235);
+  text-shadow:
+    0 0 10px oklch(0.62 0.19 235 / 0.6),
+    0 0 20px oklch(0.62 0.19 235 / 0.4),
+    0 0 30px oklch(0.62 0.19 235 / 0.2);
+  animation: text-pulse 3s ease-in-out infinite;
+}
+
+.text-glow-white {
+  color: oklch(0.98 0.005 265);
+  text-shadow:
+    0 0 15px oklch(1 0 0 / 0.8),
+    0 0 25px oklch(0.72 0.09 75 / 0.5),
+    0 0 35px oklch(0.72 0.09 75 / 0.3);
+}
+
+@keyframes text-pulse {
+  0%, 100% {
+    text-shadow:
+      0 0 10px currentColor,
+      0 0 20px currentColor,
+      0 0 30px currentColor,
+      0 0 40px currentColor;
+  }
+  50% {
+    text-shadow:
+      0 0 15px currentColor,
+      0 0 30px currentColor,
+      0 0 45px currentColor,
+      0 0 60px currentColor;
+  }
+}
+
+/* Diamond Facet Effect */
+@keyframes diamond-sparkle {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    opacity: 1;
+    transform: scale(1.2) rotate(90deg);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1) rotate(180deg);
+  }
+  75% {
+    opacity: 1;
+    transform: scale(1.2) rotate(270deg);
+  }
+}
+
+.diamond-border {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(oklch(0.22 0.01 265), oklch(0.22 0.01 265)) padding-box,
+    linear-gradient(135deg,
+      oklch(0.72 0.09 75),
+      oklch(0.98 0.005 265),
+      oklch(0.62 0.19 235),
+      oklch(0.72 0.09 75)
+    ) border-box;
+  box-shadow:
+    0 0 20px oklch(0.72 0.09 75 / 0.3),
+    inset 0 0 20px oklch(0.72 0.09 75 / 0.1);
+  position: relative;
+}
+
+.diamond-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(45deg,
+    transparent 30%,
+    oklch(1 0 0 / 0.3) 50%,
+    transparent 70%
+  );
+  animation: diamond-sparkle 3s linear infinite;
+}
+
+/* Prismatic Text Effect */
+.text-prismatic {
+  background: linear-gradient(
+    90deg,
+    oklch(0.72 0.09 75) 0%,
+    oklch(0.98 0.005 265) 20%,
+    oklch(0.62 0.19 235) 40%,
+    oklch(0.78 0.15 300) 60%,
+    oklch(0.72 0.09 75) 80%,
+    oklch(0.98 0.005 265) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: text-shimmer 4s linear infinite;
+  filter: drop-shadow(0 0 10px oklch(0.72 0.09 75 / 0.5));
+}
+
+/* Crystalline Button Effect */
+.btn-crystalline {
+  position: relative;
+  background: linear-gradient(135deg,
+    oklch(0.72 0.09 75 / 0.1),
+    oklch(0.98 0.005 265 / 0.05),
+    oklch(0.62 0.19 235 / 0.1)
+  );
+  border: 2px solid oklch(0.72 0.09 75 / 0.4);
+  box-shadow:
+    0 0 30px oklch(0.72 0.09 75 / 0.3),
+    inset 0 0 20px oklch(1 0 0 / 0.1),
+    inset 0 1px 0 oklch(1 0 0 / 0.3);
+  overflow: hidden;
+}
+
+.btn-crystalline::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(45deg,
+    transparent,
+    oklch(1 0 0 / 0.5),
+    transparent
+  );
+  transform: translateX(-100%) rotate(45deg);
+  transition: transform 0.6s ease;
+}
+
+.btn-crystalline:hover::before {
+  transform: translateX(100%) rotate(45deg);
+}
+
+.btn-crystalline:hover {
+  box-shadow:
+    0 0 50px oklch(0.72 0.09 75 / 0.5),
+    0 0 80px oklch(0.62 0.19 235 / 0.3),
+    inset 0 0 30px oklch(1 0 0 / 0.2);
+  border-color: oklch(0.98 0.005 265 / 0.6);
+}
+
+/* ==================================== */
+/*  END DIAMOND SPARKLE EFFECTS 💎     */
+/* ==================================== */
