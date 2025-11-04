@@ -11,11 +11,11 @@ const CosmosIntro = lazy(() => import("@/components/cosmos-intro-simplified").th
 const SideNavModern = lazy(() => import("@/components/side-nav-modern").then(m => ({ default: m.SideNavModern })))
 const PortfolioShowcase = lazy(() => import("@/components/portfolio-showcase").then(m => ({ default: m.PortfolioShowcase })))
 const SkillsConstellation = lazy(() => import("@/components/skills-constellation").then(m => ({ default: m.SkillsConstellation })))
+const InteractiveSkillsShowcase = lazy(() => import("@/components/interactive-skills-showcase").then(m => ({ default: m.InteractiveSkillsShowcase })))
 const DifferenceSection = lazy(() => import("@/components/difference-section").then(m => ({ default: m.DifferenceSection })))
 const StorySection = lazy(() => import("@/components/story-section").then(m => ({ default: m.StorySection })))
 const ProcessSection = lazy(() => import("@/components/process-section").then(m => ({ default: m.ProcessSection })))
 const WhoThisIsForSection = lazy(() => import("@/components/who-this-is-for-section").then(m => ({ default: m.WhoThisIsForSection })))
-const TestimonialsSection = lazy(() => import("@/components/testimonials-section").then(m => ({ default: m.TestimonialsSection })))
 const FinalCTASection = lazy(() => import("@/components/final-cta-section").then(m => ({ default: m.FinalCTASection })))
 const ChatAvatar = lazy(() => import("@/components/chat-avatar").then(m => ({ default: m.ChatAvatar })))
 const FloatingParticles = lazy(() => import("@/components/floating-particles").then(m => ({ default: m.FloatingParticles })))
@@ -103,6 +103,10 @@ export default function Home() {
         </Suspense>
 
         <Suspense fallback={<SectionLoader />}>
+          <InteractiveSkillsShowcase />
+        </Suspense>
+
+        <Suspense fallback={<SectionLoader />}>
           <DifferenceSection />
         </Suspense>
 
@@ -116,10 +120,6 @@ export default function Home() {
 
         <Suspense fallback={<SectionLoader />}>
           <WhoThisIsForSection />
-        </Suspense>
-
-        <Suspense fallback={<SectionLoader />}>
-          <TestimonialsSection />
         </Suspense>
 
         <Suspense fallback={<SectionLoader />}>

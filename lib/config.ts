@@ -6,9 +6,9 @@
 export const config = {
   // Contact Information
   contact: {
-    email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'hello@michaelcrowe.ai',
+    email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'michael@crowelogic.com',
     phone: process.env.NEXT_PUBLIC_CONTACT_PHONE || '480-322-5761',
-    linkedin: process.env.NEXT_PUBLIC_LINKEDIN_URL || 'https://linkedin.com/in/michaelcrowe',
+    linkedin: process.env.NEXT_PUBLIC_LINKEDIN_URL || 'https://www.linkedin.com/in/michael-crowe-b4b567256/',
   },
 
   // Branding
@@ -27,7 +27,7 @@ export const config = {
   api: {
     emailServiceKey: process.env.EMAIL_SERVICE_API_KEY,
     emailFrom: process.env.EMAIL_FROM || 'noreply@michaelcrowe.ai',
-    emailTo: process.env.EMAIL_TO || 'hello@michaelcrowe.ai',
+    emailTo: process.env.EMAIL_TO || 'michael@crowelogic.com',
   },
 } as const
 
