@@ -6,25 +6,26 @@ import Link from "next/link"
 import { motion } from "framer-motion"
 import { PremiumGlassCard } from "./premium-glass-card"
 
+// Simplified animations for better performance
 const container = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.15,
-      delayChildren: 0.3,
+      staggerChildren: 0.1,
+      delayChildren: 0.1,
     },
   },
 }
 
 const item = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 20 },
   show: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.8,
-      ease: [0.22, 1, 0.36, 1],
+      duration: 0.5,
+      ease: "easeOut",
     },
   },
 }
@@ -35,39 +36,18 @@ export function HeroPremium() {
       id="hero"
       className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20"
     >
-      {/* Animated gradient orbs */}
-      <motion.div
-        className="absolute top-1/4 -left-48 w-[500px] h-[500px] rounded-full opacity-20"
+      {/* Static subtle gradients - no animation for performance */}
+      <div
+        className="absolute top-1/4 -left-48 w-[500px] h-[500px] rounded-full opacity-10 pointer-events-none"
         style={{
-          background: "radial-gradient(circle, rgba(218, 165, 32, 0.4), transparent 70%)",
-        }}
-        animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.2, 0.4, 0.2],
-          x: [0, 50, 0],
-        }}
-        transition={{
-          duration: 8,
-          repeat: Infinity,
-          ease: "easeInOut",
+          background: "radial-gradient(circle, rgba(218, 165, 32, 0.2), transparent 70%)",
         }}
       />
 
-      <motion.div
-        className="absolute bottom-1/4 -right-48 w-[500px] h-[500px] rounded-full opacity-20"
+      <div
+        className="absolute bottom-1/4 -right-48 w-[500px] h-[500px] rounded-full opacity-10 pointer-events-none"
         style={{
-          background: "radial-gradient(circle, rgba(65, 105, 225, 0.4), transparent 70%)",
-        }}
-        animate={{
-          scale: [1.2, 1, 1.2],
-          opacity: [0.4, 0.2, 0.4],
-          x: [0, -50, 0],
-        }}
-        transition={{
-          duration: 8,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 1,
+          background: "radial-gradient(circle, rgba(65, 105, 225, 0.2), transparent 70%)",
         }}
       />
 

@@ -6,9 +6,10 @@ import { HeroPremium } from "@/components/hero-premium"
 import { WhyWorkSection } from "@/components/why-work-section"
 import { ServicesPricing } from "@/components/services-pricing"
 
-// Lazy load heavy components
-const CosmosIntro = lazy(() => import("@/components/cosmos-intro-optimized").then(m => ({ default: m.CosmosIntroOptimized })))
-const SideNavModern = lazy(() => import("@/components/side-nav-modern").then(m => ({ default: m.SideNavModern })))
+// Only lazy load truly heavy or below-fold components
+import { SideNavModern } from "@/components/side-nav-modern"
+import { ChatAvatarFunctional } from "@/components/chat-avatar-functional"
+
 const PortfolioShowcase = lazy(() => import("@/components/portfolio-showcase").then(m => ({ default: m.PortfolioShowcase })))
 const SkillsConstellation = lazy(() => import("@/components/skills-constellation").then(m => ({ default: m.SkillsConstellation })))
 const InteractiveSkillsShowcase = lazy(() => import("@/components/interactive-skills-showcase").then(m => ({ default: m.InteractiveSkillsShowcase })))
@@ -17,8 +18,6 @@ const StorySection = lazy(() => import("@/components/story-section").then(m => (
 const ProcessSection = lazy(() => import("@/components/process-section").then(m => ({ default: m.ProcessSection })))
 const WhoThisIsForSection = lazy(() => import("@/components/who-this-is-for-section").then(m => ({ default: m.WhoThisIsForSection })))
 const FinalCTASection = lazy(() => import("@/components/final-cta-section").then(m => ({ default: m.FinalCTASection })))
-const ChatAvatar = lazy(() => import("@/components/chat-avatar-functional").then(m => ({ default: m.ChatAvatarFunctional })))
-const FloatingParticles = lazy(() => import("@/components/floating-particles").then(m => ({ default: m.FloatingParticles })))
 
 // Loading fallback component
 function SectionLoader() {
@@ -61,31 +60,12 @@ export default function Home() {
 
   return (
     <ErrorBoundary>
-      {showIntro && (
-        <Suspense fallback={<div className="fixed inset-0 bg-black flex items-center justify-center"><div className="text-white">Loading...</div></div>}>
-          <CosmosIntro onComplete={handleIntroComplete} />
-        </Suspense>
-      )}
+      {/* Intro disabled by default - view at /showcase */}
 
-      {/* Floating Particles - Always visible */}
-      {introComplete && (
-        <Suspense fallback={null}>
-          <FloatingParticles />
-        </Suspense>
-      )}
+      {/* Modern Side Navigation - No lazy loading */}
+      <SideNavModern />
 
-      {/* Modern Side Navigation */}
-      {introComplete && (
-        <Suspense fallback={null}>
-          <SideNavModern />
-        </Suspense>
-      )}
-
-      <main
-        className={`min-h-screen transition-opacity duration-1000 ${
-          introComplete ? "opacity-100" : "opacity-0"
-        }`}
-      >
+      <main className="min-h-screen">
         {/* Above-the-fold content - not lazy loaded */}
         <HeroPremium />
         <WhyWorkSection />
@@ -124,9 +104,8 @@ export default function Home() {
           <FinalCTASection />
         </Suspense>
 
-        <Suspense fallback={null}>
-          <ChatAvatar />
-        </Suspense>
+        {/* Chat Avatar - No lazy loading for instant availability */}
+        <ChatAvatarFunctional />
       </main>
     </ErrorBoundary>
   )
