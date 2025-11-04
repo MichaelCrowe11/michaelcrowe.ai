@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Check, Rocket, TrendingUp, Zap } from "lucide-react"
+import { Check, Package, TrendingUp, BarChart3 } from "lucide-react"
 
 const container = {
   hidden: { opacity: 0 },
@@ -28,7 +28,7 @@ const item = {
 export function WhyWorkSection() {
   const achievements = [
     {
-      icon: Rocket,
+      icon: Package,
       title: "I Don't Just Consult - I Ship",
       items: [
         "Created Crowe Logic: AI reasoning framework powering multiple production systems",
@@ -49,10 +49,10 @@ export function WhyWorkSection() {
       ],
     },
     {
-      icon: Zap,
+      icon: BarChart3,
       title: "Real Revenue, Not Just Demos",
       items: [
-        "I've generated millions in revenue using AI systems I built myself.",
+        "Built AI systems that generated astronomical value and took my research to new levels.",
         "I know what works because I've bet my own businesses on it.",
       ],
     },

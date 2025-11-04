@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Sparkles, Zap, Rocket } from "lucide-react"
+import { ArrowRight, TrendingUp, DollarSign, Layers, Globe } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { PremiumGlassCard } from "./premium-glass-card"
@@ -86,13 +86,13 @@ export function HeroPremium() {
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
               <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
               >
-                <Sparkles className="w-4 h-4 text-gold" />
+                <TrendingUp className="w-4 h-4 text-gold" />
               </motion.div>
               <span className="text-sm font-semibold bg-gradient-to-r from-gold to-accent bg-clip-text text-transparent">
-                Production AI Systems That Actually Work
+                Production-Ready AI Systems
               </span>
             </motion.div>
           </motion.div>
@@ -106,7 +106,7 @@ export function HeroPremium() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.5 }}
               >
-                I Build AI Systems
+                AI Systems for
               </motion.span>
 
               <motion.span
@@ -118,7 +118,7 @@ export function HeroPremium() {
                   textShadow: "0 0 80px rgba(218, 165, 32, 0.5)",
                 }}
               >
-                That Actually Work.
+                Real Business Growth.
               </motion.span>
 
               <motion.span
@@ -127,7 +127,7 @@ export function HeroPremium() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.9 }}
               >
-                Now I'll Build Yours.
+                Built with Experience.
               </motion.span>
             </h1>
           </motion.div>
@@ -192,7 +192,7 @@ export function HeroPremium() {
             <PremiumGlassCard delay={0.2} glowColor="gold">
               <div className="text-center">
                 <div className="mb-3">
-                  <Zap className="w-8 h-8 text-gold mx-auto" />
+                  <DollarSign className="w-8 h-8 text-gold mx-auto" />
                 </div>
                 <motion.div
                   className="text-4xl lg:text-5xl font-bold bg-gradient-to-br from-gold to-yellow-600 bg-clip-text text-transparent mb-2"
@@ -210,7 +210,7 @@ export function HeroPremium() {
             <PremiumGlassCard delay={0.4} glowColor="blue">
               <div className="text-center">
                 <div className="mb-3">
-                  <Rocket className="w-8 h-8 text-accent mx-auto" />
+                  <Layers className="w-8 h-8 text-accent mx-auto" />
                 </div>
                 <motion.div
                   className="text-4xl lg:text-5xl font-bold bg-gradient-to-br from-accent to-blue-600 bg-clip-text text-transparent mb-2"
@@ -228,7 +228,7 @@ export function HeroPremium() {
             <PremiumGlassCard delay={0.6} glowColor="purple">
               <div className="text-center">
                 <div className="mb-3">
-                  <Sparkles className="w-8 h-8 text-purple-400 mx-auto" />
+                  <Globe className="w-8 h-8 text-purple-400 mx-auto" />
                 </div>
                 <motion.div
                   className="text-4xl lg:text-5xl font-bold bg-gradient-to-br from-purple-400 to-pink-600 bg-clip-text text-transparent mb-2"

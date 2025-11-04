@@ -7,7 +7,7 @@ import { WhyWorkSection } from "@/components/why-work-section"
 import { ServicesPricing } from "@/components/services-pricing"
 
 // Lazy load heavy components
-const CosmosIntro = lazy(() => import("@/components/cosmos-intro-enhanced").then(m => ({ default: m.CosmosIntro })))
+const CosmosIntro = lazy(() => import("@/components/cosmos-intro-simplified").then(m => ({ default: m.CosmosIntroSimplified })))
 const SideNavModern = lazy(() => import("@/components/side-nav-modern").then(m => ({ default: m.SideNavModern })))
 const PortfolioShowcase = lazy(() => import("@/components/portfolio-showcase").then(m => ({ default: m.PortfolioShowcase })))
 const SkillsConstellation = lazy(() => import("@/components/skills-constellation").then(m => ({ default: m.SkillsConstellation })))

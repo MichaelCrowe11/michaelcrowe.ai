@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import * as THREE from "three"
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
+import { OrbitControls } from "three/addons/controls/OrbitControls.js"
 import Image from "next/image"
 import { config } from "@/lib/config"
 
@@ -41,13 +41,14 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
     // Enable skip button after 2 seconds
     const skipTimer = setTimeout(() => setCanSkip(true), 2000)
 
-    let scene: THREE.Scene
-    let camera: THREE.PerspectiveCamera
-    let renderer: THREE.WebGLRenderer
-    let controls: OrbitControls
-    let stars: THREE.Points
-    let animationId: number
+    let scene: THREE.Scene | null = null
+    let camera: THREE.PerspectiveCamera | null = null
+    let renderer: THREE.WebGLRenderer | null = null
+    let controls: OrbitControls | null = null
+    let stars: THREE.Points | null = null
+    let animationId: number | null = null
     let startTime = Date.now()
+    let isMounted = true
 
     async function init() {
       // Scene setup
@@ -223,12 +224,13 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
 
       // Animation loop with phases
       function animate() {
+        if (!isMounted) return
         animationId = requestAnimationFrame(animate)
 
         const elapsed = (Date.now() - startTime) / 1000
-        controls.update()
+        if (controls) controls.update()
 
-        if (stars) {
+        if (stars && camera && renderer) {
           const material = stars.material as THREE.ShaderMaterial
 
           // Phase timeline
@@ -303,19 +305,58 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
       animate()
 
       return () => {
+        isMounted = false
         window.removeEventListener("resize", handleResize)
-        cancelAnimationFrame(animationId)
-        controls.dispose()
-        renderer.dispose()
-        containerRef.current?.removeChild(renderer.domElement)
+        if (animationId) cancelAnimationFrame(animationId)
+        if (controls) controls.dispose()
+        if (renderer) {
+          if (containerRef.current && renderer.domElement.parentNode === containerRef.current) {
+            containerRef.current.removeChild(renderer.domElement)
+          }
+          renderer.dispose()
+        }
+        if (stars) {
+          if (stars.geometry) stars.geometry.dispose()
+          if (stars.material) {
+            if (Array.isArray(stars.material)) {
+              stars.material.forEach(m => m.dispose())
+            } else {
+              stars.material.dispose()
+            }
+          }
+        }
+        if (scene) {
+          scene.clear()
+        }
       }
     }
 
     init()
 
     return () => {
+      isMounted = false
       clearTimeout(skipTimer)
       if (animationId) cancelAnimationFrame(animationId)
+      if (controls) controls.dispose()
+      if (renderer) {
+        if (containerRef.current && renderer.domElement.parentNode === containerRef.current) {
+          containerRef.current.removeChild(renderer.domElement)
+        }
+        renderer.dispose()
+      }
+      if (stars) {
+        if (stars.geometry) stars.geometry.dispose()
+        if (stars.material) {
+          if (Array.isArray(stars.material)) {
+            stars.material.forEach(m => m.dispose())
+          } else {
+            stars.material.dispose()
+          }
+        }
+      }
+      if (scene) {
+        scene.clear()
+      }
     }
   }, [onComplete])
 

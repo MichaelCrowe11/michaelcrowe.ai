@@ -5,7 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
-import { StarfieldBackground } from "@/components/starfield-background"
+import { StarfieldBackgroundSimple } from "@/components/starfield-background-simple"
 import { FireworkStars } from "@/components/firework-stars"
 import { StructuredData } from "@/components/structured-data"
 
@@ -85,8 +85,8 @@ export default function RootLayout({
         <StructuredData />
       </head>
       <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased minimal-bg`}>
-        {/* 10,088 Stars Background */}
-        <StarfieldBackground />
+        {/* Starfield Background */}
+        <StarfieldBackgroundSimple />
 
         {/* Firework Star Explosions */}
         <FireworkStars />

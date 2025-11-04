@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Check, ArrowRight, Sparkles, Zap, Rocket, Crown, Search, Lightbulb } from "lucide-react"
+import { Check, ArrowRight, Compass, Wrench, UserCheck, Crown, Search, ClipboardList } from "lucide-react"
 import Link from "next/link"
 
 const container = {
@@ -30,7 +30,7 @@ const item = {
 export function ServicesPricing() {
   const mainServices = [
     {
-      icon: Sparkles,
+      icon: Compass,
       name: "AI Strategy & Roadmap",
       price: "$15,000",
       duration: "2 Weeks",
@@ -50,7 +50,7 @@ export function ServicesPricing() {
       bgGradient: "from-gold/5 to-gold/10",
     },
     {
-      icon: Zap,
+      icon: Wrench,
       name: "AI Implementation Intensive",
       price: "$45,000",
       duration: "6 Weeks",
@@ -64,13 +64,13 @@ export function ServicesPricing() {
         "60 days post-launch optimization",
         "Direct access to me throughout",
       ],
-      outcome: "50-100+ hours/week saved across your organization. Systems that actually work.",
+      outcome: "50-100+ hours/week saved across your organization. Production-ready systems with measurable ROI.",
       highlighted: true,
       borderColor: "border-gold",
       bgGradient: "from-gold/10 to-accent/10",
     },
     {
-      icon: Rocket,
+      icon: UserCheck,
       name: "Executive AI Advisory",
       price: "$15,000/mo",
       duration: "6-month minimum",
@@ -123,7 +123,7 @@ export function ServicesPricing() {
       ],
     },
     {
-      icon: Lightbulb,
+      icon: ClipboardList,
       name: "AI Audit",
       price: "$5,000",
       duration: "1 Week",
@@ -307,7 +307,7 @@ export function ServicesPricing() {
                 When you work with me, you're getting frameworks battle-tested in production - not theoretical consulting.
               </p>
               <p className="text-sm italic pt-4 border-t border-border/50 mt-6">
-                If you want cheap AI experiments, there are plenty of options. If you want systems that actually work - let's talk.
+                If you want cheap AI experiments, there are plenty of options. If you want production-ready systems with proven results - let's talk.
               </p>
             </div>
 

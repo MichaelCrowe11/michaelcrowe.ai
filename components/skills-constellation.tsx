@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { Brain, Code, Database, Sparkles, Zap, Cpu } from "lucide-react"
+import { Network, Code, Database, MessageSquare, BarChart, Cpu, Box, Palette, ChartBar, Workflow, Cloud } from "lucide-react"
 
 interface Skill {
   name: string
@@ -36,7 +36,7 @@ export function SkillsConstellation() {
       name: "AI/Machine Learning",
       level: 95,
       category: "AI/ML",
-      icon: Brain,
+      icon: Network,
       color: "139, 92, 246",
       description: "GPT-4, Claude, custom AI systems, prompt engineering",
     },
@@ -44,7 +44,7 @@ export function SkillsConstellation() {
       name: "Natural Language Processing",
       level: 90,
       category: "AI/ML",
-      icon: Sparkles,
+      icon: MessageSquare,
       color: "236, 72, 153",
       description: "Chatbots, voice AI, sentiment analysis, text generation",
     },
@@ -88,7 +88,7 @@ export function SkillsConstellation() {
       name: "WebGL & Three.js",
       level: 85,
       category: "Creative",
-      icon: Sparkles,
+      icon: Box,
       color: "218, 165, 32",
       description: "3D graphics, shaders, particle systems, animations",
     },
@@ -96,7 +96,7 @@ export function SkillsConstellation() {
       name: "UI/UX Design",
       level: 88,
       category: "Creative",
-      icon: Sparkles,
+      icon: Palette,
       color: "251, 191, 36",
       description: "Figma, design systems, user research, prototyping",
     },
@@ -106,7 +106,7 @@ export function SkillsConstellation() {
       name: "Data Science",
       level: 80,
       category: "Data",
-      icon: Brain,
+      icon: ChartBar,
       color: "168, 85, 247",
       description: "Python, Pandas, data visualization, predictive models",
     },
@@ -114,7 +114,7 @@ export function SkillsConstellation() {
       name: "Business Analytics",
       level: 85,
       category: "Data",
-      icon: Zap,
+      icon: BarChart,
       color: "217, 70, 239",
       description: "Metrics, KPIs, dashboards, actionable insights",
     },
@@ -124,7 +124,7 @@ export function SkillsConstellation() {
       name: "Process Automation",
       level: 92,
       category: "Automation",
-      icon: Zap,
+      icon: Workflow,
       color: "239, 68, 68",
       description: "Workflow automation, API integrations, task scheduling",
     },
@@ -132,7 +132,7 @@ export function SkillsConstellation() {
       name: "DevOps & Cloud",
       level: 80,
       category: "Automation",
-      icon: Cpu,
+      icon: Cloud,
       color: "234, 88, 12",
       description: "AWS, Docker, CI/CD, infrastructure as code",
     },
