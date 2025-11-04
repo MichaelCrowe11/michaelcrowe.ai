@@ -104,11 +104,12 @@ export function ChatAvatar() {
         <div className="fixed bottom-6 right-6 z-50 w-80 sm:w-96 bg-card border border-border rounded-2xl shadow-2xl animate-slide-up">
           {/* Header */}
           <div className="flex items-center gap-3 p-4 border-b border-border bg-muted/50 rounded-t-2xl">
-            <div className="relative">
+            <div className="relative bg-black rounded-full p-1">
               <img
                 src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/crowe-logic-logo-87FZNrbBWYjPIm7AaAVgQ2TQIx435b.png"
                 alt="Michael Crowe"
-                className="w-12 h-12 rounded-full border-2 border-gold"
+                className="w-12 h-12 rounded-full border-2 border-gold object-contain"
+                style={{ mixBlendMode: "lighten" }}
               />
               <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-card"></div>
             </div>

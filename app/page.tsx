@@ -7,7 +7,7 @@ import { WhyWorkSection } from "@/components/why-work-section"
 import { ServicesPricing } from "@/components/services-pricing"
 
 // Lazy load heavy components
-const CosmosIntro = lazy(() => import("@/components/cosmos-intro-simplified").then(m => ({ default: m.CosmosIntroSimplified })))
+const CosmosIntro = lazy(() => import("@/components/cosmos-intro-optimized").then(m => ({ default: m.CosmosIntroOptimized })))
 const SideNavModern = lazy(() => import("@/components/side-nav-modern").then(m => ({ default: m.SideNavModern })))
 const PortfolioShowcase = lazy(() => import("@/components/portfolio-showcase").then(m => ({ default: m.PortfolioShowcase })))
 const SkillsConstellation = lazy(() => import("@/components/skills-constellation").then(m => ({ default: m.SkillsConstellation })))
@@ -17,7 +17,7 @@ const StorySection = lazy(() => import("@/components/story-section").then(m => (
 const ProcessSection = lazy(() => import("@/components/process-section").then(m => ({ default: m.ProcessSection })))
 const WhoThisIsForSection = lazy(() => import("@/components/who-this-is-for-section").then(m => ({ default: m.WhoThisIsForSection })))
 const FinalCTASection = lazy(() => import("@/components/final-cta-section").then(m => ({ default: m.FinalCTASection })))
-const ChatAvatar = lazy(() => import("@/components/chat-avatar").then(m => ({ default: m.ChatAvatar })))
+const ChatAvatar = lazy(() => import("@/components/chat-avatar-functional").then(m => ({ default: m.ChatAvatarFunctional })))
 const FloatingParticles = lazy(() => import("@/components/floating-particles").then(m => ({ default: m.FloatingParticles })))
 
 // Loading fallback component
