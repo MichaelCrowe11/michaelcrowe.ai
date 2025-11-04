@@ -30,16 +30,14 @@ function SectionLoader() {
 }
 
 export default function Home() {
-  const [showIntro, setShowIntro] = useState(true)
-  const [introComplete, setIntroComplete] = useState(false)
+  // Skip intro by default for better performance
+  const [showIntro, setShowIntro] = useState(false)
+  const [introComplete, setIntroComplete] = useState(true)
 
   useEffect(() => {
-    // Check if user has seen intro in this session
-    const hasSeenIntro = sessionStorage.getItem("hasSeenCosmosIntro")
-    if (hasSeenIntro) {
-      setShowIntro(false)
-      setIntroComplete(true)
-    }
+    // Intro disabled by default for performance
+    // Users can view it at /showcase instead
+    sessionStorage.setItem("hasSeenCosmosIntro", "true")
 
     // Safety fallback: Force show main content after 15 seconds if intro hasn't completed
     const safetyTimeout = setTimeout(() => {
