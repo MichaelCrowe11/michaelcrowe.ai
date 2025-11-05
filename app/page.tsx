@@ -5,6 +5,7 @@ import { ErrorBoundary } from "@/components/error-boundary"
 import { HeroPremium } from "@/components/hero-premium"
 import { WhyWorkSection } from "@/components/why-work-section"
 import { ServicesPricing } from "@/components/services-pricing"
+import { BigBangIntroThree } from "@/components/bigbang-intro-three"
 
 // Only lazy load truly heavy or below-fold components
 import { SideNavModern } from "@/components/side-nav-modern"
@@ -29,14 +30,25 @@ function SectionLoader() {
 }
 
 export default function Home() {
-  // Skip intro by default for better performance
+  // Check if user has seen the intro - enable it on first visit
   const [showIntro, setShowIntro] = useState(false)
   const [introComplete, setIntroComplete] = useState(true)
 
   useEffect(() => {
-    // Intro disabled by default for performance
-    // Users can view it at /showcase instead
-    sessionStorage.setItem("hasSeenCosmosIntro", "true")
+    // Check if user has seen the Big Bang intro
+    const hasSeenIntro = sessionStorage.getItem("hasSeenBigBangIntro")
+
+    // Show intro only on first visit
+    // To always show intro, set: showIntro = !hasSeenIntro
+    // To never show intro (current behavior), set: showIntro = false
+    const enableIntro = false // Change to true to enable intro on first visit
+
+    if (!hasSeenIntro && enableIntro) {
+      setShowIntro(true)
+      setIntroComplete(false)
+    } else {
+      sessionStorage.setItem("hasSeenBigBangIntro", "true")
+    }
 
     // Safety fallback: Force show main content after 15 seconds if intro hasn't completed
     const safetyTimeout = setTimeout(() => {
@@ -60,7 +72,10 @@ export default function Home() {
 
   return (
     <ErrorBoundary>
-      {/* Intro disabled by default - view at /showcase */}
+      {/* Big Bang Intro - Show on first visit if enabled */}
+      {showIntro && !introComplete && (
+        <BigBangIntroThree onComplete={handleIntroComplete} />
+      )}
 
       {/* Modern Side Navigation - No lazy loading */}
       <SideNavModern />

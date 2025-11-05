@@ -1037,3 +1037,27 @@
 /* ==================================== */
 /*  END DIAMOND SPARKLE EFFECTS 💎     */
 /* ==================================== */
+
+/* ==================================== */
+/*  BIG BANG INTRO EFFECTS 🌌          */
+/* ==================================== */
+
+/* Radial Gradient Utilities */
+.bg-gradient-radial {
+  background: radial-gradient(circle, var(--tw-gradient-stops));
+}
+
+/* Performance Optimization */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ==================================== */
+/*  END BIG BANG INTRO EFFECTS 🌌      */
+/* ==================================== */
