@@ -1,6 +1,5 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Inter, Space_Grotesk } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { Header } from "@/components/header"
@@ -8,9 +7,6 @@ import { Footer } from "@/components/footer"
 import { StarfieldBackgroundSimple } from "@/components/starfield-background-simple"
 import { FireworkStars } from "@/components/firework-stars"
 import { StructuredData } from "@/components/structured-data"
-
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
-const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk" })
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://michaelcrowe.ai"),
@@ -84,7 +80,7 @@ export default function RootLayout({
       <head>
         <StructuredData />
       </head>
-      <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased minimal-bg`}>
+      <body className="font-sans antialiased minimal-bg">
         {/* Starfield Background */}
         <StarfieldBackgroundSimple />
 

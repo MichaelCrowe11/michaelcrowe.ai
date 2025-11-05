@@ -5,7 +5,9 @@ import { ErrorBoundary } from "@/components/error-boundary"
 import { HeroPremium } from "@/components/hero-premium"
 import { WhyWorkSection } from "@/components/why-work-section"
 import { ServicesPricing } from "@/components/services-pricing"
-import { BigBangIntroThree } from "@/components/bigbang-intro-three"
+
+// Lazy load BigBangIntroThree (uses Three.js - client-side only)
+const BigBangIntroThree = lazy(() => import("@/components/bigbang-intro-three").then(m => ({ default: m.BigBangIntroThree })))
 
 // Only lazy load truly heavy or below-fold components
 import { SideNavModern } from "@/components/side-nav-modern"
@@ -33,8 +35,14 @@ export default function Home() {
   // Check if user has seen the intro - enable it on first visit
   const [showIntro, setShowIntro] = useState(false)
   const [introComplete, setIntroComplete] = useState(true)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
+
+    // Only check sessionStorage on client
+    if (typeof window === 'undefined') return
+
     // Check if user has seen the Big Bang intro
     const hasSeenIntro = sessionStorage.getItem("hasSeenBigBangIntro")
 
@@ -73,8 +81,10 @@ export default function Home() {
   return (
     <ErrorBoundary>
       {/* Big Bang Intro - Show on first visit if enabled */}
-      {showIntro && !introComplete && (
-        <BigBangIntroThree onComplete={handleIntroComplete} />
+      {mounted && showIntro && !introComplete && (
+        <Suspense fallback={<div className="fixed inset-0 bg-black" />}>
+          <BigBangIntroThree onComplete={handleIntroComplete} />
+        </Suspense>
       )}
 
       {/* Modern Side Navigation - No lazy loading */}
