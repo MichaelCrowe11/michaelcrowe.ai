@@ -75,10 +75,14 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
     let nebulaClouds: THREE.Mesh[] = []
     let godRays: THREE.Mesh[] = []
     let lightOrbs: THREE.Mesh[] = []
-    let asteroids: THREE.Mesh[] = []
+  let asteroids: THREE.Mesh[] = []
     let meteors: THREE.Group[] = []
     let dustClouds: THREE.Points[] = []
     let shockwave: THREE.Mesh | null = null
+  // Planetary formation system
+  let planetSystem: THREE.Group | null = null
+  let accretionDisk: THREE.Mesh | null = null
+  let planetsMesh: THREE.InstancedMesh | null = null
     let animationId: number
     let startTime = Date.now()
     let vignette: HTMLDivElement | null = null
@@ -846,6 +850,94 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
           scene.add(orb)
         }
 
+        // Planetary formation: accretion disk and proto-planets (instanced)
+        planetSystem = new THREE.Group()
+        planetSystem.visible = false
+
+        // Accretion disk (ring with radial alpha gradient)
+        const ringGeo = new THREE.RingGeometry(6, 20, 128, 1)
+        const ringMat = new THREE.ShaderMaterial({
+          uniforms: {
+            opacity: { value: 0.0 },
+            colorInner: { value: new THREE.Color(0x996633) },
+            colorOuter: { value: new THREE.Color(0x221100) },
+          },
+          vertexShader: `
+            varying vec2 vUv;
+            void main() {
+              vUv = uv;
+              gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+          `,
+          fragmentShader: `
+            uniform float opacity;
+            uniform vec3 colorInner;
+            uniform vec3 colorOuter;
+            varying vec2 vUv;
+            void main() {
+              float r = vUv.x; // ring UV uses x radial coordinate
+              float edge = smoothstep(0.0, 0.1, r) * (1.0 - smoothstep(0.9, 1.0, r));
+              vec3 col = mix(colorOuter, colorInner, r);
+              gl_FragColor = vec4(col, edge * 0.6 * opacity);
+            }
+          `,
+          transparent: true,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        })
+        accretionDisk = new THREE.Mesh(ringGeo, ringMat)
+        accretionDisk.rotation.x = -Math.PI / 2
+        planetSystem.add(accretionDisk)
+
+        // Instanced proto-planets
+        const planetGeo = new THREE.SphereGeometry(0.5, 16, 16)
+        const planetMat = new THREE.MeshStandardMaterial({
+          color: 0x8899aa,
+          metalness: 0.1,
+          roughness: 0.8,
+          emissive: new THREE.Color(0x111111),
+          emissiveIntensity: 0.3,
+          transparent: true,
+          opacity: 0
+        })
+        const planetCount = 60
+        planetsMesh = new THREE.InstancedMesh(planetGeo, planetMat, planetCount)
+        planetsMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage)
+        // Store orbital params on userData
+        const radii: number[] = []
+        const speeds: number[] = []
+        const angles: number[] = []
+        const tilts: number[] = []
+        for (let i = 0; i < planetCount; i++) {
+          const radius = 6 + Math.random() * 18
+          const speed = (Math.random() * 0.5 + 0.1) * (20 / radius) // farther = slower
+          const angle = Math.random() * Math.PI * 2
+          const tilt = (Math.random() - 0.5) * 0.2
+          radii.push(radius)
+          speeds.push(speed)
+          angles.push(angle)
+          tilts.push(tilt)
+
+          const m = new THREE.Matrix4()
+          const p = new THREE.Vector3(
+            Math.cos(angle) * radius,
+            Math.sin(tilt) * 0.5,
+            Math.sin(angle) * radius
+          )
+          const s = new THREE.Vector3(1, 1, 1).multiplyScalar(0.6 + Math.random() * 1.5)
+          m.compose(p, new THREE.Quaternion(), s)
+          planetsMesh.setMatrixAt(i, m)
+        }
+        planetsMesh.userData = { radii, speeds, angles, tilts }
+        planetSystem.add(planetsMesh)
+
+        // Soft key light for planets
+        const planetLight = new THREE.PointLight(0xffddaa, 0.0, 100)
+        planetLight.position.set(10, 10, 10)
+        planetSystem.add(planetLight)
+
+        scene.add(planetSystem)
+
         setIsLoading(false)
       } catch (error) {
         // TODO: Implement proper error tracking (e.g., Sentry)
@@ -1053,6 +1145,41 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
             // Smooth zoom in to prepare for neural network
             const zoomProgress = (elapsed - 8) / 5
             camera.position.z = 50 - (zoomProgress * 15) // Zoom from 50 to 35
+
+            // Planetary formation emerges near end of cosmos phase
+            if (planetSystem && accretionDisk && planetsMesh) {
+              const appearProgress = THREE.MathUtils.clamp((elapsed - 11) / 2, 0, 1)
+              planetSystem.visible = appearProgress > 0
+
+              // Accretion disk opacity and slow rotation
+              const diskMat = accretionDisk.material as THREE.ShaderMaterial
+              diskMat.uniforms.opacity.value = appearProgress
+              accretionDisk.rotation.z += 0.001
+
+              // Planets opacity and orbits
+              const pm = planetsMesh.material as THREE.MeshStandardMaterial
+              pm.opacity = appearProgress
+
+              const { radii, speeds, angles, tilts } = planetsMesh.userData as {
+                radii: number[]; speeds: number[]; angles: number[]; tilts: number[]
+              }
+              const m = new THREE.Matrix4()
+              for (let i = 0; i < planetsMesh.count; i++) {
+                angles[i] += speeds[i] * 0.016 // advance angle per frame
+                const r = radii[i]
+                const angle = angles[i]
+                const tilt = tilts[i]
+                const p = new THREE.Vector3(
+                  Math.cos(angle) * r,
+                  Math.sin(tilt) * 0.5,
+                  Math.sin(angle) * r
+                )
+                const s = new THREE.Vector3(1, 1, 1).multiplyScalar(0.6 + ((i % 5) / 10))
+                m.compose(p, new THREE.Quaternion(), s)
+                planetsMesh.setMatrixAt(i, m)
+              }
+              planetsMesh.instanceMatrix.needsUpdate = true
+            }
           } else if (elapsed < 19) {
             // Phase 4: Neural Network AI Showcase (13-19s)
             setPhase("neural-network")
@@ -1067,6 +1194,16 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
               const cloudMat = cloud.material as THREE.ShaderMaterial
               cloudMat.uniforms.opacity.value = Math.max(0, 1 - transitionProgress)
             })
+
+            // Fade out planet system during transition
+            if (planetSystem && accretionDisk && planetsMesh) {
+              const fade = Math.max(0, 1 - Math.min(1, transitionProgress))
+              const diskMat = accretionDisk.material as THREE.ShaderMaterial
+              diskMat.uniforms.opacity.value = fade
+              const pm = planetsMesh.material as THREE.MeshStandardMaterial
+              pm.opacity = fade
+              if (fade === 0) planetSystem.visible = false
+            }
             
             // Show neural network with smooth fade
             if (neuralNetwork) {
