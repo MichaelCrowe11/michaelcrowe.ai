@@ -44,6 +44,9 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
     let controls: OrbitControls
     let stars: THREE.Points
     let neuralNetwork: THREE.Group | null = null
+    let particles: THREE.Points | null = null
+    let dataFlows: THREE.Line[] = []
+    let nebulaClouds: THREE.Mesh[] = []
     let animationId: number
     let startTime = Date.now()
 
@@ -183,6 +186,140 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
         stars = new THREE.Points(geometry, material)
         scene.add(stars)
 
+        // Create explosion particles for Big Bang
+        const particleCount = 2000
+        const particleGeometry = new THREE.BufferGeometry()
+        const particlePositions: number[] = []
+        const particleColors: number[] = []
+        const particleSizes: number[] = []
+        const particleVelocities: number[] = []
+
+        for (let i = 0; i < particleCount; i++) {
+          particlePositions.push(0, 0, 0) // Start at center
+          
+          // Random direction for explosion
+          const theta = Math.random() * Math.PI * 2
+          const phi = Math.random() * Math.PI
+          const speed = Math.random() * 50 + 30
+          particleVelocities.push(
+            Math.sin(phi) * Math.cos(theta) * speed,
+            Math.sin(phi) * Math.sin(theta) * speed,
+            Math.cos(phi) * speed
+          )
+          
+          // Hot colors: white, yellow, orange, red
+          const colorChoice = Math.random()
+          if (colorChoice < 0.3) {
+            particleColors.push(1, 1, 1) // White
+          } else if (colorChoice < 0.6) {
+            particleColors.push(1, 0.8, 0.2) // Yellow
+          } else if (colorChoice < 0.8) {
+            particleColors.push(1, 0.5, 0) // Orange
+          } else {
+            particleColors.push(1, 0.2, 0.2) // Red
+          }
+          
+          particleSizes.push(Math.random() * 3 + 1)
+        }
+
+        particleGeometry.setAttribute('position', new THREE.Float32BufferAttribute(particlePositions, 3))
+        particleGeometry.setAttribute('color', new THREE.Float32BufferAttribute(particleColors, 3))
+        particleGeometry.setAttribute('size', new THREE.Float32BufferAttribute(particleSizes, 1))
+        particleGeometry.setAttribute('velocity', new THREE.Float32BufferAttribute(particleVelocities, 3))
+
+        const particleMaterial = new THREE.ShaderMaterial({
+          uniforms: {
+            time: { value: 0 },
+            opacity: { value: 0 }
+          },
+          vertexShader: `
+            attribute float size;
+            attribute vec3 color;
+            attribute vec3 velocity;
+            varying vec3 vColor;
+            uniform float time;
+            uniform float opacity;
+
+            void main() {
+              vColor = color;
+              vec3 pos = position + velocity * time;
+              vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+              gl_PointSize = size * (300.0 / -mvPosition.z) * opacity;
+              gl_Position = projectionMatrix * mvPosition;
+            }
+          `,
+          fragmentShader: `
+            varying vec3 vColor;
+            uniform float opacity;
+
+            void main() {
+              vec2 center = gl_PointCoord - vec2(0.5);
+              float dist = length(center);
+              if (dist > 0.5) discard;
+              
+              float glow = 1.0 - smoothstep(0.0, 0.5, dist);
+              gl_FragColor = vec4(vColor * glow, glow * opacity);
+            }
+          `,
+          transparent: true,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false
+        })
+
+        particles = new THREE.Points(particleGeometry, particleMaterial)
+        scene.add(particles)
+
+        // Create volumetric nebula clouds
+        for (let i = 0; i < 5; i++) {
+          const cloudGeometry = new THREE.SphereGeometry(30, 32, 32)
+          const cloudMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+              color1: { value: new THREE.Color(0x4a90e2) },
+              color2: { value: new THREE.Color(0xdaa520) },
+              time: { value: 0 },
+              opacity: { value: 0 }
+            },
+            vertexShader: `
+              varying vec3 vPosition;
+              void main() {
+                vPosition = position;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+              }
+            `,
+            fragmentShader: `
+              uniform vec3 color1;
+              uniform vec3 color2;
+              uniform float time;
+              uniform float opacity;
+              varying vec3 vPosition;
+
+              float noise(vec3 p) {
+                return fract(sin(dot(p, vec3(12.9898, 78.233, 45.164))) * 43758.5453);
+              }
+
+              void main() {
+                float n = noise(vPosition * 0.05 + time * 0.1);
+                vec3 color = mix(color1, color2, n);
+                float alpha = n * 0.15 * opacity;
+                gl_FragColor = vec4(color, alpha);
+              }
+            `,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            side: THREE.BackSide,
+            depthWrite: false
+          })
+          const cloud = new THREE.Mesh(cloudGeometry, cloudMaterial)
+          cloud.position.set(
+            (Math.random() - 0.5) * 100,
+            (Math.random() - 0.5) * 100,
+            (Math.random() - 0.5) * 100 - 50
+          )
+          cloud.scale.setScalar(Math.random() * 2 + 1)
+          nebulaClouds.push(cloud)
+          scene.add(cloud)
+        }
+
         // Create Neural Network visualization
         neuralNetwork = new THREE.Group()
         
@@ -251,6 +388,27 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
         neuralNetwork.visible = false
         scene.add(neuralNetwork)
 
+        // Create animated data flows through neural network
+        const flowCount = 20
+        for (let i = 0; i < flowCount; i++) {
+          const curve = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(-20, (Math.random() - 0.5) * 30, 0),
+            new THREE.Vector3(0, (Math.random() - 0.5) * 30, 0),
+            new THREE.Vector3(20, (Math.random() - 0.5) * 30, 0)
+          ])
+          const points = curve.getPoints(50)
+          const flowGeometry = new THREE.BufferGeometry().setFromPoints(points)
+          const flowMaterial = new THREE.LineBasicMaterial({
+            color: 0x00ff88,
+            transparent: true,
+            opacity: 0,
+            linewidth: 2
+          })
+          const flow = new THREE.Line(flowGeometry, flowMaterial)
+          dataFlows.push(flow)
+          scene.add(flow)
+        }
+
         setIsLoading(false)
       } catch (error) {
         // TODO: Implement proper error tracking (e.g., Sentry)
@@ -293,6 +451,14 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
             material.uniforms.explosionFactor.value = easedProgress
             material.uniforms.opacity.value = 1
 
+            // Animate explosion particles
+            if (particles) {
+              const particleMat = particles.material as THREE.ShaderMaterial
+              particleMat.uniforms.time.value = explosionProgress * 2
+              particleMat.uniforms.opacity.value = Math.min(1, explosionProgress * 2) * 
+                                                    (1 - explosionProgress) // Fade out as they expand
+            }
+
             // Enhanced flash effect with color gradation
             if (elapsed < 5.3) {
               scene.background = new THREE.Color(0xffffff)
@@ -317,6 +483,21 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
             material.uniforms.opacity.value = 1
             controls.enabled = true
 
+            // Fade out particles
+            if (particles) {
+              const particleMat = particles.material as THREE.ShaderMaterial
+              particleMat.uniforms.opacity.value = Math.max(0, 1 - (elapsed - 8) / 2)
+            }
+
+            // Fade in nebula clouds
+            nebulaClouds.forEach(cloud => {
+              const cloudMat = cloud.material as THREE.ShaderMaterial
+              cloudMat.uniforms.opacity.value = Math.min(1, (elapsed - 9) / 2)
+              cloudMat.uniforms.time.value = elapsed
+              cloud.rotation.y += 0.001
+              cloud.rotation.x += 0.0005
+            })
+
             // Reset camera shake
             camera.position.x = 0
             camera.position.y = 0
@@ -333,6 +514,12 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
             material.uniforms.opacity.value = Math.max(0, 1 - Math.min(1, transitionProgress))
             controls.enabled = false
             
+            // Fade out nebula clouds
+            nebulaClouds.forEach(cloud => {
+              const cloudMat = cloud.material as THREE.ShaderMaterial
+              cloudMat.uniforms.opacity.value = Math.max(0, 1 - transitionProgress)
+            })
+            
             // Show neural network with smooth fade
             if (neuralNetwork) {
               neuralNetwork.visible = true
@@ -344,9 +531,13 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
                   const delay = index * 0.015
                   const opacity = Math.min(1, Math.max(0, (networkProgress - delay) * 2.5))
                   ;(child.material as THREE.MeshBasicMaterial).opacity = opacity
+                  
+                  // Pulsing glow effect on neurons
+                  const glowPulse = Math.sin(elapsed * 4 + index * 0.5) * 0.3 + 0.7
+                  ;(child.material as THREE.MeshBasicMaterial).opacity = opacity * glowPulse
                 } else if (child instanceof THREE.Line) {
                   const delay = index * 0.008
-                  const opacity = Math.min(0.5, Math.max(0, (networkProgress - delay) * 1.8))
+                  const opacity = Math.min(0.6, Math.max(0, (networkProgress - delay) * 1.8))
                   ;(child.material as THREE.LineBasicMaterial).opacity = opacity
                 }
               })
@@ -358,6 +549,14 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
               const pulse = Math.sin((elapsed - 13) * 2) * 0.05 + 1
               neuralNetwork.scale.setScalar(pulse)
             }
+            
+            // Animate data flows through network
+            dataFlows.forEach((flow, index) => {
+              const flowMat = flow.material as THREE.LineBasicMaterial
+              const flowProgress = ((elapsed - 14 + index * 0.1) % 2) / 2 // Cycle every 2 seconds
+              flowMat.opacity = Math.sin(flowProgress * Math.PI) * 0.8
+              flow.visible = elapsed > 14
+            })
             
             // Camera slowly orbits around network
             camera.position.z = 35
@@ -537,28 +736,75 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
             {/* Phase 5: Matrix Code Rain - WEB ANIMATION SHOWCASE */}
             {phase === "matrix-code" && (
               <div className="text-center space-y-8 px-4 animate-fade-in-fast">
+                <div className="scanline"></div>
                 <div className="space-y-4">
-                  <div className="font-mono text-green-400/80 text-sm md:text-base mb-6 overflow-hidden h-40">
-                    {/* Simulated matrix rain effect */}
-                    <div className="matrix-rain-text animate-scroll-up leading-relaxed">
-                      01001001 01101110 01101110<br/>
-                      01101111 01110110 01100001<br/>
-                      01110100 01101001 01101111<br/>
-                      01101110 00100000 01001001<br/>
-                      01110011 00100000 01000011<br/>
-                      01101111 01100100 01100101<br/>
+                  {/* Enhanced Matrix Rain with multiple columns */}
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
+                    <div className="matrix-column" style={{ left: '10%' }}>
+                      <div className="matrix-rain-text animate-scroll-up font-mono text-green-400 text-xs">
+                        AI・機械学習・深層学習<br/>
+                        01001001 01101110<br/>
+                        NEURAL・NETWORK<br/>
+                        01110110 01100001<br/>
+                        データ・分析・予測<br/>
+                        01110100 01101111<br/>
+                      </div>
+                    </div>
+                    <div className="matrix-column" style={{ left: '25%', animationDelay: '0.5s' }}>
+                      <div className="matrix-rain-text animate-scroll-up font-mono text-green-400 text-xs">
+                        PYTHON・REACT・AI<br/>
+                        01110011 00100000<br/>
+                        アルゴリズム・最適化<br/>
+                        01000011 01101111<br/>
+                        INNOVATION・CODE<br/>
+                        01100100 01100101<br/>
+                      </div>
+                    </div>
+                    <div className="matrix-column" style={{ left: '45%', animationDelay: '1s' }}>
+                      <div className="matrix-rain-text animate-scroll-up font-mono text-green-400 text-xs">
+                        三次元・可視化<br/>
+                        01110011 01110100<br/>
+                        WEBGL・SHADER<br/>
+                        01110010 01100001<br/>
+                        フレームワーク<br/>
+                        01101110 01110011<br/>
+                      </div>
+                    </div>
+                    <div className="matrix-column" style={{ left: '65%', animationDelay: '1.5s' }}>
+                      <div className="matrix-rain-text animate-scroll-up font-mono text-green-400 text-xs">
+                        TRANSFORM・CLOUD<br/>
+                        01100110 01101111<br/>
+                        クラウド・API<br/>
+                        01110010 01101101<br/>
+                        NEXT.JS・VERCEL<br/>
+                        01100001 01101110<br/>
+                      </div>
+                    </div>
+                    <div className="matrix-column" style={{ left: '85%', animationDelay: '2s' }}>
+                      <div className="matrix-rain-text animate-scroll-up font-mono text-green-400 text-xs">
+                        自動化・効率化<br/>
+                        01100011 01100101<br/>
+                        OPTIMIZATION<br/>
+                        01101001 01101110<br/>
+                        データサイエンス<br/>
+                        01110100 01101111<br/>
+                      </div>
                     </div>
                   </div>
-                  <h2 className="text-4xl md:text-6xl font-bold text-white leading-tight">
-                    <span className="text-green-400">Innovation</span> Is Code
-                    <span className="block text-gold text-shimmer mt-2">Excellence Is Execution</span>
-                  </h2>
-                  <p className="text-xl md:text-2xl text-white/70 font-light max-w-2xl mx-auto">
-                    From elegant algorithms to stunning interfaces—
-                    <span className="block text-white/90 mt-2">
-                      Every pixel, every line, crafted with purpose
-                    </span>
-                  </p>
+                  
+                  {/* Center content above the matrix rain */}
+                  <div className="relative z-10 mt-32">
+                    <h2 className="text-4xl md:text-6xl font-bold text-white leading-tight">
+                      <span className="text-green-400">Innovation</span> Is Code
+                      <span className="block text-gold text-shimmer mt-2">Excellence Is Execution</span>
+                    </h2>
+                    <p className="text-xl md:text-2xl text-white/70 font-light max-w-2xl mx-auto mt-6">
+                      From elegant algorithms to stunning interfaces—
+                      <span className="block text-white/90 mt-2">
+                        Every pixel, every line, crafted with purpose
+                      </span>
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
