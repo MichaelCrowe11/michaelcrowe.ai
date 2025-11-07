@@ -1264,3 +1264,63 @@
 /* ==================================== */
 /*  END STARFIELD & AVATAR ANIMATIONS  */
 /* ==================================== */
+
+/* ==================================== */
+/*  CHAT SOLAR OVERLAY (LIGHTWEIGHT)    */
+/* ==================================== */
+.solar-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  background: oklch(0.95 0.02 100);
+  border-radius: 9999px;
+  transform: translate(-50%, -50%);
+  box-shadow:
+    0 0 30px oklch(0.95 0.02 100 / 0.8),
+    0 0 80px oklch(0.82 0.12 80 / 0.6),
+    0 0 140px oklch(0.72 0.09 75 / 0.4);
+}
+
+.orbit-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border: 1px dashed oklch(0.98 0.005 265 / 0.25);
+  border-radius: 9999px;
+  transform: translate(-50%, -50%);
+  animation: spin 36s linear infinite;
+}
+
+.orbit-r1 { width: 240px; height: 240px; animation-duration: 22s; }
+.orbit-r2 { width: 340px; height: 340px; animation-duration: 28s; }
+.orbit-r3 { width: 460px; height: 460px; animation-duration: 36s; }
+.orbit-r4 { width: 600px; height: 600px; animation-duration: 48s; }
+
+.planet-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: -50% -50%;
+  transform: rotate(0deg) translateX(50%) translateY(-50%);
+  width: 8px;
+  height: 8px;
+  background: oklch(0.72 0.09 75);
+  border-radius: 9999px;
+  box-shadow: 0 0 12px oklch(0.72 0.09 75 / 0.7);
+}
+
+.planet-p1 { width: 6px; height: 6px; background: oklch(0.62 0.19 235); box-shadow: 0 0 10px oklch(0.62 0.19 235 / 0.7); }
+.planet-p2 { width: 7px; height: 7px; background: oklch(0.72 0.09 75); }
+.planet-p3 { width: 9px; height: 9px; background: oklch(0.58 0.14 150); box-shadow: 0 0 14px oklch(0.58 0.14 150 / 0.7); }
+.planet-p4 { width: 8px; height: 8px; background: oklch(0.65 0.08 210); box-shadow: 0 0 12px oklch(0.65 0.08 210 / 0.7); }
+
+@keyframes spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* ==================================== */
+/*  END CHAT SOLAR OVERLAY              */
+/* ==================================== */

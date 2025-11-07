@@ -879,8 +879,10 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
         }
 
         // Planetary formation: accretion disk and proto-planets (instanced)
-        planetSystem = new THREE.Group()
+  planetSystem = new THREE.Group()
         planetSystem.visible = false
+  // Place slightly off-center so it doesn't collide with network center visuals
+  planetSystem.position.set(-14, -3, -5)
 
         // Accretion disk (ring with radial alpha gradient)
         const ringGeo = new THREE.RingGeometry(6, 20, 128, 1)
@@ -1240,12 +1242,12 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
 
               // Accretion disk opacity and slow rotation
               const diskMat = accretionDisk.material as THREE.ShaderMaterial
-              diskMat.uniforms.opacity.value = appearProgress
+              diskMat.uniforms.opacity.value = Math.min(0.9, appearProgress * 1.1)
               accretionDisk.rotation.z += 0.001
 
               // Planets opacity and orbits
               const pm = planetsMesh.material as THREE.MeshStandardMaterial
-              pm.opacity = appearProgress
+              pm.opacity = Math.min(0.85, appearProgress * 1.1)
 
               const { radii, speeds, angles, tilts } = planetsMesh.userData as {
                 radii: number[]; speeds: number[]; angles: number[]; tilts: number[]
@@ -1282,15 +1284,17 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
               cloudMat.uniforms.opacity.value = Math.max(0, 1 - transitionProgress)
             })
 
-            // Fade out planet system during transition (slightly slower for graceful handoff)
+            // Maintain planet presence through ~20s at a low but visible opacity,
+            // shifted off-center to avoid conflict with the network visuals
             if (planetSystem && accretionDisk && planetsMesh) {
-              const planetsFade = THREE.MathUtils.clamp((elapsed - 13) / 3, 0, 1)
-              const fade = 1 - planetsFade
+              const presence = THREE.MathUtils.clamp((20 - elapsed) / 7, 0, 1)
+              const diskAlpha = Math.min(0.35, presence * 0.5)
+              const planetAlpha = Math.min(0.5, presence * 0.7)
               const diskMat = accretionDisk.material as THREE.ShaderMaterial
-              diskMat.uniforms.opacity.value = fade
               const pm = planetsMesh.material as THREE.MeshStandardMaterial
-              pm.opacity = fade
-              if (fade === 0) planetSystem.visible = false
+              planetSystem.visible = planetAlpha > 0.02 || diskAlpha > 0.02
+              diskMat.uniforms.opacity.value = diskAlpha
+              pm.opacity = planetAlpha
             }
             
             // Show neural network with smooth fade

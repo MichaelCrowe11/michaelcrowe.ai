@@ -143,6 +143,24 @@ export function AvatarSpaceChat() {
           <div className="stars-layer-3"></div>
         </div>
 
+        {/* Subtle Solar System Overlay */}
+        <div className="absolute inset-0 pointer-events-none opacity-70">
+          <div className="solar-center glow"></div>
+          {/* Orbits */}
+          <div className="orbit-ring orbit-r1">
+            <div className="planet-dot planet-p1"></div>
+          </div>
+          <div className="orbit-ring orbit-r2">
+            <div className="planet-dot planet-p2"></div>
+          </div>
+          <div className="orbit-ring orbit-r3">
+            <div className="planet-dot planet-p3"></div>
+          </div>
+          <div className="orbit-ring orbit-r4">
+            <div className="planet-dot planet-p4"></div>
+          </div>
+        </div>
+
         {/* Floating Logo with enhanced glow - NO BACKGROUND */}
         <div className="relative z-10 animate-float">
           {/* Multi-layer outer glow */}
