@@ -28,7 +28,7 @@ interface StarCatalog {
   stars: Star[]
 }
 
-type IntroPhase = "age-of-possibilities" | "big-bang" | "cosmos-expand" | "avatar-reveal" | "brand-message" | "complete"
+type IntroPhase = "age-of-possibilities" | "big-bang" | "cosmos-expand" | "neural-network" | "matrix-code" | "avatar-reveal" | "brand-message" | "complete"
 
 export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -43,6 +43,7 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
     let renderer: THREE.WebGLRenderer
     let controls: OrbitControls
     let stars: THREE.Points
+    let neuralNetwork: THREE.Group | null = null
     let animationId: number
     let startTime = Date.now()
 
@@ -182,6 +183,74 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
         stars = new THREE.Points(geometry, material)
         scene.add(stars)
 
+        // Create Neural Network visualization
+        neuralNetwork = new THREE.Group()
+        
+        // Create 3 layers of neurons
+        const layers = [6, 8, 6] // Input, hidden, output
+        const layerSpacing = 20
+        const neuronSpacing = 8
+        const neurons: THREE.Mesh[] = []
+        const connections: THREE.Line[] = []
+        
+        layers.forEach((neuronCount, layerIndex) => {
+          const x = (layerIndex - 1) * layerSpacing
+          
+          for (let i = 0; i < neuronCount; i++) {
+            const y = (i - neuronCount / 2) * neuronSpacing
+            
+            // Neuron sphere
+            const neuronGeometry = new THREE.SphereGeometry(1.5, 16, 16)
+            const neuronMaterial = new THREE.MeshBasicMaterial({
+              color: 0xdaa520,
+              transparent: true,
+              opacity: 0
+            })
+            const neuron = new THREE.Mesh(neuronGeometry, neuronMaterial)
+            neuron.position.set(x, y, 0)
+            neuralNetwork.add(neuron)
+            neurons.push(neuron)
+            
+            // Glow effect
+            const glowGeometry = new THREE.SphereGeometry(2, 16, 16)
+            const glowMaterial = new THREE.MeshBasicMaterial({
+              color: 0xdaa520,
+              transparent: true,
+              opacity: 0,
+              side: THREE.BackSide
+            })
+            const glow = new THREE.Mesh(glowGeometry, glowMaterial)
+            glow.position.set(x, y, 0)
+            neuralNetwork.add(glow)
+            
+            // Connect to previous layer
+            if (layerIndex > 0) {
+              const prevLayerNeuronCount = layers[layerIndex - 1]
+              for (let j = 0; j < prevLayerNeuronCount; j++) {
+                const prevY = (j - prevLayerNeuronCount / 2) * neuronSpacing
+                const prevX = (layerIndex - 2) * layerSpacing
+                
+                const points = [
+                  new THREE.Vector3(prevX, prevY, 0),
+                  new THREE.Vector3(x, y, 0)
+                ]
+                const lineGeometry = new THREE.BufferGeometry().setFromPoints(points)
+                const lineMaterial = new THREE.LineBasicMaterial({
+                  color: 0x4a90e2,
+                  transparent: true,
+                  opacity: 0
+                })
+                const line = new THREE.Line(lineGeometry, lineMaterial)
+                neuralNetwork.add(line)
+                connections.push(line)
+              }
+            }
+          }
+        })
+        
+        neuralNetwork.visible = false
+        scene.add(neuralNetwork)
+
         setIsLoading(false)
       } catch (error) {
         // TODO: Implement proper error tracking (e.g., Sentry)
@@ -207,14 +276,14 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
         if (stars) {
           const material = stars.material as THREE.ShaderMaterial
 
-          // Phase timeline
-          if (elapsed < 6) {
-            // Phase 1: "Age of Possibilities" (0-6s) - DOUBLED
+          // Phase timeline with NEW scenes
+          if (elapsed < 5) {
+            // Phase 1: "Age of Possibilities" (0-5s)
             setPhase("age-of-possibilities")
-          } else if (elapsed < 9) {
-            // Phase 2: Big Bang explosion (6-9s) - DOUBLED for more drama
+          } else if (elapsed < 8) {
+            // Phase 2: Big Bang explosion (5-8s)
             setPhase("big-bang")
-            const explosionProgress = (elapsed - 6) / 3
+            const explosionProgress = (elapsed - 5) / 3
 
             // Eased explosion with acceleration
             const easedProgress = explosionProgress < 0.5
@@ -225,10 +294,10 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
             material.uniforms.opacity.value = 1
 
             // Enhanced flash effect with color gradation
-            if (elapsed < 6.3) {
+            if (elapsed < 5.3) {
               scene.background = new THREE.Color(0xffffff)
-            } else if (elapsed < 6.8) {
-              const flashFade = (elapsed - 6.3) / 0.5
+            } else if (elapsed < 5.8) {
+              const flashFade = (elapsed - 5.3) / 0.5
               scene.background = new THREE.Color().lerpColors(
                 new THREE.Color(0xffffff),
                 new THREE.Color(0x1a1a2e),
@@ -241,8 +310,8 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
             // Camera shake effect during explosion
             camera.position.x = Math.sin(elapsed * 20) * 0.5
             camera.position.y = Math.cos(elapsed * 20) * 0.5
-          } else if (elapsed < 15) {
-            // Phase 3: Cosmos expansion (9-15s) - DOUBLED
+          } else if (elapsed < 13) {
+            // Phase 3: Cosmos expansion (8-13s)
             setPhase("cosmos-expand")
             material.uniforms.explosionFactor.value = 1
             material.uniforms.opacity.value = 1
@@ -256,14 +325,66 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
             if (camera.position.z > 25) {
               camera.position.z -= 0.06
             }
-          } else if (elapsed < 24) {
-            // Phase 4: Avatar reveal - DOUBLED (15-24s)
-            setPhase("avatar-reveal")
+          } else if (elapsed < 19) {
+            // Phase 4: Neural Network AI Showcase (13-19s) - NEW!
+            setPhase("neural-network")
+            
+            // Fade out stars
+            material.uniforms.opacity.value = Math.max(0, 1 - (elapsed - 13) / 1)
+            controls.enabled = false
+            
+            // Show neural network
+            if (neuralNetwork) {
+              neuralNetwork.visible = true
+              const networkProgress = (elapsed - 14) / 5
+              
+              // Animate network appearance
+              neuralNetwork.children.forEach((child, index) => {
+                if (child instanceof THREE.Mesh) {
+                  const delay = index * 0.02
+                  const opacity = Math.min(1, Math.max(0, (networkProgress - delay) * 3))
+                  ;(child.material as THREE.MeshBasicMaterial).opacity = opacity
+                } else if (child instanceof THREE.Line) {
+                  const delay = index * 0.01
+                  const opacity = Math.min(0.4, Math.max(0, (networkProgress - delay) * 2))
+                  ;(child.material as THREE.LineBasicMaterial).opacity = opacity
+                }
+              })
+              
+              // Rotate network
+              neuralNetwork.rotation.y = elapsed * 0.3
+              
+              // Pulse effect
+              const pulse = Math.sin(elapsed * 3) * 0.1 + 1
+              neuralNetwork.scale.setScalar(pulse)
+            }
+            
+            // Position camera for network view
+            camera.position.z = 50
+          } else if (elapsed < 22) {
+            // Phase 5: Matrix Code Rain (19-22s) - NEW!
+            setPhase("matrix-code")
+            
+            // Hide neural network
+            if (neuralNetwork) {
+              neuralNetwork.visible = false
+            }
+            
+            // Fade stars back in with digital effect
+            const fadeProgress = (elapsed - 19) / 3
+            material.uniforms.opacity.value = fadeProgress
+            
+            // Camera fly-through effect
+            camera.position.z = 50 - fadeProgress * 25
           } else if (elapsed < 30) {
-            // Phase 5: Brand message - DOUBLED (24-30s)
+            // Phase 6: Avatar reveal (22-30s)
+            setPhase("avatar-reveal")
+            material.uniforms.opacity.value = 1
+          } else if (elapsed < 36) {
+            // Phase 7: Brand message (30-36s)
             setPhase("brand-message")
           } else {
-            // Phase 6: Complete
+            // Phase 8: Complete
             setPhase("complete")
             setTimeout(() => {
               onComplete()
@@ -351,7 +472,73 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
               </div>
             )}
 
-            {/* Phase 4: Avatar Reveal - METEOR ENTRANCE */}
+            {/* Phase 4: Neural Network - AI SHOWCASE */}
+            {phase === "neural-network" && (
+              <div className="text-center space-y-8 px-4 animate-fade-in">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-center gap-4 mb-6">
+                    <div className="h-px w-20 bg-gradient-to-r from-transparent to-gold/50"></div>
+                    <span className="text-sm text-gold/60 font-mono tracking-widest">AI SYSTEMS</span>
+                    <div className="h-px w-20 bg-gradient-to-l from-transparent to-gold/50"></div>
+                  </div>
+                  <h2 className="text-4xl md:text-6xl font-bold text-white leading-tight">
+                    Neural Networks
+                    <span className="block text-gold text-shimmer mt-2">In Motion</span>
+                  </h2>
+                  <p className="text-xl md:text-2xl text-white/70 font-light max-w-2xl mx-auto">
+                    Watch AI learn, adapt, and evolve—
+                    <span className="block text-white/90 mt-2">
+                      Building intelligence layer by layer
+                    </span>
+                  </p>
+                </div>
+                <div className="flex items-center justify-center gap-8 mt-8">
+                  <div className="flex flex-col items-center">
+                    <div className="w-3 h-3 rounded-full bg-blue-400 animate-pulse mb-2"></div>
+                    <span className="text-xs text-white/50 font-mono">INPUT</span>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <div className="w-3 h-3 rounded-full bg-gold animate-pulse mb-2" style={{ animationDelay: '0.2s' }}></div>
+                    <span className="text-xs text-white/50 font-mono">HIDDEN</span>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse mb-2" style={{ animationDelay: '0.4s' }}></div>
+                    <span className="text-xs text-white/50 font-mono">OUTPUT</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Phase 5: Matrix Code Rain - WEB ANIMATION SHOWCASE */}
+            {phase === "matrix-code" && (
+              <div className="text-center space-y-8 px-4 animate-fade-in">
+                <div className="space-y-4">
+                  <div className="font-mono text-green-400/80 text-sm md:text-base mb-6 overflow-hidden h-40">
+                    {/* Simulated matrix rain effect */}
+                    <div className="matrix-rain-text animate-scroll-up leading-relaxed">
+                      01001001 01101110 01101110<br/>
+                      01101111 01110110 01100001<br/>
+                      01110100 01101001 01101111<br/>
+                      01101110 00100000 01001001<br/>
+                      01110011 00100000 01000011<br/>
+                      01101111 01100100 01100101<br/>
+                    </div>
+                  </div>
+                  <h2 className="text-4xl md:text-6xl font-bold text-white leading-tight">
+                    <span className="text-green-400">Innovation</span> Is Code
+                    <span className="block text-gold text-shimmer mt-2">Excellence Is Execution</span>
+                  </h2>
+                  <p className="text-xl md:text-2xl text-white/70 font-light max-w-2xl mx-auto">
+                    From elegant algorithms to stunning interfaces—
+                    <span className="block text-white/90 mt-2">
+                      Every pixel, every line, crafted with purpose
+                    </span>
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Phase 6: Avatar Reveal - METEOR ENTRANCE */}
             {phase === "avatar-reveal" && (
               <div className="text-center space-y-10 px-4">
                 <div className="relative w-80 h-80 mx-auto flex items-center justify-center">
@@ -394,7 +581,7 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
               </div>
             )}
 
-            {/* Phase 5: Brand Message */}
+            {/* Phase 7: Brand Message */}
             {phase === "brand-message" && (
               <div className="text-center space-y-8 px-4 max-w-4xl animate-fade-in">
                 <h2 className="text-4xl md:text-6xl font-bold text-white leading-tight tracking-tight">
@@ -426,7 +613,7 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
               </div>
             )}
 
-            {/* Phase 6: Complete (fading out) */}
+            {/* Phase 8: Complete (fading out) */}
             {phase === "complete" && (
               <div className="animate-fade-out">
                 <p className="text-white/50">Welcome</p>

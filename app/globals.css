@@ -1089,6 +1089,35 @@
   animation-fill-mode: both;
 }
 
+/* Matrix Code Rain Effect */
+@keyframes scroll-up {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}
+
+.animate-scroll-up {
+  animation: scroll-up 8s linear infinite;
+}
+
+.matrix-rain-text {
+  text-shadow: 
+    0 0 5px rgba(74, 222, 128, 0.8),
+    0 0 10px rgba(74, 222, 128, 0.6),
+    0 0 15px rgba(74, 222, 128, 0.4);
+}
+
 /* ==================================== */
 /*  END STARFIELD & AVATAR ANIMATIONS  */
 /* ==================================== */
