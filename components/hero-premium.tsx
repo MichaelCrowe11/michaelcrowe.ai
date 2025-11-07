@@ -97,7 +97,7 @@ export function HeroPremium() {
             </motion.div>
           </motion.div>
 
-          {/* Main Heading */}
+          {/* Main Heading - SEO Optimized H1 */}
           <motion.div variants={item} className="text-center mb-8">
             <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight leading-tight">
               <motion.span
@@ -106,7 +106,7 @@ export function HeroPremium() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.5 }}
               >
-                I Build AI Systems
+                AI Implementation Consultant
               </motion.span>
 
               <motion.span
@@ -118,7 +118,7 @@ export function HeroPremium() {
                   textShadow: "0 0 80px rgba(218, 165, 32, 0.5)",
                 }}
               >
-                That Actually Work.
+                Building Production AI Systems
               </motion.span>
 
               <motion.span
@@ -127,7 +127,7 @@ export function HeroPremium() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.9 }}
               >
-                Now I'll Build Yours.
+                That Actually Work
               </motion.span>
             </h1>
           </motion.div>

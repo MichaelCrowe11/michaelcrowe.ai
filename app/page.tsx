@@ -1,22 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { DifferenceSection } from "@/components/difference-section"
-import { StorySection } from "@/components/story-section"
-import { ProcessSection } from "@/components/process-section"
-import { WhoThisIsForSection } from "@/components/who-this-is-for-section"
-import { TestimonialsSection } from "@/components/testimonials-section"
-import { FinalCTASection } from "@/components/final-cta-section"
-import { ChatAvatar } from "@/components/chat-avatar"
 import { CosmosIntro } from "@/components/cosmos-intro-enhanced"
-import { SideNavModern } from "@/components/side-nav-modern"
-import { HeroPremium } from "@/components/hero-premium"
-import { ServicesModern } from "@/components/services-modern"
-import { PortfolioShowcase } from "@/components/portfolio-showcase"
-import { SkillsConstellation } from "@/components/skills-constellation"
-import { WhyWorkSection } from "@/components/why-work-section"
-import { ServicesPricing } from "@/components/services-pricing"
-import { FloatingParticles } from "@/components/floating-particles"
+import { AvatarSpaceChat } from "@/components/avatar-space-chat"
 
 export default function Home() {
   const [showIntro, setShowIntro] = useState(true)
@@ -43,30 +29,11 @@ export default function Home() {
     <>
       {showIntro && <CosmosIntro onComplete={handleIntroComplete} />}
 
-      {/* Floating Particles - Always visible */}
-      {introComplete && <FloatingParticles />}
-
-      {/* Modern Side Navigation */}
-      {introComplete && <SideNavModern />}
-
-      <main
-        className={`min-h-screen transition-opacity duration-1000 ${
-          introComplete ? "opacity-100" : "opacity-0"
-        }`}
-      >
-        <HeroPremium />
-        <WhyWorkSection />
-        <ServicesPricing />
-        <PortfolioShowcase />
-        <SkillsConstellation />
-        <DifferenceSection />
-        <StorySection />
-        <ProcessSection />
-        <WhoThisIsForSection />
-        <TestimonialsSection />
-        <FinalCTASection />
-        <ChatAvatar />
-      </main>
+      {introComplete && (
+        <div className="transition-opacity duration-1000 opacity-100">
+          <AvatarSpaceChat />
+        </div>
+      )}
     </>
   )
 }

@@ -22,7 +22,11 @@ export function Footer() {
               </div>
             </Link>
             <p className="text-sm text-muted-foreground mb-4">
-              AI Systems Architect helping small businesses automate and scale.
+              AI Implementation Consultant | Founder of Crowe Logic AI & CriOS Nova
+            </p>
+            <p className="text-sm text-muted-foreground mb-4">
+              <strong>Office Hours:</strong> Monday-Friday, 9am-5pm MST<br />
+              <strong>Location:</strong> Phoenix, Arizona (Serving Worldwide)
             </p>
             <div className="flex gap-4">
               <a

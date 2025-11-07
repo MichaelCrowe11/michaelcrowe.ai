@@ -5,6 +5,7 @@ import * as THREE from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
 import Image from "next/image"
 import { config } from "@/lib/config"
+import { FloatingAvatar } from "@/components/floating-avatar"
 
 interface Star {
   id: number
@@ -207,13 +208,13 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
           const material = stars.material as THREE.ShaderMaterial
 
           // Phase timeline
-          if (elapsed < 3) {
-            // Phase 1: "Age of Possibilities" (0-3s)
+          if (elapsed < 6) {
+            // Phase 1: "Age of Possibilities" (0-6s) - DOUBLED
             setPhase("age-of-possibilities")
-          } else if (elapsed < 4.5) {
-            // Phase 2: Big Bang explosion (3-4.5s) - Extended for more drama
+          } else if (elapsed < 9) {
+            // Phase 2: Big Bang explosion (6-9s) - DOUBLED for more drama
             setPhase("big-bang")
-            const explosionProgress = (elapsed - 3) / 1.5
+            const explosionProgress = (elapsed - 6) / 3
 
             // Eased explosion with acceleration
             const easedProgress = explosionProgress < 0.5
@@ -224,10 +225,10 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
             material.uniforms.opacity.value = 1
 
             // Enhanced flash effect with color gradation
-            if (elapsed < 3.15) {
+            if (elapsed < 6.3) {
               scene.background = new THREE.Color(0xffffff)
-            } else if (elapsed < 3.4) {
-              const flashFade = (elapsed - 3.15) / 0.25
+            } else if (elapsed < 6.8) {
+              const flashFade = (elapsed - 6.3) / 0.5
               scene.background = new THREE.Color().lerpColors(
                 new THREE.Color(0xffffff),
                 new THREE.Color(0x1a1a2e),
@@ -240,8 +241,8 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
             // Camera shake effect during explosion
             camera.position.x = Math.sin(elapsed * 20) * 0.5
             camera.position.y = Math.cos(elapsed * 20) * 0.5
-          } else if (elapsed < 7.5) {
-            // Phase 3: Cosmos expansion (4.5-7.5s)
+          } else if (elapsed < 15) {
+            // Phase 3: Cosmos expansion (9-15s) - DOUBLED
             setPhase("cosmos-expand")
             material.uniforms.explosionFactor.value = 1
             material.uniforms.opacity.value = 1
@@ -253,13 +254,13 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
 
             // Smoother zoom in
             if (camera.position.z > 25) {
-              camera.position.z -= 0.12
+              camera.position.z -= 0.06
             }
-          } else if (elapsed < 9) {
-            // Phase 4: Avatar reveal (7-9s)
+          } else if (elapsed < 24) {
+            // Phase 4: Avatar reveal - DOUBLED (15-24s)
             setPhase("avatar-reveal")
-          } else if (elapsed < 12) {
-            // Phase 5: Brand message (9-12s)
+          } else if (elapsed < 30) {
+            // Phase 5: Brand message - DOUBLED (24-30s)
             setPhase("brand-message")
           } else {
             // Phase 6: Complete
@@ -350,58 +351,91 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
               </div>
             )}
 
-            {/* Phase 4: Avatar Reveal */}
+            {/* Phase 4: Avatar Reveal - METEOR ENTRANCE */}
             {phase === "avatar-reveal" && (
-              <div className="text-center space-y-8 px-4 animate-fade-in">
-                <div className="relative w-48 h-48 mx-auto">
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gold/20 via-accent/20 to-gold/20 animate-pulse" />
-                  <div className="absolute inset-2 rounded-full overflow-hidden border-4 border-gold shadow-2xl shadow-gold/50">
+              <div className="text-center space-y-10 px-4">
+                <div className="relative w-80 h-80 mx-auto flex items-center justify-center">
+                  {/* Multi-layer glow effects */}
+                  <div className="absolute inset-0 -m-20 rounded-full bg-gold/20 blur-[120px] animate-pulse-slow"></div>
+                  <div className="absolute inset-0 -m-12 rounded-full bg-gold/25 blur-[80px]"></div>
+                  
+                  {/* Animated rings */}
+                  <div className="absolute inset-0 rounded-full border border-gold/30 animate-ping-slow"></div>
+                  <div className="absolute inset-4 rounded-full border border-gold/20 animate-ping-slow" style={{ animationDelay: '1s' }}></div>
+                  
+                  {/* Logo with METEOR entrance - WHITE BACKGROUND REMOVED */}
+                  <svg className="absolute inset-0 w-0 h-0">
+                    <defs>
+                      <filter id="remove-white">
+                        <feColorMatrix
+                          type="matrix"
+                          values="1 0 0 0 0
+                                  0 1 0 0 0
+                                  0 0 1 0 0
+                                  -1 -1 -1 1 0"
+                        />
+                      </filter>
+                    </defs>
+                  </svg>
+                  <div className="relative z-10 animate-meteor-entry" style={{ filter: 'url(#remove-white) drop-shadow(0 0 80px rgba(218, 165, 32, 1)) drop-shadow(0 0 40px rgba(218, 165, 32, 0.8))' }}>
                     <Image
                       src={config.branding.logoUrl}
-                      alt="Michael Crowe"
-                      width={192}
-                      height={192}
-                      className="w-full h-full object-cover"
+                      alt="Crowe Logic"
+                      width={320}
+                      height={320}
+                      className="w-full h-full object-contain"
+                      priority
                     />
                   </div>
+                  
+                  {/* Meteor trail effect */}
+                  <div className="absolute top-0 right-0 w-full h-full pointer-events-none animate-meteor-trail">
+                    <div className="absolute top-0 right-0 w-[200%] h-1 bg-gradient-to-l from-transparent via-gold/60 to-transparent blur-sm"></div>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <h2 className="text-3xl md:text-4xl font-bold text-white">
+                <div className="space-y-3 animate-reveal-up animation-delay-1000">
+                  <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
                     Michael Crowe
                   </h2>
-                  <p className="text-xl md:text-2xl text-gold">
-                    AI Systems Architect
-                  </p>
+                  <p className="text-xl md:text-2xl text-gold font-light">AI Systems Architect</p>
+                  <div className="flex items-center justify-center gap-2 text-sm text-white/50 mt-4">
+                    <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                    <span>Online & Ready</span>
+                  </div>
                 </div>
+                <p className="text-sm text-white/60 animate-pulse font-light animation-delay-1500">Press Enter to begin your conversation</p>
               </div>
             )}
 
             {/* Phase 5: Brand Message */}
             {phase === "brand-message" && (
               <div className="text-center space-y-8 px-4 max-w-4xl animate-fade-in">
-                <h2 className="text-4xl md:text-6xl font-bold text-white leading-tight">
-                  Building AI That Actually Works
-                  <span className="block text-gold mt-2">For Small Business</span>
+                <h2 className="text-4xl md:text-6xl font-bold text-white leading-tight tracking-tight">
+                  The Future of Websites
+                  <span className="block text-gold mt-3 text-shimmer">Is Conversation</span>
                 </h2>
-                <p className="text-xl md:text-2xl text-white/70 leading-relaxed">
-                  Self-taught developer who scaled a business from garage to serving millions.
-                  <span className="block text-white/90 mt-2">
-                    Now helping small businesses do the same—but faster, with AI.
+                <p className="text-xl md:text-2xl text-white/70 leading-relaxed font-light">
+                  No more clicking through pages.
+                  <span className="block text-white/90 mt-3 font-normal">
+                    Just talk to Michael's AI. Ask anything. Get answers. Take action.
                   </span>
                 </p>
-                <button
-                  onClick={onComplete}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      onComplete()
-                    }
-                  }}
-                  aria-label="Enter website and skip cosmos introduction"
-                  className="mt-8 px-8 py-4 bg-gold hover:bg-gold/90 text-gold-foreground font-semibold rounded-full transition-all pointer-events-auto transform hover:scale-105 shadow-lg shadow-gold/50 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-black"
-                >
-                  Enter
-                </button>
+                <div className="relative inline-block mt-8">
+                  <div className="absolute -inset-2 bg-gold/20 rounded-full blur-xl animate-pulse-slow"></div>
+                  <button
+                    onClick={onComplete}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        onComplete()
+                      }
+                    }}
+                    aria-label="Enter and start conversation"
+                    className="relative px-10 py-5 bg-gradient-to-r from-gold to-gold/90 hover:from-gold/90 hover:to-gold text-black font-bold rounded-full transition-all pointer-events-auto transform hover:scale-110 active:scale-95 shadow-2xl shadow-gold/50 focus:outline-none focus:ring-4 focus:ring-gold/50 focus:ring-offset-4 focus:ring-offset-black text-lg"
+                  >
+                    Start Conversation →
+                  </button>
+                </div>
               </div>
             )}
 
