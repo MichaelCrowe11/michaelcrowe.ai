@@ -62,26 +62,158 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = contactFormSchema.parse(body)
 
-    // TODO: Integrate with email service
-    // Example with Resend:
-    // const { data, error } = await resend.emails.send({
-    //   from: config.api.emailFrom,
-    //   to: config.api.emailTo,
-    //   subject: `New Contact Form Submission from ${validatedData.name}`,
-    //   html: generateEmailTemplate(validatedData),
-    // })
+    // Try to send email using available service
+    let emailSent = false
+    let emailError = null
 
-    // For now, log the submission (remove in production with actual email service)
+    // Try Resend first (recommended)
+    const resendKey = process.env.RESEND_API_KEY
+    if (resendKey && !emailSent) {
+      try {
+        const response = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${resendKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: config.api.emailFrom,
+            to: config.api.emailTo,
+            subject: `New Contact: ${validatedData.name} - ${validatedData.service || 'General Inquiry'}`,
+            html: `
+              <h2>New Contact Form Submission</h2>
+              <p><strong>Name:</strong> ${validatedData.name}</p>
+              <p><strong>Email:</strong> ${validatedData.email}</p>
+              ${validatedData.company ? `<p><strong>Company:</strong> ${validatedData.company}</p>` : ''}
+              ${validatedData.phone ? `<p><strong>Phone:</strong> ${validatedData.phone}</p>` : ''}
+              ${validatedData.service ? `<p><strong>Service Interest:</strong> ${validatedData.service}</p>` : ''}
+              <p><strong>Message:</strong></p>
+              <p>${validatedData.message.replace(/\n/g, '<br>')}</p>
+              <hr>
+              <p><small>Submitted: ${new Date().toISOString()}</small></p>
+            `,
+          }),
+        })
+
+        if (response.ok) {
+          emailSent = true
+          console.log('Email sent via Resend')
+        }
+      } catch (error) {
+        console.error('Resend error:', error)
+        emailError = error
+      }
+    }
+
+    // Try SendGrid as fallback
+    const sendgridKey = process.env.SENDGRID_API_KEY
+    if (sendgridKey && !emailSent) {
+      try {
+        const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${sendgridKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            personalizations: [{
+              to: [{ email: config.api.emailTo }],
+              subject: `New Contact: ${validatedData.name}`,
+            }],
+            from: { email: config.api.emailFrom },
+            content: [{
+              type: 'text/html',
+              value: `
+                <h2>New Contact Form Submission</h2>
+                <p><strong>Name:</strong> ${validatedData.name}</p>
+                <p><strong>Email:</strong> ${validatedData.email}</p>
+                ${validatedData.company ? `<p><strong>Company:</strong> ${validatedData.company}</p>` : ''}
+                ${validatedData.phone ? `<p><strong>Phone:</strong> ${validatedData.phone}</p>` : ''}
+                ${validatedData.service ? `<p><strong>Service:</strong> ${validatedData.service}</p>` : ''}
+                <p><strong>Message:</strong></p>
+                <p>${validatedData.message.replace(/\n/g, '<br>')}</p>
+              `,
+            }],
+          }),
+        })
+
+        if (response.ok) {
+          emailSent = true
+          console.log('Email sent via SendGrid')
+        }
+      } catch (error) {
+        console.error('SendGrid error:', error)
+        emailError = error
+      }
+    }
+
+    // Try Mailgun as fallback
+    const mailgunKey = process.env.MAILGUN_API_KEY
+    const mailgunDomain = process.env.MAILGUN_DOMAIN
+    if (mailgunKey && mailgunDomain && !emailSent) {
+      try {
+        const formData = new URLSearchParams()
+        formData.append('from', config.api.emailFrom)
+        formData.append('to', config.api.emailTo)
+        formData.append('subject', `New Contact: ${validatedData.name}`)
+        formData.append('html', `
+          <h2>New Contact Form Submission</h2>
+          <p><strong>Name:</strong> ${validatedData.name}</p>
+          <p><strong>Email:</strong> ${validatedData.email}</p>
+          ${validatedData.company ? `<p><strong>Company:</strong> ${validatedData.company}</p>` : ''}
+          ${validatedData.phone ? `<p><strong>Phone:</strong> ${validatedData.phone}</p>` : ''}
+          ${validatedData.service ? `<p><strong>Service:</strong> ${validatedData.service}</p>` : ''}
+          <p><strong>Message:</strong></p>
+          <p>${validatedData.message.replace(/\n/g, '<br>')}</p>
+        `)
+
+        const response = await fetch(`https://api.mailgun.net/v3/${mailgunDomain}/messages`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${Buffer.from(`api:${mailgunKey}`).toString('base64')}`,
+          },
+          body: formData,
+        })
+
+        if (response.ok) {
+          emailSent = true
+          console.log('Email sent via Mailgun')
+        }
+      } catch (error) {
+        console.error('Mailgun error:', error)
+        emailError = error
+      }
+    }
+
+    // Log to observability endpoint
+    try {
+      await fetch(`${config.site.url}/api/log`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          level: emailSent ? 'info' : 'error',
+          message: emailSent ? 'Contact form submitted' : 'Contact form submitted but email failed',
+          context: {
+            name: validatedData.name,
+            email: validatedData.email,
+            service: validatedData.service,
+            emailSent,
+            timestamp: new Date().toISOString(),
+          },
+        }),
+      })
+    } catch (logError) {
+      console.error('Failed to log submission:', logError)
+    }
+
+    // For development, log the submission
     if (process.env.NODE_ENV === 'development') {
-      console.log('Contact form submission (dev mode):', {
-        name: validatedData.name,
-        email: validatedData.email,
+      console.log('Contact form submission:', {
+        ...validatedData,
+        emailSent,
         timestamp: new Date().toISOString(),
       })
     }
-
-    // Simulate email sending delay
-    await new Promise(resolve => setTimeout(resolve, 500))
 
     return NextResponse.json(
       {

@@ -221,7 +221,7 @@ export function AvatarSpaceChat() {
     intervalsRef.current.push(interval)
   }
 
-  const handleSend = (textArg?: string) => {
+  const handleSend = async (textArg?: string) => {
     const textToSend = (typeof textArg === 'string' ? textArg : input || '').trim()
     if (!textToSend) return
 
@@ -229,15 +229,38 @@ export function AvatarSpaceChat() {
     setMessages(prev => [...prev, { id: userMsgId, role: 'user', content: textToSend }])
     setInput('')
 
-    setTimeout(() => {
-      // Use sales engine to generate high-converting response
-      const reply = salesEngine.generateResponse(textToSend)
+    const assistantMsgId = idCounterRef.current++
+    setMessages(prev => [...prev, { id: assistantMsgId, role: 'assistant', content: '', streaming: true }])
+    setAvatarState('thinking')
 
-      const assistantMsgId = idCounterRef.current++
-      setMessages(prev => [...prev, { id: assistantMsgId, role: 'assistant', content: '', streaming: true }])
-      setAvatarState('thinking')
+    try {
+      // Try AI API first (OpenAI/Anthropic if keys are set)
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: textToSend,
+          conversationHistory: messages.slice(-6).map(m => ({
+            role: m.role,
+            content: m.content,
+          })),
+        }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        streamText(data.message, assistantMsgId)
+      } else {
+        // Fallback to sales engine
+        const reply = salesEngine.generateResponse(textToSend)
+        streamText(reply, assistantMsgId)
+      }
+    } catch (error) {
+      console.error('Chat error:', error)
+      // Fallback to sales engine
+      const reply = salesEngine.generateResponse(textToSend)
       streamText(reply, assistantMsgId)
-    }, 800)
+    }
   }
 
   const toggleMic = () => {

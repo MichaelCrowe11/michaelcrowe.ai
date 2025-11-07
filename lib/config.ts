@@ -25,9 +25,28 @@ export const config = {
 
   // API Configuration (server-side only)
   api: {
-    emailServiceKey: process.env.EMAIL_SERVICE_API_KEY,
+    // Email Services
     emailFrom: process.env.EMAIL_FROM || 'noreply@michaelcrowe.ai',
     emailTo: process.env.EMAIL_TO || 'Michael@crowelogic.com',
+    resendKey: process.env.RESEND_API_KEY,
+    sendgridKey: process.env.SENDGRID_API_KEY,
+    mailgunKey: process.env.MAILGUN_API_KEY,
+    mailgunDomain: process.env.MAILGUN_DOMAIN,
+    
+    // AI Services
+    openaiKey: process.env.OPENAI_API_KEY,
+    anthropicKey: process.env.ANTHROPIC_API_KEY,
+    elevenLabsKey: process.env.ELEVENLABS_API_KEY,
+    elevenLabsVoiceId: process.env.ELEVENLABS_VOICE_ID,
+    
+    // Analytics & Tracking
+    gaId: process.env.NEXT_PUBLIC_GA_ID,
+    hotjarId: process.env.NEXT_PUBLIC_HOTJAR_ID,
+    posthogKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
+    
+    // Calendar Integration
+    calComApiKey: process.env.CAL_COM_API_KEY,
+    calendlyToken: process.env.CALENDLY_TOKEN,
   },
 } as const
 
