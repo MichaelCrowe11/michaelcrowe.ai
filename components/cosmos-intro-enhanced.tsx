@@ -7,9 +7,11 @@ import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js"
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js"
 import { FilmPass } from "three/examples/jsm/postprocessing/FilmPass.js"
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js"
 import Image from "next/image"
 import { config } from "@/lib/config"
 import { FloatingAvatar } from "@/components/floating-avatar"
+import { createNoise2D } from "simplex-noise"
 
 interface Star {
   id: number
@@ -38,6 +40,24 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [phase, setPhase] = useState<IntroPhase>("age-of-possibilities")
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const [cursorTrail, setCursorTrail] = useState<Array<{ x: number; y: number; id: number }>>([])
+
+  // Interactive cursor tracking
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({ x: e.clientX, y: e.clientY })
+      
+      // Add to cursor trail
+      setCursorTrail(prev => {
+        const newTrail = [...prev, { x: e.clientX, y: e.clientY, id: Date.now() }]
+        return newTrail.slice(-15) // Keep last 15 points
+      })
+    }
+    
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [])
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -53,9 +73,12 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
     let particles: THREE.Points | null = null
     let dataFlows: THREE.Line[] = []
     let nebulaClouds: THREE.Mesh[] = []
+    let godRays: THREE.Mesh[] = []
+    let lightOrbs: THREE.Mesh[] = []
     let animationId: number
     let startTime = Date.now()
     let vignette: HTMLDivElement | null = null
+    const noise2D = createNoise2D()
 
     async function init() {
       // Scene setup
@@ -100,6 +123,70 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
       // Film grain for cinematic look
       const filmPass = new FilmPass(0.15, false)
       composer.addPass(filmPass)
+
+      // Custom chromatic aberration shader
+      const chromaticAberrationShader = {
+        uniforms: {
+          tDiffuse: { value: null },
+          amount: { value: 0.002 },
+          angle: { value: 0.0 }
+        },
+        vertexShader: `
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          uniform sampler2D tDiffuse;
+          uniform float amount;
+          uniform float angle;
+          varying vec2 vUv;
+
+          void main() {
+            vec2 offset = amount * vec2(cos(angle), sin(angle));
+            vec4 cr = texture2D(tDiffuse, vUv + offset);
+            vec4 cga = texture2D(tDiffuse, vUv);
+            vec4 cb = texture2D(tDiffuse, vUv - offset);
+            gl_FragColor = vec4(cr.r, cga.g, cb.b, cga.a);
+          }
+        `
+      }
+      const chromaticPass = new ShaderPass(chromaticAberrationShader)
+      composer.addPass(chromaticPass)
+
+      // Custom vignette shader (more control than CSS)
+      const vignetteShader = {
+        uniforms: {
+          tDiffuse: { value: null },
+          darkness: { value: 1.2 },
+          offset: { value: 0.95 }
+        },
+        vertexShader: `
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          uniform sampler2D tDiffuse;
+          uniform float darkness;
+          uniform float offset;
+          varying vec2 vUv;
+
+          void main() {
+            vec4 texel = texture2D(tDiffuse, vUv);
+            vec2 uv = (vUv - vec2(0.5)) * vec2(offset);
+            float vignette = 1.0 - dot(uv, uv);
+            vignette = clamp(pow(vignette, darkness), 0.0, 1.0);
+            gl_FragColor = vec4(texel.rgb * vignette, texel.a);
+          }
+        `
+      }
+      const vignettePass = new ShaderPass(vignetteShader)
+      composer.addPass(vignettePass)
 
       // Controls
       controls = new OrbitControls(camera, renderer.domElement)
@@ -440,6 +527,70 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
           scene.add(flow)
         }
 
+        // Create volumetric god rays
+        for (let i = 0; i < 12; i++) {
+          const rayGeometry = new THREE.PlaneGeometry(0.3, 80)
+          const rayMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+              color: { value: new THREE.Color(0xdaa520) },
+              opacity: { value: 0.0 },
+              time: { value: 0.0 }
+            },
+            vertexShader: `
+              varying vec2 vUv;
+              void main() {
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+              }
+            `,
+            fragmentShader: `
+              uniform vec3 color;
+              uniform float opacity;
+              uniform float time;
+              varying vec2 vUv;
+              
+              void main() {
+                float fade = smoothstep(0.0, 0.3, vUv.y) * smoothstep(1.0, 0.7, vUv.y);
+                float pulse = sin(time * 2.0 + vUv.y * 10.0) * 0.5 + 0.5;
+                float alpha = fade * opacity * pulse * 0.3;
+                gl_FragColor = vec4(color, alpha);
+              }
+            `,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            side: THREE.DoubleSide,
+            depthWrite: false
+          })
+          const ray = new THREE.Mesh(rayGeometry, rayMaterial)
+          ray.position.z = -20
+          ray.rotation.z = (i / 12) * Math.PI * 2
+          godRays.push(ray)
+          scene.add(ray)
+        }
+
+        // Create floating light orbs for ambient magic
+        for (let i = 0; i < 25; i++) {
+          const orbGeometry = new THREE.SphereGeometry(0.3, 16, 16)
+          const orbMaterial = new THREE.MeshBasicMaterial({
+            color: Math.random() > 0.5 ? 0xdaa520 : 0x4a90e2,
+            transparent: true,
+            opacity: 0
+          })
+          const orb = new THREE.Mesh(orbGeometry, orbMaterial)
+          orb.position.set(
+            (Math.random() - 0.5) * 100,
+            (Math.random() - 0.5) * 100,
+            (Math.random() - 0.5) * 50
+          )
+          orb.userData = {
+            baseY: orb.position.y,
+            speed: Math.random() * 0.5 + 0.3,
+            offset: Math.random() * Math.PI * 2
+          }
+          lightOrbs.push(orb)
+          scene.add(orb)
+        }
+
         setIsLoading(false)
       } catch (error) {
         // TODO: Implement proper error tracking (e.g., Sentry)
@@ -595,6 +746,14 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
             camera.position.x = Math.sin((elapsed - 13) * 0.2) * 5
             camera.position.y = Math.cos((elapsed - 13) * 0.15) * 3
             camera.lookAt(0, 0, 0)
+            
+            // Animate god rays during neural network
+            godRays.forEach((ray, i) => {
+              const rayMat = ray.material as THREE.ShaderMaterial
+              rayMat.uniforms.opacity.value = Math.min(0.8, (elapsed - 14) / 2)
+              rayMat.uniforms.time.value = elapsed
+              ray.rotation.z += 0.001
+            })
           } else if (elapsed < 23) {
             // Phase 5: Matrix Code Rain (19-23s) - Smooth transition
             setPhase("matrix-code")
@@ -622,6 +781,12 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
             camera.position.z = 35 + ((elapsed - 19) / 4) * 15 // 35 to 50
             camera.position.x *= 0.95 // Return to center
             camera.position.y *= 0.95
+            
+            // Fade out god rays
+            godRays.forEach(ray => {
+              const rayMat = ray.material as THREE.ShaderMaterial
+              rayMat.uniforms.opacity.value = Math.max(0, 1 - (elapsed - 19) / 2)
+            })
           } else if (elapsed < 31) {
             // Phase 6: Avatar reveal (23-31s) - Smooth star brightness increase
             setPhase("avatar-reveal")
@@ -649,6 +814,28 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
 
           material.uniforms.time.value = elapsed
         }
+
+        // Animate floating light orbs throughout
+        lightOrbs.forEach((orb, i) => {
+          const orbMat = orb.material as THREE.MeshBasicMaterial
+          const data = orb.userData
+          
+          // Floating motion with noise
+          const noiseValue = noise2D(i * 0.1, elapsed * 0.3)
+          orb.position.y = data.baseY + Math.sin(elapsed * data.speed + data.offset) * 3 + noiseValue * 2
+          orb.position.x += Math.sin(elapsed * 0.2 + i) * 0.02
+          
+          // Fade based on phase
+          if (phase === "neural-network" || phase === "avatar-reveal") {
+            orbMat.opacity = Math.min(0.6, (elapsed - 13) / 3)
+          } else {
+            orbMat.opacity = Math.max(0, orbMat.opacity - 0.01)
+          }
+          
+          // Gentle rotation
+          orb.rotation.x += 0.01
+          orb.rotation.y += 0.01
+        })
 
         // Dynamic bloom adjustment based on phase
         if (phase === "big-bang") {
@@ -691,7 +878,58 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
   }, [onComplete])
 
   return (
-    <div className="fixed inset-0 z-50 bg-black">
+    <div className="fixed inset-0 z-50 bg-black overflow-hidden">
+      {/* Interactive cursor trail */}
+      {cursorTrail.map((point, i) => (
+        <div
+          key={point.id}
+          className="fixed pointer-events-none rounded-full"
+          style={{
+            left: point.x,
+            top: point.y,
+            width: '8px',
+            height: '8px',
+            background: `radial-gradient(circle, rgba(218, 165, 32, ${0.6 - i * 0.04}), transparent)`,
+            transform: 'translate(-50%, -50%)',
+            zIndex: 5
+          }}
+        />
+      ))}
+
+      {/* Custom cursor */}
+      <div
+        className="fixed pointer-events-none z-50 mix-blend-screen"
+        style={{
+          left: mousePos.x,
+          top: mousePos.y,
+          transform: 'translate(-50%, -50%)'
+        }}
+      >
+        <div className="relative">
+          <div className="absolute inset-0 w-8 h-8 border border-gold/50 rounded-full animate-ping-slow"></div>
+          <div className="w-2 h-2 bg-gold rounded-full"></div>
+        </div>
+      </div>
+
+      {/* Holographic scan lines */}
+      <div className="absolute inset-0 pointer-events-none z-10 opacity-10" style={{
+        backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(218, 165, 32, 0.1) 2px, rgba(218, 165, 32, 0.1) 4px)'
+      }}></div>
+
+      {/* Corner UI elements */}
+      <div className="absolute top-6 left-6 z-30 pointer-events-none">
+        <div className="flex items-center gap-2 text-xs text-gold/40 font-mono">
+          <div className="w-2 h-2 rounded-full bg-gold animate-pulse"></div>
+          <span>SYSTEM ONLINE</span>
+        </div>
+      </div>
+      <div className="absolute top-6 right-6 z-30 pointer-events-none">
+        <div className="text-xs text-gold/40 font-mono text-right">
+          <div>CROWE LOGIC v2.0</div>
+          <div className="text-[10px] text-gold/20">NEURAL INTERFACE</div>
+        </div>
+      </div>
+
       {/* Professional vignette overlay */}
       <div className="absolute inset-0 pointer-events-none z-10" style={{
         background: 'radial-gradient(ellipse at center, transparent 0%, transparent 40%, rgba(0,0,0,0.3) 70%, rgba(0,0,0,0.7) 100%)'
