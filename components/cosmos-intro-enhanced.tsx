@@ -368,28 +368,42 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
             attribute vec3 color;
             attribute vec3 velocity;
             varying vec3 vColor;
+            varying float vSpeed;
             uniform float time;
             uniform float opacity;
 
             void main() {
               vColor = color;
+              vSpeed = length(velocity);
               vec3 pos = position + velocity * time;
               vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-              gl_PointSize = size * (300.0 / -mvPosition.z) * opacity;
+              float lifeFade = 1.0 - smoothstep(0.0, 1.0, time * 0.8);
+              gl_PointSize = size * (300.0 / -mvPosition.z) * opacity * (lifeFade + 0.2);
               gl_Position = projectionMatrix * mvPosition;
             }
           `,
           fragmentShader: `
             varying vec3 vColor;
+            varying float vSpeed;
             uniform float opacity;
 
             void main() {
               vec2 center = gl_PointCoord - vec2(0.5);
               float dist = length(center);
               if (dist > 0.5) discard;
-              
-              float glow = 1.0 - smoothstep(0.0, 0.5, dist);
-              gl_FragColor = vec4(vColor * glow, glow * opacity);
+
+              // Blackbody-inspired gradient based on particle speed
+              float s = clamp(vSpeed / 80.0, 0.0, 1.0);
+              vec3 hot = vec3(1.0, 1.0, 1.0);
+              vec3 warm = vec3(1.0, 0.84, 0.2);
+              vec3 orange = vec3(1.0, 0.5, 0.0);
+              vec3 red = vec3(1.0, 0.2, 0.2);
+              vec3 c1 = mix(hot, warm, s);
+              vec3 c2 = mix(orange, red, s);
+              vec3 bb = mix(c1, c2, s);
+
+              float glow = pow(1.0 - smoothstep(0.0, 0.5, dist), 2.0);
+              gl_FragColor = vec4(bb * glow, glow * opacity);
             }
           `,
           transparent: true,
@@ -405,7 +419,8 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
         const shockwaveMaterial = new THREE.ShaderMaterial({
           uniforms: {
             time: { value: 0 },
-            opacity: { value: 0 }
+            opacity: { value: 0 },
+            thickness: { value: 0.25 }
           },
           vertexShader: `
             varying vec3 vNormal;
@@ -419,14 +434,21 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
           fragmentShader: `
             uniform float time;
             uniform float opacity;
+            uniform float thickness;
             varying vec3 vNormal;
             varying vec3 vPosition;
 
             void main() {
-              float fresnel = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 2.0);
-              vec3 color = mix(vec3(1.0, 0.5, 0.0), vec3(1.0, 1.0, 0.3), fresnel);
-              float pulse = sin(time * 10.0) * 0.5 + 0.5;
-              float alpha = fresnel * opacity * pulse;
+              // Strong rim via fresnel
+              float fresnel = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 3.0);
+
+              // Ring thickness falloff from surface center (vPosition normalized on unit sphere)
+              float r = length(normalize(vPosition));
+              float ring = smoothstep(1.0, 1.0 - thickness, r) * (1.0 - smoothstep(1.0 - thickness, 1.0 - thickness * 0.5, r));
+
+              vec3 color = mix(vec3(1.0, 0.45, 0.1), vec3(1.0, 0.95, 0.5), fresnel);
+              float pulse = 0.7 + 0.3 * sin(time * 8.0);
+              float alpha = fresnel * ring * opacity * pulse;
               gl_FragColor = vec4(color, alpha);
             }
           `,
@@ -555,8 +577,9 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
                 vec2 center = gl_PointCoord - vec2(0.5);
                 float dist = length(center);
                 if (dist > 0.5) discard;
-                
-                float alpha = (1.0 - dist * 2.0) * opacity * 0.6;
+
+                float soft = pow(1.0 - smoothstep(0.0, 0.5, dist), 1.5);
+                float alpha = soft * opacity * 0.4;
                 gl_FragColor = vec4(vColor, alpha);
               }
             `,
@@ -1057,9 +1080,9 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
             if (shockwave) {
               const shockwaveMat = shockwave.material as THREE.ShaderMaterial
               shockwaveMat.uniforms.time.value = explosionProgress * 5
-              shockwaveMat.uniforms.opacity.value = Math.min(1, explosionProgress * 3) * 
-                                                     (1 - Math.pow(explosionProgress, 2))
-              shockwave.scale.setScalar(1 + explosionProgress * 50)
+              shockwaveMat.uniforms.opacity.value = Math.sin(Math.min(1.0, explosionProgress) * 3.14159) * 0.8
+              shockwaveMat.uniforms.thickness.value = THREE.MathUtils.lerp(0.35, 0.15, explosionProgress)
+              shockwave.scale.setScalar(1 + explosionProgress * 40)
             }
 
             // Animate asteroids
@@ -1130,7 +1153,7 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
             // Explosion light
             if (scene.userData.explosionLight) {
               const light = scene.userData.explosionLight as THREE.PointLight
-              light.intensity = Math.pow(explosionProgress, 0.5) * 50 * (1 - explosionProgress)
+              light.intensity = Math.sin(Math.min(1.0, explosionProgress) * Math.PI) * 35
             }
 
             // Enhanced flash effect with color gradation
