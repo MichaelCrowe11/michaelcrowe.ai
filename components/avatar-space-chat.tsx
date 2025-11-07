@@ -339,8 +339,8 @@ export function AvatarSpaceChat() {
 
       {/* Main Chat Container - ChatGPT/Claude Style */}
       <div className="relative z-10 h-full flex flex-col max-w-4xl mx-auto">
-        {/* Header with Avatar */}
-        <div className="flex-shrink-0 py-6 px-4 sm:px-6 flex items-center justify-between border-b border-gold/20 bg-black/40 backdrop-blur-sm">
+        {/* Header with Avatar - Premium Glass */}
+        <div className="flex-shrink-0 py-6 px-4 sm:px-6 flex items-center justify-between glass-gold glass-shimmer border-b-0">
           <div className="flex items-center gap-4">
             {/* Bright, visible avatar */}
             <div className="relative" style={{ 
@@ -372,12 +372,12 @@ export function AvatarSpaceChat() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setAvatarMode('swirl')}
-              className={`px-3 py-1.5 rounded-lg text-xs transition ${avatarMode==='swirl' ? 'bg-gold/20 text-gold border border-gold/40' : 'text-white/60 hover:text-white/90 border border-white/10'}`}
+              className={`px-3 py-1.5 rounded-lg text-xs transition glass-button ${avatarMode==='swirl' ? 'bg-gold/20 text-gold border-gold/40' : 'text-white/60 hover:text-white/90'}`}
               title="Animated Swirl"
             >Swirl</button>
             <button
               onClick={() => setAvatarMode('minimal')}
-              className={`px-3 py-1.5 rounded-lg text-xs transition ${avatarMode==='minimal' ? 'bg-gold/20 text-gold border border-gold/40' : 'text-white/60 hover:text-white/90 border border-white/10'}`}
+              className={`px-3 py-1.5 rounded-lg text-xs transition glass-button ${avatarMode==='minimal' ? 'bg-gold/20 text-gold border-gold/40' : 'text-white/60 hover:text-white/90'}`}
               title="Minimal"
             >Minimal</button>
           </div>
@@ -407,11 +407,11 @@ export function AvatarSpaceChat() {
                 )}
 
                 <div className={`flex-1 ${msg.role === 'user' ? 'ml-12' : ''}`}>
-                  {/* Gold-framed message bubble */}
-                  <div className={`relative rounded-2xl p-4 ${
+                  {/* Premium Glass message bubble */}
+                  <div className={`relative rounded-2xl p-4 message-glass-card glass-reflection ${
                     msg.role === 'user'
-                      ? 'bg-gradient-to-br from-gold/10 to-gold/5 border-2 border-gold/40 shadow-lg shadow-gold/20'
-                      : 'bg-gradient-to-br from-white/5 to-white/2 border-2 border-gold/30 shadow-lg shadow-gold/10'
+                      ? 'gold-border metallic-shine'
+                      : 'border-gold/20'
                   }`}>
                     {/* Glow effect */}
                     <div className={`absolute -inset-1 rounded-2xl blur-xl opacity-30 ${
@@ -459,14 +459,14 @@ export function AvatarSpaceChat() {
           </div>
         </div>
 
-        {/* Input Area - Fixed at Bottom */}
-        <div className="flex-shrink-0 border-t border-gold/20 bg-black/60 backdrop-blur-xl">
+        {/* Premium Glass Input Area - Fixed at Bottom */}
+        <div className="flex-shrink-0 border-t border-gold/20 glass-dark">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4">
             <div className="relative">
               {/* Gold glow behind input */}
               <div className="absolute -inset-2 bg-gradient-to-r from-gold/20 via-gold/30 to-gold/20 rounded-3xl blur-2xl opacity-50"></div>
               
-              <div className="relative flex items-end gap-3 bg-gradient-to-br from-white/10 to-white/5 border-2 border-gold/40 rounded-3xl p-3 shadow-2xl shadow-gold/20">
+              <div className="relative flex items-end gap-3 message-glass-card gold-border p-3 shadow-2xl shadow-gold/20">
                 <textarea
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
@@ -477,7 +477,7 @@ export function AvatarSpaceChat() {
                     }
                   }}
                   placeholder="Ask Michael anything about AI solutions..."
-                  className="flex-1 bg-transparent px-4 py-3 text-white brightness-150 placeholder-white/60 focus:outline-none text-base font-normal resize-none max-h-32"
+                  className="flex-1 glass-input text-white brightness-150 placeholder-white/60 focus:outline-none text-base font-normal resize-none max-h-32"
                   aria-label="Chat input"
                   rows={1}
                   style={{ 
@@ -489,10 +489,10 @@ export function AvatarSpaceChat() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={toggleMic}
-                    className={`p-3 rounded-2xl transition-all duration-300 transform hover:scale-105 ${
+                    className={`glass-button p-3 rounded-2xl transition-all duration-300 transform hover:scale-105 ${
                       isListening 
                         ? 'bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/50 animate-pulse' 
-                        : 'bg-white/10 hover:bg-white/20 border border-gold/30'
+                        : 'border-gold/30'
                     }`}
                     aria-label="Toggle microphone"
                     title={isListening ? 'Stop recording' : 'Start voice input'}
@@ -507,7 +507,7 @@ export function AvatarSpaceChat() {
                   <button
                     onClick={() => handleSend()}
                     disabled={!input.trim()}
-                    className="bg-gradient-to-r from-gold to-gold/90 hover:from-gold/90 hover:to-gold text-black font-semibold px-6 py-3 rounded-2xl transition-all duration-300 flex items-center gap-2 shadow-lg shadow-gold/40 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="glass-button metallic-shine bg-gradient-to-r from-gold to-gold/90 hover:from-gold/90 hover:to-gold text-black font-semibold px-6 py-3 rounded-2xl transition-all duration-300 flex items-center gap-2 shadow-lg shadow-gold/40 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     aria-label="Send message"
                   >
                     <Send className="w-5 h-5" />
@@ -516,15 +516,15 @@ export function AvatarSpaceChat() {
               </div>
             </div>
 
-            {/* Footer Controls */}
+            {/* Premium Glass Footer Controls */}
             <div className="flex items-center justify-between mt-3 px-2">
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setVoiceEnabled(!voiceEnabled)}
-                  className={`px-3 py-1.5 rounded-full text-xs transition-all duration-300 ${
+                  className={`glass-button px-3 py-1.5 rounded-full text-xs transition-all duration-300 ${
                     voiceEnabled 
-                      ? 'bg-gold/20 text-gold border border-gold/40 shadow-lg shadow-gold/20' 
-                      : 'text-white/50 hover:text-white/80 border border-white/10'
+                      ? 'bg-gold/20 text-gold border-gold/40' 
+                      : 'bg-white/5 text-white/60 border-white/20'
                   }`}
                   title={ttsSupported ? (voiceEnabled ? 'Disable voice' : 'Enable voice') : 'Voice not supported in this browser'}
                   disabled={!ttsSupported}
