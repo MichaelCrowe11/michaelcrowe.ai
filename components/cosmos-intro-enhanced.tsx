@@ -13,6 +13,9 @@ import { config } from "@/lib/config"
 import { FloatingAvatar } from "@/components/floating-avatar"
 import { createNoise2D } from "simplex-noise"
 
+// Feature flag to de-emphasize/remove Neural Network and Matrix phases
+const ENABLE_NEURAL_MATRIX = false
+
 interface Star {
   id: number
   x: number
@@ -724,7 +727,8 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
           scene.add(cloud)
         }
 
-  // Create Neural Network visualization
+  // Create Neural Network visualization (feature-flagged)
+  if (ENABLE_NEURAL_MATRIX) {
   const network = new THREE.Group()
         
         // Create 3 layers of neurons
@@ -791,7 +795,7 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
         
         network.visible = false
         scene.add(network)
-        neuralNetwork = network
+  neuralNetwork = network
 
         // Create animated data flows through neural network
         const flowCount = 20
@@ -813,6 +817,7 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
           dataFlows.push(flow)
           scene.add(flow)
         }
+  }
 
         // Create volumetric god rays
         for (let i = 0; i < 12; i++) {
@@ -1270,117 +1275,208 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
               planetsMesh.instanceMatrix.needsUpdate = true
             }
           } else if (elapsed < 19) {
-            // Phase 4: Neural Network AI Showcase (13-19s)
-            setPhase("neural-network")
-            
-            // Smooth crossfade: stars fade out as network fades in
-            const transitionProgress = (elapsed - 13) / 2 // 2 second crossfade
-            material.uniforms.opacity.value = Math.max(0, 1 - Math.min(1, transitionProgress))
-            controls.enabled = false
-            
-            // Fade out nebula clouds
-            nebulaClouds.forEach(cloud => {
-              const cloudMat = cloud.material as THREE.ShaderMaterial
-              cloudMat.uniforms.opacity.value = Math.max(0, 1 - transitionProgress)
-            })
+            if (ENABLE_NEURAL_MATRIX) {
+              // Phase 4: Neural Network AI Showcase (13-19s)
+              setPhase("neural-network")
+              
+              // Smooth crossfade: stars fade out as network fades in
+              const transitionProgress = (elapsed - 13) / 2 // 2 second crossfade
+              material.uniforms.opacity.value = Math.max(0, 1 - Math.min(1, transitionProgress))
+              controls.enabled = false
+              
+              // Fade out nebula clouds
+              nebulaClouds.forEach(cloud => {
+                const cloudMat = cloud.material as THREE.ShaderMaterial
+                cloudMat.uniforms.opacity.value = Math.max(0, 1 - transitionProgress)
+              })
 
-            // Maintain planet presence through ~20s at a low but visible opacity,
-            // shifted off-center to avoid conflict with the network visuals
-            if (planetSystem && accretionDisk && planetsMesh) {
-              const presence = THREE.MathUtils.clamp((20 - elapsed) / 7, 0, 1)
-              const diskAlpha = Math.min(0.35, presence * 0.5)
-              const planetAlpha = Math.min(0.5, presence * 0.7)
-              const diskMat = accretionDisk.material as THREE.ShaderMaterial
-              const pm = planetsMesh.material as THREE.MeshStandardMaterial
-              planetSystem.visible = planetAlpha > 0.02 || diskAlpha > 0.02
-              diskMat.uniforms.opacity.value = diskAlpha
-              pm.opacity = planetAlpha
-            }
-            
-            // Show neural network with smooth fade
-            if (neuralNetwork) {
-              neuralNetwork.visible = true
-              const networkProgress = Math.max(0, (elapsed - 13) / 6) // Full duration
-              
-              // Animate network appearance with cascading effect
-              neuralNetwork.children.forEach((child, index) => {
-                if (child instanceof THREE.Mesh) {
-                  const delay = index * 0.015
-                  const opacity = Math.min(1, Math.max(0, (networkProgress - delay) * 2.5))
-                  ;(child.material as THREE.MeshBasicMaterial).opacity = opacity
-                  
-                  // Pulsing glow effect on neurons
-                  const glowPulse = Math.sin(elapsed * 4 + index * 0.5) * 0.3 + 0.7
-                  ;(child.material as THREE.MeshBasicMaterial).opacity = opacity * glowPulse
-                } else if (child instanceof THREE.Line) {
-                  const delay = index * 0.008
-                  const opacity = Math.min(0.6, Math.max(0, (networkProgress - delay) * 1.8))
-                  ;(child.material as THREE.LineBasicMaterial).opacity = opacity
-                }
-              })
-              
-              // Smooth rotation
-              neuralNetwork.rotation.y = (elapsed - 13) * 0.4
-              
-              // Subtle pulse effect
-              const pulse = Math.sin((elapsed - 13) * 2) * 0.05 + 1
-              neuralNetwork.scale.setScalar(pulse)
-            }
-            
-            // Animate data flows through network
-            dataFlows.forEach((flow, index) => {
-              const flowMat = flow.material as THREE.LineBasicMaterial
-              const flowProgress = ((elapsed - 14 + index * 0.1) % 2) / 2 // Cycle every 2 seconds
-              flowMat.opacity = Math.sin(flowProgress * Math.PI) * 0.8
-              flow.visible = elapsed > 14
-            })
-            
-            // Camera slowly orbits around network
-            camera.position.z = 35
-            camera.position.x = Math.sin((elapsed - 13) * 0.2) * 5
-            camera.position.y = Math.cos((elapsed - 13) * 0.15) * 3
-            camera.lookAt(0, 0, 0)
-            
-            // Animate god rays during neural network
-            godRays.forEach((ray, i) => {
-              const rayMat = ray.material as THREE.ShaderMaterial
-              rayMat.uniforms.opacity.value = Math.min(0.8, (elapsed - 14) / 2)
-              rayMat.uniforms.time.value = elapsed
-              ray.rotation.z += 0.001
-            })
-          } else if (elapsed < 23) {
-            // Phase 5: Matrix Code Rain (19-23s) - Smooth transition
-            setPhase("matrix-code")
-            
-            // Smooth fade out neural network over 1.5 seconds
-            if (neuralNetwork) {
-              const fadeOut = Math.max(0, 1 - (elapsed - 19) / 1.5)
-              neuralNetwork.children.forEach((child) => {
-                if (child instanceof THREE.Mesh) {
-                  ;(child.material as THREE.MeshBasicMaterial).opacity *= fadeOut
-                } else if (child instanceof THREE.Line) {
-                  ;(child.material as THREE.LineBasicMaterial).opacity *= fadeOut
-                }
-              })
-              if (fadeOut === 0) {
-                neuralNetwork.visible = false
+              // Maintain planet presence through ~20s at a low but visible opacity
+              if (planetSystem && accretionDisk && planetsMesh) {
+                const presence = THREE.MathUtils.clamp((20 - elapsed) / 7, 0, 1)
+                const diskAlpha = Math.min(0.35, presence * 0.5)
+                const planetAlpha = Math.min(0.5, presence * 0.7)
+                const diskMat = accretionDisk.material as THREE.ShaderMaterial
+                const pm = planetsMesh.material as THREE.MeshStandardMaterial
+                planetSystem.visible = planetAlpha > 0.02 || diskAlpha > 0.02
+                diskMat.uniforms.opacity.value = diskAlpha
+                pm.opacity = planetAlpha
               }
+              
+              // Show neural network with smooth fade
+              if (neuralNetwork) {
+                neuralNetwork.visible = true
+                const networkProgress = Math.max(0, (elapsed - 13) / 6) // Full duration
+                
+                // Animate network appearance with cascading effect
+                neuralNetwork.children.forEach((child, index) => {
+                  if (child instanceof THREE.Mesh) {
+                    const delay = index * 0.015
+                    const opacity = Math.min(1, Math.max(0, (networkProgress - delay) * 2.5))
+                    ;(child.material as THREE.MeshBasicMaterial).opacity = opacity
+                    
+                    // Pulsing glow effect on neurons
+                    const glowPulse = Math.sin(elapsed * 4 + index * 0.5) * 0.3 + 0.7
+                    ;(child.material as THREE.MeshBasicMaterial).opacity = opacity * glowPulse
+                  } else if (child instanceof THREE.Line) {
+                    const delay = index * 0.008
+                    const opacity = Math.min(0.6, Math.max(0, (networkProgress - delay) * 1.8))
+                    ;(child.material as THREE.LineBasicMaterial).opacity = opacity
+                  }
+                })
+                
+                // Smooth rotation
+                neuralNetwork.rotation.y = (elapsed - 13) * 0.4
+                
+                // Subtle pulse effect
+                const pulse = Math.sin((elapsed - 13) * 2) * 0.05 + 1
+                neuralNetwork.scale.setScalar(pulse)
+              }
+              
+              // Animate data flows through network
+              dataFlows.forEach((flow, index) => {
+                const flowMat = flow.material as THREE.LineBasicMaterial
+                const flowProgress = ((elapsed - 14 + index * 0.1) % 2) / 2 // Cycle every 2 seconds
+                flowMat.opacity = Math.sin(flowProgress * Math.PI) * 0.8
+                flow.visible = elapsed > 14
+              })
+              
+              // Camera slowly orbits around network
+              camera.position.z = 35
+              camera.position.x = Math.sin((elapsed - 13) * 0.2) * 5
+              camera.position.y = Math.cos((elapsed - 13) * 0.15) * 3
+              camera.lookAt(0, 0, 0)
+              
+              // Animate god rays during neural network
+              godRays.forEach((ray) => {
+                const rayMat = ray.material as THREE.ShaderMaterial
+                rayMat.uniforms.opacity.value = Math.min(0.8, (elapsed - 14) / 2)
+                rayMat.uniforms.time.value = elapsed
+                ray.rotation.z += 0.001
+              })
+            } else {
+              // De-emphasized path: continue solar focus early (13–19s)
+              setPhase("solar-system")
+              controls.enabled = false
+              // Keep stars bright
+              material.uniforms.opacity.value = 0.95
+              // Gently reduce nebula to highlight star radiation
+              nebulaClouds.forEach(cloud => {
+                const cloudMat = cloud.material as THREE.ShaderMaterial
+                cloudMat.uniforms.opacity.value = Math.max(0, 0.8 - (elapsed - 13) * 0.1)
+                cloudMat.uniforms.time.value = elapsed
+              })
+              // Maintain planet system presence
+              if (planetSystem && accretionDisk && planetsMesh) {
+                const presence = THREE.MathUtils.clamp((20 - elapsed) / 7, 0, 1)
+                const diskAlpha = Math.min(0.45, presence * 0.6)
+                const planetAlpha = Math.min(0.65, presence * 0.8)
+                const diskMat = accretionDisk.material as THREE.ShaderMaterial
+                const pm = planetsMesh.material as THREE.MeshStandardMaterial
+                planetSystem.visible = planetAlpha > 0.02 || diskAlpha > 0.02
+                diskMat.uniforms.opacity.value = diskAlpha
+                pm.opacity = planetAlpha
+              }
+              // Begin fading in star system early
+              const t = THREE.MathUtils.clamp((elapsed - 13) / 3, 0, 1)
+              if (starSystem && orbitLines.length && solarPlanets.length) {
+                starSystem.visible = true
+                orbitLines.forEach(line => {
+                  const lm = line.material as THREE.LineBasicMaterial
+                  lm.opacity = t * 0.6
+                })
+                solarPlanets.forEach(planet => {
+                  const pm = planet.material as THREE.MeshStandardMaterial
+                  pm.opacity = t
+                  const { angle, speed } = planet.userData as { angle: number; speed: number }
+                  const newAngle = angle + speed * 0.016
+                  planet.userData.angle = newAngle
+                  const orbit = orbitLines[solarPlanets.indexOf(planet)]
+                  const radius = Math.abs((orbit.geometry.getAttribute('position') as THREE.BufferAttribute).getX(0))
+                  planet.position.set(Math.cos(newAngle) * radius, 0, Math.sin(newAngle) * radius)
+                  planet.rotation.y += 0.01
+                })
+                // Radiating god rays
+                godRays.forEach(ray => {
+                  const rayMat = ray.material as THREE.ShaderMaterial
+                  rayMat.uniforms.opacity.value = Math.min(0.85, t)
+                  rayMat.uniforms.time.value = elapsed
+                  ray.rotation.z += 0.001
+                })
+              }
+              // Camera gentle drift
+              camera.position.z = 50
+              camera.position.x = Math.sin((elapsed - 13) * 0.25) * 4
+              camera.position.y = Math.cos((elapsed - 13) * 0.2) * 3
+              camera.lookAt(0, 0, 0)
             }
-            
-            // Stars fade back in smoothly
-            const fadeProgress = Math.min(1, (elapsed - 19.5) / 2)
-            material.uniforms.opacity.value = fadeProgress * 0.4 // Dimmer for matrix effect
-            
-            // Camera smooth zoom out
-            camera.position.z = 35 + ((elapsed - 19) / 4) * 15 // 35 to 50
-            camera.position.x *= 0.95 // Return to center
-            camera.position.y *= 0.95
-            
-            // Fade out god rays
-            godRays.forEach(ray => {
-              const rayMat = ray.material as THREE.ShaderMaterial
-              rayMat.uniforms.opacity.value = Math.max(0, 1 - (elapsed - 19) / 2)
-            })
+          } else if (elapsed < 23) {
+            if (ENABLE_NEURAL_MATRIX) {
+              // Phase 5: Matrix Code Rain (19-23s) - Smooth transition
+              setPhase("matrix-code")
+              
+              // Smooth fade out neural network over 1.5 seconds
+              if (neuralNetwork) {
+                const fadeOut = Math.max(0, 1 - (elapsed - 19) / 1.5)
+                neuralNetwork.children.forEach((child) => {
+                  if (child instanceof THREE.Mesh) {
+                    ;(child.material as THREE.MeshBasicMaterial).opacity *= fadeOut
+                  } else if (child instanceof THREE.Line) {
+                    ;(child.material as THREE.LineBasicMaterial).opacity *= fadeOut
+                  }
+                })
+                if (fadeOut === 0) {
+                  neuralNetwork.visible = false
+                }
+              }
+              
+              // Stars fade back in smoothly
+              const fadeProgress = Math.min(1, (elapsed - 19.5) / 2)
+              material.uniforms.opacity.value = fadeProgress * 0.4 // Dimmer for matrix effect
+              
+              // Camera smooth zoom out
+              camera.position.z = 35 + ((elapsed - 19) / 4) * 15 // 35 to 50
+              camera.position.x *= 0.95 // Return to center
+              camera.position.y *= 0.95
+              
+              // Fade out god rays
+              godRays.forEach(ray => {
+                const rayMat = ray.material as THREE.ShaderMaterial
+                rayMat.uniforms.opacity.value = Math.max(0, 1 - (elapsed - 19) / 2)
+              })
+            } else {
+              // Continue emphasizing solar system (19–23s)
+              setPhase("solar-system")
+              material.uniforms.opacity.value = 0.9 // keep stars bright
+              const t2 = THREE.MathUtils.clamp((elapsed - 19) / 2, 0, 1)
+              if (starSystem && orbitLines.length && solarPlanets.length) {
+                starSystem.visible = true
+                orbitLines.forEach(line => {
+                  const lm = line.material as THREE.LineBasicMaterial
+                  lm.opacity = Math.max(lm.opacity, 0.6)
+                })
+                solarPlanets.forEach(planet => {
+                  const pm = planet.material as THREE.MeshStandardMaterial
+                  pm.opacity = Math.max(pm.opacity, 1.0 * t2)
+                  const { angle, speed } = planet.userData as { angle: number; speed: number }
+                  const newAngle = angle + speed * 0.016
+                  planet.userData.angle = newAngle
+                  const orbit = orbitLines[solarPlanets.indexOf(planet)]
+                  const radius = Math.abs((orbit.geometry.getAttribute('position') as THREE.BufferAttribute).getX(0))
+                  planet.position.set(Math.cos(newAngle) * radius, 0, Math.sin(newAngle) * radius)
+                })
+                // Strengthen god rays
+                godRays.forEach(ray => {
+                  const rayMat = ray.material as THREE.ShaderMaterial
+                  rayMat.uniforms.opacity.value = Math.max(rayMat.uniforms.opacity.value, 0.8)
+                  rayMat.uniforms.time.value = elapsed
+                })
+              }
+              // Camera easing back to center
+              camera.position.z = 52
+              camera.position.x *= 0.95
+              camera.position.y *= 0.95
+              camera.lookAt(0, 0, 0)
+            }
           } else if (elapsed < 29) {
             // Phase 6: Solar System (23-29s)
             setPhase("solar-system")
