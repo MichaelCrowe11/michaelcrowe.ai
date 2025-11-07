@@ -225,6 +225,33 @@
   opacity: 0;
 }
 
+/* Small avatar animations used by AIAvatar */
+@keyframes logo-breathe {
+  0% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(0,0,0,0)); }
+  50% { transform: scale(1.04); filter: drop-shadow(0 6px 12px rgba(0,0,0,0.12)); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(0,0,0,0)); }
+}
+@keyframes logo-pulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 rgba(218,165,32,0); }
+  50% { transform: scale(1.08); box-shadow: 0 6px 18px rgba(218,165,32,0.08); }
+  100% { transform: scale(1); box-shadow: 0 0 0 rgba(218,165,32,0); }
+}
+@keyframes logo-glow {
+  0% { filter: drop-shadow(0 0 0 rgba(218,165,32,0)); }
+  50% { filter: drop-shadow(0 0 10px rgba(218,165,32,0.45)); }
+  100% { filter: drop-shadow(0 0 0 rgba(218,165,32,0)); }
+}
+@keyframes logo-success {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.06) rotate(-4deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.animate-logo-breathe { animation: logo-breathe 4s ease-in-out infinite; }
+.animate-logo-pulse { animation: logo-pulse 1.6s ease-in-out infinite; }
+.animate-logo-glow { animation: logo-glow 1.2s ease-in-out infinite; }
+.animate-logo-success { animation: logo-success 0.8s ease forwards; }
+
 @keyframes fade-in-fast {
   from {
     opacity: 0;
@@ -1324,3 +1351,32 @@
 /* ==================================== */
 /*  END CHAT SOLAR OVERLAY              */
 /* ==================================== */
+
+/* ==================================== */
+/*  MINIMAL AVATAR ANIMATIONS           */
+/* ==================================== */
+@keyframes logo-breathe {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0px rgba(218,165,32,0.35)); }
+  50% { transform: scale(1.04); filter: drop-shadow(0 0 8px rgba(218,165,32,0.5)); }
+}
+
+@keyframes logo-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(218,165,32,0.0); }
+  50% { transform: scale(1.06); box-shadow: 0 0 0 6px rgba(218,165,32,0.15); }
+}
+
+@keyframes logo-glow {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(218,165,32,0.5)); }
+  50% { filter: drop-shadow(0 0 18px rgba(218,165,32,0.9)); }
+}
+
+@keyframes logo-success {
+  0% { transform: scale(0.98); filter: hue-rotate(0deg) drop-shadow(0 0 0 rgba(74,222,128,0.0)); }
+  50% { transform: scale(1.04); filter: hue-rotate(-10deg) drop-shadow(0 0 14px rgba(74,222,128,0.6)); }
+  100% { transform: scale(1); filter: hue-rotate(0deg) drop-shadow(0 0 6px rgba(74,222,128,0.4)); }
+}
+
+.animate-logo-breathe { animation: logo-breathe 2.6s ease-in-out infinite; }
+.animate-logo-pulse { animation: logo-pulse 1.4s ease-in-out infinite; }
+.animate-logo-glow { animation: logo-glow 1.2s ease-in-out infinite; }
+.animate-logo-success { animation: logo-success 900ms ease-out 1; }

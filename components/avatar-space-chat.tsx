@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { Send, Mic, MicOff } from "lucide-react"
 import { AIAvatarSwirl } from "@/components/ai-avatar-swirl"
+import { AIAvatar } from "@/components/ai-avatar"
 import Image from "next/image"
 
 interface Message {
@@ -23,9 +24,9 @@ export function AvatarSpaceChat() {
   const [input, setInput] = useState("")
   const [isListening, setIsListening] = useState(false)
   const [voiceEnabled, setVoiceEnabled] = useState(false)
-  const [avatarMode, setAvatarMode] = useState<'swirl' | 'classic'>(() => {
+  const [avatarMode, setAvatarMode] = useState<'swirl' | 'classic' | 'minimal'>(() => {
     if (typeof window === 'undefined') return 'swirl'
-    return (localStorage.getItem('avatarMode') as 'swirl' | 'classic') || 'swirl'
+    return (localStorage.getItem('avatarMode') as 'swirl' | 'classic' | 'minimal') || 'swirl'
   })
   const recognitionRef = useRef<any>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -167,7 +168,9 @@ export function AvatarSpaceChat() {
             // ignore
           }
         }
-        setAvatarState('idle')
+        // Show 'completed' (success glow) briefly before settling idle
+        setAvatarState('completed' as any)
+        setTimeout(() => setAvatarState('idle'), 1000)
       }
     }, 50)
   }
@@ -269,6 +272,8 @@ export function AvatarSpaceChat() {
           <div className="relative" style={{ filter: 'drop-shadow(0 0 50px rgba(218,165,32,0.55)) drop-shadow(0 0 25px rgba(218,165,32,0.4))' }}>
             {avatarMode === 'swirl' ? (
               <AIAvatarSwirl state={avatarState} size={220} />
+            ) : avatarMode === 'minimal' ? (
+              <AIAvatar state={avatarState === 'responding' ? 'streaming' : avatarState === 'thinking' ? 'thinking' : avatarState === 'idle' ? 'idle' : 'completed'} size="lg" />
             ) : (
               <Image
                 src="/crowe-logic-logo-transparent.png"
@@ -300,19 +305,27 @@ export function AvatarSpaceChat() {
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-reveal-up`}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <div
-                  className={`max-w-[85%] px-6 py-4 rounded-2xl backdrop-blur-md transition-all duration-300 hover:scale-[1.02] ${
-                    msg.role === 'user'
-                      ? 'bg-gradient-to-br from-gold/25 to-gold/15 text-white border border-gold/40 shadow-lg shadow-gold/10'
-                      : 'bg-gradient-to-br from-white/10 to-white/5 text-white/95 border border-white/20 shadow-xl shadow-black/20'
-                  }`}
-                >
-                  <p className="text-sm sm:text-base leading-relaxed">
-                    {msg.content}
-                    {msg.streaming && (
-                      <span className="inline-block w-0.5 h-5 ml-1 bg-gold animate-pulse" />
-                    )}
-                  </p>
+                <div className="flex items-start gap-3">
+                  {msg.role === 'assistant' && (
+                    <div className="mt-1">
+                      <AIAvatar state={msg.streaming ? 'streaming' : 'completed'} size="sm" />
+                    </div>
+                  )}
+
+                  <div
+                    className={`max-w-[85%] px-6 py-4 rounded-2xl backdrop-blur-md transition-all duration-300 hover:scale-[1.02] ${
+                      msg.role === 'user'
+                        ? 'bg-gradient-to-br from-gold/25 to-gold/15 text-white border border-gold/40 shadow-lg shadow-gold/10'
+                        : 'bg-gradient-to-br from-white/10 to-white/5 text-white/95 border border-white/20 shadow-xl shadow-black/20'
+                    }`}
+                  >
+                    <p className="text-sm sm:text-base leading-relaxed">
+                      {msg.content}
+                      {msg.streaming && (
+                        <span className="inline-block w-0.5 h-5 ml-1 bg-gold animate-pulse" />
+                      )}
+                    </p>
+                  </div>
                 </div>
               </div>
             ))}
@@ -370,12 +383,23 @@ export function AvatarSpaceChat() {
 
             {/* Footer info */}
             <div className="flex items-center justify-center gap-4 mt-4 text-xs">
-              <button
-                onClick={() => setAvatarMode(avatarMode === 'swirl' ? 'classic' : 'swirl')}
-                className="px-3 py-1.5 rounded-full border border-white/15 text-white/80 hover:text-white/95 hover:border-white/30 transition"
-              >
-                Avatar: {avatarMode === 'swirl' ? 'Swirl' : 'Classic'}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setAvatarMode('swirl')}
+                  className={`px-3 py-1.5 rounded-full border transition ${avatarMode==='swirl' ? 'border-gold/40 text-gold' : 'border-white/15 text-white/70 hover:text-white/90 hover:border-white/30'}`}
+                  title="Animated Swirl"
+                >Swirl</button>
+                <button
+                  onClick={() => setAvatarMode('classic')}
+                  className={`px-3 py-1.5 rounded-full border transition ${avatarMode==='classic' ? 'border-gold/40 text-gold' : 'border-white/15 text-white/70 hover:text-white/90 hover:border-white/30'}`}
+                  title="Classic Logo"
+                >Classic</button>
+                <button
+                  onClick={() => setAvatarMode('minimal')}
+                  className={`px-3 py-1.5 rounded-full border transition ${avatarMode==='minimal' ? 'border-gold/40 text-gold' : 'border-white/15 text-white/70 hover:text-white/90 hover:border-white/30'}`}
+                  title="Minimal"
+                >Minimal</button>
+              </div>
               <button
                 onClick={() => setVoiceEnabled(!voiceEnabled)}
                 className={`px-3 py-1.5 rounded-full transition-all duration-300 ${
