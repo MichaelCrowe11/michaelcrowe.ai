@@ -115,9 +115,9 @@ export function ChatStars({
           
           const bloomPass = new UnrealBloomPass(
             new THREE.Vector2(window.innerWidth, window.innerHeight),
-            1.2,  // Strength
-            0.4,  // Radius
-            0.6   // Threshold
+            1.5,  // Strength (increased for more glow)
+            0.5,  // Radius
+            0.5   // Threshold (lower = more bloom)
           )
           composer.addPass(bloomPass)
         } catch (error) {
@@ -157,15 +157,15 @@ export function ChatStars({
           // Color variation (subtle blues, whites, golds)
           const colorChoice = Math.random()
           if (colorChoice < 0.7) {
-            // White-ish stars
-            const brightness = 0.8 + Math.random() * 0.2
+            // White-ish stars (brighter)
+            const brightness = 0.9 + Math.random() * 0.1
             colors.push(brightness, brightness, brightness)
           } else if (colorChoice < 0.9) {
-            // Blue-ish stars
-            colors.push(0.7, 0.8, 1.0)
+            // Blue-ish stars (brighter)
+            colors.push(0.8, 0.9, 1.0)
           } else {
-            // Gold-ish stars
-            colors.push(1.0, 0.9, 0.7)
+            // Gold-ish stars (brighter)
+            colors.push(1.0, 0.95, 0.8)
           }
 
           // Size with variation
@@ -185,7 +185,7 @@ export function ChatStars({
           uniforms: {
             time: { value: 0 },
             twinkleSpeed: { value: prefersReducedMotion ? 0.1 : twinkleSpeed },
-            opacity: { value: 0.8 },
+            opacity: { value: 0.95 }, // Increased brightness
             audioBoost: { value: 0.0 }, // Audio-reactive brightness boost
           },
           vertexShader: `
@@ -224,14 +224,14 @@ export function ChatStars({
               if (dist > 0.5) discard;
               
               // Twinkle effect with per-star phase offset
-              float twinkle = 0.6 + 0.4 * sin(time * twinkleSpeed + vSeed * 12.566);
+              float twinkle = 0.7 + 0.3 * sin(time * twinkleSpeed + vSeed * 12.566);
               
               // Audio-reactive boost (subtle pulse)
-              float audioPulse = 1.0 + audioBoost * 0.4;
+              float audioPulse = 1.0 + audioBoost * 0.5;
               
-              // Soft glow
+              // Soft glow (enhanced brightness)
               float glow = 1.0 - smoothstep(0.0, 0.5, dist);
-              glow = pow(glow, 1.5);
+              glow = pow(glow, 1.2); // More pronounced glow
               
               // Final color with twinkle, audio boost, and glow
               vec3 finalColor = vColor * twinkle * audioPulse;

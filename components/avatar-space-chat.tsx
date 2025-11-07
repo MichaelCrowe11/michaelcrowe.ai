@@ -304,10 +304,10 @@ export function AvatarSpaceChat() {
         <ChatStars
           enabled={true}
           layerCount={4}
-          starsPerLayer={400}
-          twinkleSpeed={1.0}
-          parallaxStrength={0.3}
-          shootingStarRate={3}
+          starsPerLayer={2778} // 11,111 total stars (2778 × 4 = 11,112)
+          twinkleSpeed={1.2}
+          parallaxStrength={0.4}
+          shootingStarRate={5}
           audioAmplitude={audioAmplitude}
         />
       )}
