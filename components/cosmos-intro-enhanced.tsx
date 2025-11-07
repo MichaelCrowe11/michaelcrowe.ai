@@ -3,6 +3,10 @@
 import { useEffect, useRef, useState } from "react"
 import * as THREE from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js"
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js"
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js"
+import { FilmPass } from "three/examples/jsm/postprocessing/FilmPass.js"
 import Image from "next/image"
 import { config } from "@/lib/config"
 import { FloatingAvatar } from "@/components/floating-avatar"
@@ -41,6 +45,8 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
     let scene: THREE.Scene
     let camera: THREE.PerspectiveCamera
     let renderer: THREE.WebGLRenderer
+    let composer: EffectComposer
+    let bloomPass: UnrealBloomPass
     let controls: OrbitControls
     let stars: THREE.Points
     let neuralNetwork: THREE.Group | null = null
@@ -49,6 +55,7 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
     let nebulaClouds: THREE.Mesh[] = []
     let animationId: number
     let startTime = Date.now()
+    let vignette: HTMLDivElement | null = null
 
     async function init() {
       // Scene setup
@@ -64,11 +71,35 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
       )
       camera.position.set(0, 0, 50)
 
-      // Renderer
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+      // Renderer with enhanced settings
+      renderer = new THREE.WebGLRenderer({ 
+        antialias: true, 
+        alpha: true,
+        powerPreference: "high-performance"
+      })
       renderer.setSize(window.innerWidth, window.innerHeight)
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+      renderer.toneMapping = THREE.ACESFilmicToneMapping
+      renderer.toneMappingExposure = 1.2
       containerRef.current?.appendChild(renderer.domElement)
+
+      // Post-processing setup
+      composer = new EffectComposer(renderer)
+      const renderPass = new RenderPass(scene, camera)
+      composer.addPass(renderPass)
+
+      // Bloom pass for professional glow
+      bloomPass = new UnrealBloomPass(
+        new THREE.Vector2(window.innerWidth, window.innerHeight),
+        1.5, // strength
+        0.4, // radius
+        0.85 // threshold
+      )
+      composer.addPass(bloomPass)
+
+      // Film grain for cinematic look
+      const filmPass = new FilmPass(0.15, false)
+      composer.addPass(filmPass)
 
       // Controls
       controls = new OrbitControls(camera, renderer.domElement)
@@ -421,6 +452,7 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
         camera.aspect = window.innerWidth / window.innerHeight
         camera.updateProjectionMatrix()
         renderer.setSize(window.innerWidth, window.innerHeight)
+        composer.setSize(window.innerWidth, window.innerHeight)
       }
       window.addEventListener("resize", handleResize)
 
@@ -618,7 +650,25 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
           material.uniforms.time.value = elapsed
         }
 
-        renderer.render(scene, camera)
+        // Dynamic bloom adjustment based on phase
+        if (phase === "big-bang") {
+          bloomPass.strength = 3.0
+          bloomPass.threshold = 0.3
+        } else if (phase === "neural-network") {
+          bloomPass.strength = 2.0
+          bloomPass.threshold = 0.4
+        } else if (phase === "matrix-code") {
+          bloomPass.strength = 1.8
+          bloomPass.threshold = 0.5
+        } else if (phase === "avatar-reveal") {
+          bloomPass.strength = 2.5
+          bloomPass.threshold = 0.3
+        } else {
+          bloomPass.strength = 1.5
+          bloomPass.threshold = 0.5
+        }
+
+        composer.render()
       }
 
       animate()
@@ -627,6 +677,7 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
         window.removeEventListener("resize", handleResize)
         cancelAnimationFrame(animationId)
         controls.dispose()
+        composer.dispose()
         renderer.dispose()
         containerRef.current?.removeChild(renderer.domElement)
       }
@@ -641,10 +692,20 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black">
+      {/* Professional vignette overlay */}
+      <div className="absolute inset-0 pointer-events-none z-10" style={{
+        background: 'radial-gradient(ellipse at center, transparent 0%, transparent 40%, rgba(0,0,0,0.3) 70%, rgba(0,0,0,0.7) 100%)'
+      }}></div>
+      
+      {/* Subtle grain texture */}
+      <div className="absolute inset-0 pointer-events-none z-10 opacity-[0.03]" style={{
+        backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 400 400\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")'
+      }}></div>
+
       <div ref={containerRef} className="w-full h-full" />
 
       {/* Phase overlays */}
-      <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center">
+      <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center z-20">
         {isLoading ? (
           <div className="text-white text-xl">Initializing...</div>
         ) : (
@@ -652,15 +713,22 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
             {/* Phase 1: Age of Possibilities */}
             {phase === "age-of-possibilities" && (
               <div className="text-center space-y-8 px-4 animate-fade-in">
-                <div className="space-y-4">
-                  <p className="text-xl md:text-2xl text-white/60 font-light">
-                    We live in
-                  </p>
-                  <h1 className="text-5xl md:text-7xl font-bold text-white">
-                    The Age of Possibilities
+                <div className="space-y-6 max-w-5xl mx-auto">
+                  <div className="inline-block">
+                    <p className="text-sm md:text-base text-white/40 font-light tracking-[0.3em] uppercase mb-6">
+                      Michael Crowe presents
+                    </p>
+                  </div>
+                  <h1 className="text-6xl md:text-8xl lg:text-9xl font-bold text-white leading-none tracking-tight">
+                    The Age of
+                    <span className="block text-transparent bg-clip-text bg-gradient-to-r from-gold via-yellow-200 to-gold mt-2 text-glow-pulse">
+                      Possibilities
+                    </span>
                   </h1>
-                  <p className="text-xl md:text-2xl text-gold/80 font-light">
-                    Where innovation meets transformation
+                  <div className="h-px w-32 mx-auto bg-gradient-to-r from-transparent via-gold to-transparent opacity-60 my-8"></div>
+                  <p className="text-xl md:text-3xl text-white/70 font-light leading-relaxed max-w-3xl mx-auto">
+                    Where <span className="text-white font-normal">innovation</span> meets{" "}
+                    <span className="text-gold font-normal">transformation</span>
                   </p>
                 </div>
               </div>
@@ -677,57 +745,79 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
 
             {/* Phase 3: Cosmos Expansion */}
             {phase === "cosmos-expand" && (
-              <div className="text-center space-y-6 px-4 animate-fade-in">
-                <div className="space-y-4">
-                  <h2 className="text-3xl md:text-5xl font-bold text-white leading-tight">
+              <div className="text-center space-y-8 px-4 animate-fade-in">
+                <div className="space-y-6 max-w-4xl mx-auto">
+                  <div className="inline-flex items-center gap-3 text-sm text-white/30 font-mono tracking-wider mb-4">
+                    <span className="w-8 h-px bg-white/30"></span>
+                    <span>10,088 STARS RENDERED</span>
+                    <span className="w-8 h-px bg-white/30"></span>
+                  </div>
+                  <h2 className="text-5xl md:text-7xl font-bold text-white leading-tight tracking-tight">
                     Every Data Point
-                    <span className="block text-gold/90">Tells a Story</span>
-                  </h2>
-                  <p className="text-xl md:text-2xl text-white/70 font-light max-w-2xl mx-auto">
-                    From patterns in the cosmos to insights in your business—
-                    <span className="block text-white/90 mt-2">
-                      I transform complexity into clarity
+                    <span className="block text-transparent bg-clip-text bg-gradient-to-r from-gold via-yellow-200 to-gold mt-3">
+                      Tells a Story
                     </span>
+                  </h2>
+                  <div className="h-px w-48 mx-auto bg-gradient-to-r from-transparent via-gold/50 to-transparent my-6"></div>
+                  <p className="text-2xl md:text-3xl text-white/60 font-light leading-relaxed max-w-3xl mx-auto">
+                    From patterns in the cosmos to insights in your business
+                  </p>
+                  <p className="text-xl md:text-2xl text-white/90 font-normal max-w-2xl mx-auto mt-4">
+                    I transform complexity into clarity
                   </p>
                 </div>
-                <p className="text-sm md:text-base text-white/50 mt-8">
-                  Drag to explore • Scroll to zoom
-                </p>
+                <div className="flex items-center justify-center gap-4 text-xs md:text-sm text-white/40 font-mono mt-12">
+                  <span>DRAG TO EXPLORE</span>
+                  <span className="w-1 h-1 rounded-full bg-white/40"></span>
+                  <span>SCROLL TO ZOOM</span>
+                </div>
               </div>
             )}
 
             {/* Phase 4: Neural Network - AI SHOWCASE */}
             {phase === "neural-network" && (
-              <div className="text-center space-y-8 px-4 animate-fade-in-fast">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-center gap-4 mb-6">
-                    <div className="h-px w-20 bg-gradient-to-r from-transparent to-gold/50"></div>
-                    <span className="text-sm text-gold/60 font-mono tracking-widest">AI SYSTEMS</span>
-                    <div className="h-px w-20 bg-gradient-to-l from-transparent to-gold/50"></div>
+              <div className="text-center space-y-10 px-4 animate-fade-in-fast">
+                <div className="space-y-8 max-w-5xl mx-auto">
+                  <div className="inline-flex items-center gap-4 px-6 py-3 border border-gold/20 rounded-full backdrop-blur-sm bg-black/20">
+                    <div className="w-2 h-2 rounded-full bg-gold animate-pulse"></div>
+                    <span className="text-xs md:text-sm text-gold/80 font-mono tracking-widest uppercase">Artificial Intelligence</span>
+                    <div className="w-2 h-2 rounded-full bg-gold animate-pulse"></div>
                   </div>
-                  <h2 className="text-4xl md:text-6xl font-bold text-white leading-tight">
+                  <h2 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white leading-none tracking-tight">
                     Neural Networks
-                    <span className="block text-gold text-shimmer mt-2">In Motion</span>
-                  </h2>
-                  <p className="text-xl md:text-2xl text-white/70 font-light max-w-2xl mx-auto">
-                    Watch AI learn, adapt, and evolve—
-                    <span className="block text-white/90 mt-2">
-                      Building intelligence layer by layer
+                    <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-gold to-green-400 mt-4 text-shimmer">
+                      In Motion
                     </span>
+                  </h2>
+                  <div className="h-px w-64 mx-auto bg-gradient-to-r from-transparent via-blue-400/30 to-transparent"></div>
+                  <p className="text-xl md:text-3xl text-white/60 font-light leading-relaxed max-w-3xl mx-auto">
+                    Watch AI <span className="text-white">learn</span>, <span className="text-white">adapt</span>, and <span className="text-white">evolve</span>
+                  </p>
+                  <p className="text-lg md:text-xl text-white/80 font-normal max-w-2xl mx-auto">
+                    Building intelligence layer by layer
                   </p>
                 </div>
-                <div className="flex items-center justify-center gap-8 mt-8">
-                  <div className="flex flex-col items-center">
-                    <div className="w-3 h-3 rounded-full bg-blue-400 animate-pulse mb-2"></div>
-                    <span className="text-xs text-white/50 font-mono">INPUT</span>
+                <div className="flex items-center justify-center gap-12 mt-12">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-blue-400/20 blur-xl rounded-full"></div>
+                      <div className="relative w-4 h-4 rounded-full bg-blue-400 animate-pulse"></div>
+                    </div>
+                    <span className="text-xs text-white/40 font-mono uppercase tracking-wider">Input Layer</span>
                   </div>
-                  <div className="flex flex-col items-center">
-                    <div className="w-3 h-3 rounded-full bg-gold animate-pulse mb-2" style={{ animationDelay: '0.2s' }}></div>
-                    <span className="text-xs text-white/50 font-mono">HIDDEN</span>
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gold/20 blur-xl rounded-full"></div>
+                      <div className="relative w-4 h-4 rounded-full bg-gold animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
+                    <span className="text-xs text-white/40 font-mono uppercase tracking-wider">Hidden Layer</span>
                   </div>
-                  <div className="flex flex-col items-center">
-                    <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse mb-2" style={{ animationDelay: '0.4s' }}></div>
-                    <span className="text-xs text-white/50 font-mono">OUTPUT</span>
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-green-400/20 blur-xl rounded-full"></div>
+                      <div className="relative w-4 h-4 rounded-full bg-green-400 animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                    </div>
+                    <span className="text-xs text-white/40 font-mono uppercase tracking-wider">Output Layer</span>
                   </div>
                 </div>
               </div>
@@ -811,62 +901,106 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
 
             {/* Phase 6: Avatar Reveal - METEOR ENTRANCE */}
             {phase === "avatar-reveal" && (
-              <div className="text-center space-y-10 px-4">
-                <div className="relative w-80 h-80 mx-auto flex items-center justify-center">
-                  {/* Multi-layer glow effects */}
-                  <div className="absolute inset-0 -m-20 rounded-full bg-gold/20 blur-[120px] animate-pulse-slow"></div>
-                  <div className="absolute inset-0 -m-12 rounded-full bg-gold/25 blur-[80px]"></div>
+              <div className="text-center space-y-12 px-4">
+                <div className="relative w-96 h-96 mx-auto flex items-center justify-center">
+                  {/* Enhanced multi-layer glow effects */}
+                  <div className="absolute inset-0 -m-32 rounded-full bg-gold/20 blur-[160px] animate-pulse-slow"></div>
+                  <div className="absolute inset-0 -m-20 rounded-full bg-gold/30 blur-[100px]"></div>
+                  <div className="absolute inset-0 -m-12 rounded-full bg-gold/40 blur-[60px]"></div>
                   
-                  {/* Animated rings */}
-                  <div className="absolute inset-0 rounded-full border border-gold/30 animate-ping-slow"></div>
-                  <div className="absolute inset-4 rounded-full border border-gold/20 animate-ping-slow" style={{ animationDelay: '1s' }}></div>
+                  {/* Animated hexagonal rings */}
+                  <div className="absolute inset-0 rounded-full border-2 border-gold/40 animate-ping-slow"></div>
+                  <div className="absolute inset-8 rounded-full border border-gold/30 animate-ping-slow" style={{ animationDelay: '0.5s' }}></div>
+                  <div className="absolute inset-16 rounded-full border border-gold/20 animate-ping-slow" style={{ animationDelay: '1s' }}></div>
+                  
+                  {/* Corner accents */}
+                  <div className="absolute -top-2 -left-2 w-8 h-8 border-t-2 border-l-2 border-gold/50"></div>
+                  <div className="absolute -top-2 -right-2 w-8 h-8 border-t-2 border-r-2 border-gold/50"></div>
+                  <div className="absolute -bottom-2 -left-2 w-8 h-8 border-b-2 border-l-2 border-gold/50"></div>
+                  <div className="absolute -bottom-2 -right-2 w-8 h-8 border-b-2 border-r-2 border-gold/50"></div>
                   
                   {/* Logo with METEOR entrance - TRANSPARENT VERSION */}
-                  <div className="relative z-10 animate-meteor-entry" style={{ filter: 'drop-shadow(0 0 80px rgba(218, 165, 32, 1)) drop-shadow(0 0 40px rgba(218, 165, 32, 0.8))' }}>
+                  <div className="relative z-10 animate-meteor-entry" style={{ filter: 'drop-shadow(0 0 100px rgba(218, 165, 32, 1)) drop-shadow(0 0 50px rgba(218, 165, 32, 0.9))' }}>
                     <Image
                       src="/crowe-logic-logo-transparent.png"
                       alt="Crowe Logic"
-                      width={320}
-                      height={320}
+                      width={384}
+                      height={384}
                       className="w-full h-full object-contain"
                       priority
                     />
                   </div>
                   
-                  {/* Meteor trail effect */}
+                  {/* Enhanced meteor trail */}
                   <div className="absolute top-0 right-0 w-full h-full pointer-events-none animate-meteor-trail">
-                    <div className="absolute top-0 right-0 w-[200%] h-1 bg-gradient-to-l from-transparent via-gold/60 to-transparent blur-sm"></div>
+                    <div className="absolute top-0 right-0 w-[300%] h-2 bg-gradient-to-l from-transparent via-gold to-transparent blur-md"></div>
+                    <div className="absolute top-4 right-4 w-[250%] h-1 bg-gradient-to-l from-transparent via-yellow-400/60 to-transparent blur-sm"></div>
                   </div>
                 </div>
-                <div className="space-y-3 animate-reveal-up animation-delay-1000">
-                  <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
+                
+                <div className="space-y-6 animate-reveal-up animation-delay-1000 max-w-3xl mx-auto">
+                  <div className="inline-block px-6 py-2 border border-gold/30 rounded-full backdrop-blur-sm bg-black/20">
+                    <span className="text-xs md:text-sm text-gold/70 font-mono tracking-widest uppercase">Systems Architect</span>
+                  </div>
+                  <h2 className="text-5xl md:text-7xl font-bold text-white tracking-tight">
                     Michael Crowe
                   </h2>
-                  <p className="text-xl md:text-2xl text-gold font-light">AI Systems Architect</p>
-                  <div className="flex items-center justify-center gap-2 text-sm text-white/50 mt-4">
-                    <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                    <span>Online & Ready</span>
+                  <div className="h-px w-48 mx-auto bg-gradient-to-r from-transparent via-gold/50 to-transparent"></div>
+                  <p className="text-2xl md:text-3xl text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-gold to-green-400 font-light">
+                    Artificial Intelligence Specialist
+                  </p>
+                  <div className="flex items-center justify-center gap-3 text-sm text-white/50 mt-6 font-mono">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-green-400/20 blur-lg rounded-full"></div>
+                      <div className="relative w-3 h-3 rounded-full bg-green-400 animate-pulse"></div>
+                    </div>
+                    <span className="uppercase tracking-wider">Available Now</span>
                   </div>
                 </div>
-                <p className="text-sm text-white/60 animate-pulse font-light animation-delay-1500">Press Enter to begin your conversation</p>
+                
+                <div className="animate-pulse font-light animation-delay-1500 mt-12">
+                  <p className="text-sm md:text-base text-white/40 font-mono tracking-wide">
+                    [ PRESS ENTER TO INITIATE CONVERSATION ]
+                  </p>
+                </div>
               </div>
             )}
 
             {/* Phase 7: Brand Message */}
             {phase === "brand-message" && (
-              <div className="text-center space-y-8 px-4 max-w-4xl animate-fade-in">
-                <h2 className="text-4xl md:text-6xl font-bold text-white leading-tight tracking-tight">
-                  The Future of Websites
-                  <span className="block text-gold mt-3 text-shimmer">Is Conversation</span>
-                </h2>
-                <p className="text-xl md:text-2xl text-white/70 leading-relaxed font-light">
-                  No more clicking through pages.
-                  <span className="block text-white/90 mt-3 font-normal">
-                    Just talk to Michael's AI. Ask anything. Get answers. Take action.
-                  </span>
-                </p>
-                <div className="relative inline-block mt-8">
-                  <div className="absolute -inset-2 bg-gold/20 rounded-full blur-xl animate-pulse-slow"></div>
+              <div className="text-center space-y-12 px-4 max-w-6xl mx-auto animate-fade-in">
+                <div className="space-y-8">
+                  <div className="inline-flex items-center gap-3 px-4 py-2 border border-gold/20 rounded-full backdrop-blur-sm bg-black/20">
+                    <span className="w-2 h-2 rounded-full bg-gold animate-pulse"></span>
+                    <span className="text-xs md:text-sm text-gold/70 font-mono tracking-widest uppercase">Revolutionary Interface</span>
+                    <span className="w-2 h-2 rounded-full bg-gold animate-pulse"></span>
+                  </div>
+                  
+                  <h2 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white leading-none tracking-tight">
+                    The Future of Websites
+                    <span className="block text-transparent bg-clip-text bg-gradient-to-r from-gold via-yellow-200 to-gold mt-4 text-shimmer">
+                      Is Conversation
+                    </span>
+                  </h2>
+                  
+                  <div className="h-px w-96 mx-auto bg-gradient-to-r from-transparent via-gold/40 to-transparent"></div>
+                  
+                  <div className="space-y-6 max-w-4xl mx-auto">
+                    <p className="text-2xl md:text-4xl text-white/70 leading-relaxed font-light">
+                      No more clicking through pages
+                    </p>
+                    <p className="text-xl md:text-3xl text-white/90 font-normal leading-relaxed">
+                      Just <span className="text-blue-400">talk</span> to Michael's AI.{" "}
+                      <span className="text-gold">Ask anything.</span>{" "}
+                      <span className="text-green-400">Get answers.</span>{" "}
+                      <span className="text-white">Take action.</span>
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="relative inline-block mt-16">
+                  <div className="absolute -inset-4 bg-gold/20 rounded-full blur-2xl animate-pulse-slow"></div>
+                  <div className="absolute -inset-2 bg-gold/30 rounded-full blur-xl"></div>
                   <button
                     onClick={onComplete}
                     onKeyDown={(e) => {
@@ -876,11 +1010,20 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
                       }
                     }}
                     aria-label="Enter and start conversation"
-                    className="relative px-10 py-5 bg-gradient-to-r from-gold to-gold/90 hover:from-gold/90 hover:to-gold text-black font-bold rounded-full transition-all pointer-events-auto transform hover:scale-110 active:scale-95 shadow-2xl shadow-gold/50 focus:outline-none focus:ring-4 focus:ring-gold/50 focus:ring-offset-4 focus:ring-offset-black text-lg"
+                    className="relative group px-12 py-6 bg-gradient-to-r from-gold via-yellow-400 to-gold hover:from-yellow-400 hover:via-gold hover:to-yellow-400 text-black font-bold rounded-full transition-all pointer-events-auto transform hover:scale-110 active:scale-95 shadow-2xl shadow-gold/60 focus:outline-none focus:ring-4 focus:ring-gold/50 focus:ring-offset-4 focus:ring-offset-black text-lg md:text-xl tracking-wide"
                   >
-                    Start Conversation →
+                    <span className="flex items-center gap-3">
+                      Initiate Conversation
+                      <svg className="w-6 h-6 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </span>
                   </button>
                 </div>
+                
+                <p className="text-xs md:text-sm text-white/30 font-mono tracking-wider uppercase mt-8">
+                  Press Enter or Click Above
+                </p>
               </div>
             )}
 
