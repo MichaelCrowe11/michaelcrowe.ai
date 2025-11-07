@@ -5,6 +5,7 @@ import { Send, Mic, MicOff } from "lucide-react"
 import { AIAvatarSwirl } from "@/components/ai-avatar-swirl"
 import { AIAvatar } from "@/components/ai-avatar"
 import Image from "next/image"
+import { useTTS } from "@/lib/use-tts"
 
 interface Message {
   id: number
@@ -23,7 +24,13 @@ export function AvatarSpaceChat() {
   ])
   const [input, setInput] = useState("")
   const [isListening, setIsListening] = useState(false)
-  const [voiceEnabled, setVoiceEnabled] = useState(false)
+  const [voiceEnabled, setVoiceEnabled] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    try {
+      const v = localStorage.getItem('voiceEnabled')
+      return v ? v === 'true' : false
+    } catch { return false }
+  })
   const [avatarMode, setAvatarMode] = useState<'swirl' | 'classic' | 'minimal'>(() => {
     if (typeof window === 'undefined') return 'swirl'
     return (localStorage.getItem('avatarMode') as 'swirl' | 'classic' | 'minimal') || 'swirl'
@@ -32,6 +39,9 @@ export function AvatarSpaceChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const idCounterRef = useRef(1)
+  const { isSupported: ttsSupported, speak, cancel: cancelTTS } = useTTS({ rate: 0.9, pitch: 1 })
+  const intervalsRef = useRef<number[]>([])
+  const [liveText, setLiveText] = useState("")
 
   // Responsive + dynamic overlay opacity
   const [overlayBaseOpacity, setOverlayBaseOpacity] = useState(0.9)
@@ -62,6 +72,14 @@ export function AvatarSpaceChat() {
       try { localStorage.setItem('avatarMode', avatarMode) } catch {}
     }
   }, [avatarMode])
+
+  // Persist voice toggle and stop any ongoing TTS when turned off
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try { localStorage.setItem('voiceEnabled', String(voiceEnabled)) } catch {}
+    }
+    if (!voiceEnabled) cancelTTS()
+  }, [voiceEnabled, cancelTTS])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -115,6 +133,8 @@ export function AvatarSpaceChat() {
 
   // Subtle parallax for overlay based on pointer movement
   useEffect(() => {
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduce) return
     const onMove = (e: MouseEvent) => {
       const w = window.innerWidth
       const h = window.innerHeight
@@ -135,8 +155,8 @@ export function AvatarSpaceChat() {
     const words = text.split(' ')
     let currentIndex = 0
 
-    setAvatarState('responding')
-    const interval = setInterval(() => {
+    // Keep in 'thinking' until audio playback actually starts
+    const interval = window.setInterval(() => {
       if (currentIndex < words.length) {
         const partialText = words.slice(0, currentIndex + 1).join(' ')
         setMessages(prev => 
@@ -157,22 +177,26 @@ export function AvatarSpaceChat() {
         )
         clearInterval(interval)
 
-        if (voiceEnabled && typeof window !== 'undefined' && 'speechSynthesis' in window) {
-          try {
-            const utter = new SpeechSynthesisUtterance(text)
-            utter.rate = 0.9
-            utter.pitch = 1
-            window.speechSynthesis.cancel()
-            window.speechSynthesis.speak(utter)
-          } catch (e) {
-            // ignore
-          }
+        if (voiceEnabled && ttsSupported) {
+          speak(text, {
+            onStart: () => setAvatarState('responding'),
+            onEnd: () => {
+              setAvatarState('completed' as any)
+              setTimeout(() => setAvatarState('idle'), 1000)
+            },
+            onError: () => {
+              setAvatarState('completed' as any)
+              setTimeout(() => setAvatarState('idle'), 1000)
+            }
+          })
+        } else {
+          // No TTS: finish visually
+          setAvatarState('completed' as any)
+          setTimeout(() => setAvatarState('idle'), 1000)
         }
-        // Show 'completed' (success glow) briefly before settling idle
-        setAvatarState('completed' as any)
-        setTimeout(() => setAvatarState('idle'), 1000)
       }
     }, 50)
+    intervalsRef.current.push(interval)
   }
 
   const handleSend = (textArg?: string) => {
@@ -218,6 +242,20 @@ export function AvatarSpaceChat() {
     }
   }
 
+  // Accessibility: announce assistant message updates
+  useEffect(() => {
+    const lastAssistant = [...messages].reverse().find(m => m.role === 'assistant')
+    if (lastAssistant) setLiveText(lastAssistant.content)
+  }, [messages])
+
+  // Cleanup streaming intervals on unmount
+  useEffect(() => {
+    return () => {
+      intervalsRef.current.forEach(id => clearInterval(id))
+      intervalsRef.current = []
+    }
+  }, [])
+
   return (
     <div className="fixed inset-0 bg-black overflow-hidden">
 
@@ -256,7 +294,7 @@ export function AvatarSpaceChat() {
         </div>
 
         {/* Top-right UI label */}
-        <div className="absolute top-6 right-6 z-10 pointer-events-none">
+        <div className="absolute top-6 right-6 z-10 pointer-events-none" aria-hidden="true">
           <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-gold/30 bg-black/30 backdrop-blur-sm shadow-glow-gold">
             <div className="w-2 h-2 rounded-full bg-gold animate-pulse"></div>
             <span className="text-xs sm:text-sm font-mono tracking-widest text-gold/90 uppercase">Orbital Interface Online</span>
@@ -294,6 +332,9 @@ export function AvatarSpaceChat() {
       <div className="absolute bottom-0 left-0 w-full h-[45vh] bg-gradient-to-t from-black via-black/98 to-transparent backdrop-blur-sm">
         <div className="max-w-4xl mx-auto h-full flex flex-col px-4 sm:px-6 pt-16">
           
+          {/* Live region for screen readers */}
+          <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{liveText}</div>
+
           {/* Messages with smooth scrolling */}
           <div ref={messagesContainerRef} className="flex-1 overflow-y-auto space-y-4 pb-4 scroll-smooth" style={{
             scrollbarWidth: 'thin',
@@ -388,16 +429,19 @@ export function AvatarSpaceChat() {
                   onClick={() => setAvatarMode('swirl')}
                   className={`px-3 py-1.5 rounded-full border transition ${avatarMode==='swirl' ? 'border-gold/40 text-gold' : 'border-white/15 text-white/70 hover:text-white/90 hover:border-white/30'}`}
                   title="Animated Swirl"
+                  aria-pressed={avatarMode==='swirl'}
                 >Swirl</button>
                 <button
                   onClick={() => setAvatarMode('classic')}
                   className={`px-3 py-1.5 rounded-full border transition ${avatarMode==='classic' ? 'border-gold/40 text-gold' : 'border-white/15 text-white/70 hover:text-white/90 hover:border-white/30'}`}
                   title="Classic Logo"
+                  aria-pressed={avatarMode==='classic'}
                 >Classic</button>
                 <button
                   onClick={() => setAvatarMode('minimal')}
                   className={`px-3 py-1.5 rounded-full border transition ${avatarMode==='minimal' ? 'border-gold/40 text-gold' : 'border-white/15 text-white/70 hover:text-white/90 hover:border-white/30'}`}
                   title="Minimal"
+                  aria-pressed={avatarMode==='minimal'}
                 >Minimal</button>
               </div>
               <button
@@ -407,6 +451,10 @@ export function AvatarSpaceChat() {
                     ? 'bg-gold/20 text-gold border border-gold/30' 
                     : 'text-white/40 hover:text-white/60 border border-white/10'
                 }`}
+                title={ttsSupported ? (voiceEnabled ? 'Disable voice' : 'Enable voice') : 'Voice not supported in this browser'}
+                aria-disabled={!ttsSupported}
+                aria-pressed={voiceEnabled}
+                disabled={!ttsSupported}
               >
                 🎤 Voice {voiceEnabled ? 'ON' : 'OFF'}
               </button>

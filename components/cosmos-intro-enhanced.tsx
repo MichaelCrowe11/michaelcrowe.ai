@@ -13,8 +13,8 @@ import { config } from "@/lib/config"
 import { FloatingAvatar } from "@/components/floating-avatar"
 import { createNoise2D } from "simplex-noise"
 
-// Feature flag to de-emphasize/remove Neural Network and Matrix phases
-const ENABLE_NEURAL_MATRIX = false
+// Feature flag to de-emphasize/remove Neural Network and Matrix phases (can be controlled via env)
+const ENABLE_NEURAL_MATRIX = typeof process !== 'undefined' && process.env.NEXT_PUBLIC_ENABLE_NEURAL_MATRIX === 'true'
 
 interface Star {
   id: number
@@ -42,6 +42,7 @@ type IntroPhase = "age-of-possibilities" | "big-bang" | "cosmos-expand" | "neura
 export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [webglSupported, setWebglSupported] = useState(true)
   const [phase, setPhase] = useState<IntroPhase>("age-of-possibilities")
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const [cursorTrail, setCursorTrail] = useState<Array<{ x: number; y: number; id: number }>>([])
@@ -64,6 +65,23 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
 
   useEffect(() => {
     if (!containerRef.current) return
+
+    // Detect WebGL capability and gracefully skip intro if unsupported
+    try {
+      const canvas = document.createElement('canvas')
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl' as any)
+      if (!gl) {
+        setWebglSupported(false)
+        setIsLoading(false)
+        setTimeout(() => onComplete(), 300)
+        return
+      }
+    } catch {
+      setWebglSupported(false)
+      setIsLoading(false)
+      setTimeout(() => onComplete(), 300)
+      return
+    }
 
     let scene: THREE.Scene
     let camera: THREE.PerspectiveCamera
@@ -1664,6 +1682,18 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black overflow-hidden">
+      {!webglSupported && (
+        <div className="absolute inset-0 flex items-center justify-center text-center px-6">
+          <div className="space-y-6 max-w-lg">
+            <h2 className="text-2xl font-bold text-gold">Cosmic Intro Unavailable</h2>
+            <p className="text-white/70 text-sm leading-relaxed">
+              Your browser or device doesn&apos;t fully support the advanced graphical features required for the interactive cosmic intro.
+              You&apos;re being redirected directly to the experience without the opening sequence.
+            </p>
+            <div className="animate-pulse text-white/40 text-xs font-mono">Initializing fallback...</div>
+          </div>
+        </div>
+      )}
       {/* Interactive cursor trail */}
       {cursorTrail.map((point, i) => (
         <div

@@ -1,8 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { CosmosIntro } from "@/components/cosmos-intro-enhanced"
+import dynamic from "next/dynamic"
 import { AvatarSpaceChat } from "@/components/avatar-space-chat"
+
+const CosmosIntro = dynamic(() => import("@/components/cosmos-intro-enhanced").then(m => m.CosmosIntro), {
+  ssr: false,
+  loading: () => null
+})
 
 export default function Home() {
   const [showIntro, setShowIntro] = useState(true)
