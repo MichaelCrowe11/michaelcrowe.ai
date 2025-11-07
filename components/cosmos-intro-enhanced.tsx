@@ -276,7 +276,7 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
         if (stars) {
           const material = stars.material as THREE.ShaderMaterial
 
-          // Phase timeline with NEW scenes
+          // Phase timeline with smooth transitions
           if (elapsed < 5) {
             // Phase 1: "Age of Possibilities" (0-5s)
             setPhase("age-of-possibilities")
@@ -321,71 +321,96 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
             camera.position.x = 0
             camera.position.y = 0
 
-            // Smoother zoom in
-            if (camera.position.z > 25) {
-              camera.position.z -= 0.06
-            }
+            // Smooth zoom in to prepare for neural network
+            const zoomProgress = (elapsed - 8) / 5
+            camera.position.z = 50 - (zoomProgress * 15) // Zoom from 50 to 35
           } else if (elapsed < 19) {
-            // Phase 4: Neural Network AI Showcase (13-19s) - NEW!
+            // Phase 4: Neural Network AI Showcase (13-19s)
             setPhase("neural-network")
             
-            // Fade out stars
-            material.uniforms.opacity.value = Math.max(0, 1 - (elapsed - 13) / 1)
+            // Smooth crossfade: stars fade out as network fades in
+            const transitionProgress = (elapsed - 13) / 2 // 2 second crossfade
+            material.uniforms.opacity.value = Math.max(0, 1 - Math.min(1, transitionProgress))
             controls.enabled = false
             
-            // Show neural network
+            // Show neural network with smooth fade
             if (neuralNetwork) {
               neuralNetwork.visible = true
-              const networkProgress = (elapsed - 14) / 5
+              const networkProgress = Math.max(0, (elapsed - 13) / 6) // Full duration
               
-              // Animate network appearance
+              // Animate network appearance with cascading effect
               neuralNetwork.children.forEach((child, index) => {
                 if (child instanceof THREE.Mesh) {
-                  const delay = index * 0.02
-                  const opacity = Math.min(1, Math.max(0, (networkProgress - delay) * 3))
+                  const delay = index * 0.015
+                  const opacity = Math.min(1, Math.max(0, (networkProgress - delay) * 2.5))
                   ;(child.material as THREE.MeshBasicMaterial).opacity = opacity
                 } else if (child instanceof THREE.Line) {
-                  const delay = index * 0.01
-                  const opacity = Math.min(0.4, Math.max(0, (networkProgress - delay) * 2))
+                  const delay = index * 0.008
+                  const opacity = Math.min(0.5, Math.max(0, (networkProgress - delay) * 1.8))
                   ;(child.material as THREE.LineBasicMaterial).opacity = opacity
                 }
               })
               
-              // Rotate network
-              neuralNetwork.rotation.y = elapsed * 0.3
+              // Smooth rotation
+              neuralNetwork.rotation.y = (elapsed - 13) * 0.4
               
-              // Pulse effect
-              const pulse = Math.sin(elapsed * 3) * 0.1 + 1
+              // Subtle pulse effect
+              const pulse = Math.sin((elapsed - 13) * 2) * 0.05 + 1
               neuralNetwork.scale.setScalar(pulse)
             }
             
-            // Position camera for network view
-            camera.position.z = 50
-          } else if (elapsed < 22) {
-            // Phase 5: Matrix Code Rain (19-22s) - NEW!
+            // Camera slowly orbits around network
+            camera.position.z = 35
+            camera.position.x = Math.sin((elapsed - 13) * 0.2) * 5
+            camera.position.y = Math.cos((elapsed - 13) * 0.15) * 3
+            camera.lookAt(0, 0, 0)
+          } else if (elapsed < 23) {
+            // Phase 5: Matrix Code Rain (19-23s) - Smooth transition
             setPhase("matrix-code")
             
-            // Hide neural network
+            // Smooth fade out neural network over 1.5 seconds
             if (neuralNetwork) {
-              neuralNetwork.visible = false
+              const fadeOut = Math.max(0, 1 - (elapsed - 19) / 1.5)
+              neuralNetwork.children.forEach((child) => {
+                if (child instanceof THREE.Mesh) {
+                  ;(child.material as THREE.MeshBasicMaterial).opacity *= fadeOut
+                } else if (child instanceof THREE.Line) {
+                  ;(child.material as THREE.LineBasicMaterial).opacity *= fadeOut
+                }
+              })
+              if (fadeOut === 0) {
+                neuralNetwork.visible = false
+              }
             }
             
-            // Fade stars back in with digital effect
-            const fadeProgress = (elapsed - 19) / 3
-            material.uniforms.opacity.value = fadeProgress
+            // Stars fade back in smoothly
+            const fadeProgress = Math.min(1, (elapsed - 19.5) / 2)
+            material.uniforms.opacity.value = fadeProgress * 0.4 // Dimmer for matrix effect
             
-            // Camera fly-through effect
-            camera.position.z = 50 - fadeProgress * 25
-          } else if (elapsed < 30) {
-            // Phase 6: Avatar reveal (22-30s)
+            // Camera smooth zoom out
+            camera.position.z = 35 + ((elapsed - 19) / 4) * 15 // 35 to 50
+            camera.position.x *= 0.95 // Return to center
+            camera.position.y *= 0.95
+          } else if (elapsed < 31) {
+            // Phase 6: Avatar reveal (23-31s) - Smooth star brightness increase
             setPhase("avatar-reveal")
-            material.uniforms.opacity.value = 1
+            const brightnessProgress = Math.min(1, (elapsed - 23) / 2)
+            material.uniforms.opacity.value = 0.4 + (brightnessProgress * 0.6) // 0.4 to 1.0
+            
+            // Camera settle into final position
+            camera.position.z = 50
+            camera.position.x *= 0.9
+            camera.position.y *= 0.9
+            camera.lookAt(0, 0, 0)
           } else if (elapsed < 36) {
-            // Phase 7: Brand message (30-36s)
+            // Phase 7: Brand message (31-36s)
             setPhase("brand-message")
+            material.uniforms.opacity.value = 1
           } else {
-            // Phase 8: Complete
+            // Phase 8: Complete - Fade to black
             setPhase("complete")
+            const fadeOut = Math.min(1, (elapsed - 36) / 1)
+            material.uniforms.opacity.value = 1 - fadeOut
             setTimeout(() => {
               onComplete()
             }, 500)
@@ -474,7 +499,7 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
 
             {/* Phase 4: Neural Network - AI SHOWCASE */}
             {phase === "neural-network" && (
-              <div className="text-center space-y-8 px-4 animate-fade-in">
+              <div className="text-center space-y-8 px-4 animate-fade-in-fast">
                 <div className="space-y-4">
                   <div className="flex items-center justify-center gap-4 mb-6">
                     <div className="h-px w-20 bg-gradient-to-r from-transparent to-gold/50"></div>
@@ -511,7 +536,7 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
 
             {/* Phase 5: Matrix Code Rain - WEB ANIMATION SHOWCASE */}
             {phase === "matrix-code" && (
-              <div className="text-center space-y-8 px-4 animate-fade-in">
+              <div className="text-center space-y-8 px-4 animate-fade-in-fast">
                 <div className="space-y-4">
                   <div className="font-mono text-green-400/80 text-sm md:text-base mb-6 overflow-hidden h-40">
                     {/* Simulated matrix rain effect */}
