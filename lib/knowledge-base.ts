@@ -1,12 +1,8 @@
 /**
- * Knowledge Base System
- * Centralizes Michael Crowe's expertise, experience, and training data
- * for AI assistant personalization
- */
-
-export const /**
  * Michael Crowe Knowledge Base System
  * Comprehensive expertise database for AI assistant personalization
+ * Centralizes Michael Crowe's expertise, experience, and training data
+ * for AI assistant personalization
  * 
  * @version 2.0
  * @lastUpdated November 2025
@@ -1571,12 +1567,12 @@ Key Differentiators:
 - 150+ AI agents in production (not theory)
 
 Values:
-${kb.personality.values.slice(0, 4).map(v => `• ${v}`).join('\n')}
+${knowledgeBase.personality.values.slice(0, 4).map(v => `• ${v}`).join('\n')}
 
 Contact:
-- Calendar: ${kb.contact.contact_methods.calendar.url}
-- Email: ${kb.contact.contact_methods.email.address}
-- Phone: ${kb.contact.contact_methods.phone.number}
+- Calendar: ${knowledgeBase.contact.contact_methods.calendar.url}
+- Email: ${knowledgeBase.contact.contact_methods.email.address}
+- Phone: ${knowledgeBase.contact.contact_methods.phone.number}
 
 Provide helpful, specific advice based on Michael's actual experience and proven methodologies.`
   }
@@ -1588,15 +1584,15 @@ Provide helpful, specific advice based on Michael's actual experience and proven
 export const salesScenarios = {
   first_contact: {
     goal: "Build rapport and qualify",
-    approach: kb.sales_strategy.conversation_approach.opening,
+    approach: knowledgeBase.sales_strategy.conversation_approach.opening,
     next_step: "Discovery questions",
   },
   
-  objections: kb.sales_strategy.objection_handling,
+  objections: knowledgeBase.sales_strategy.objection_handling,
   
-  closing: kb.sales_strategy.closing_techniques,
+  closing: knowledgeBase.sales_strategy.closing_techniques,
   
-  follow_up: kb.sales_strategy.follow_up_strategy,
+  follow_up: knowledgeBase.sales_strategy.follow_up_strategy,
 } as const
 
 /**
