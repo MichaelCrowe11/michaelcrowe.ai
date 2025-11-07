@@ -30,6 +30,7 @@ export function AvatarSpaceChat() {
   // Responsive + dynamic overlay opacity
   const [overlayBaseOpacity, setOverlayBaseOpacity] = useState(0.9)
   const [overlayFade, setOverlayFade] = useState(1)
+  const [overlayParallax, setOverlayParallax] = useState({ x: 0, y: 0 })
 
   useEffect(() => {
     const win = window as any
@@ -77,8 +78,13 @@ export function AvatarSpaceChat() {
         const el = messagesContainerRef.current
         if (!el) return
         const t = el.scrollTop
-        // fade up to ~60% by 240px scroll; clamp to 0.4 min
-        const f = Math.max(0.4, 1 - Math.min(t / 240, 0.6))
+        // fade up to ~60% by 240px scroll; clamp mins by breakpoint
+        const w = window.innerWidth
+        const minXs = 0.35
+        const minSmMd = 0.45
+        const minLg = 0.5
+        const min = w >= 1024 ? minLg : w >= 640 ? minSmMd : minXs
+        const f = Math.max(min, 1 - Math.min(t / 240, 0.6))
         setOverlayFade(f)
       })
     }
@@ -92,6 +98,21 @@ export function AvatarSpaceChat() {
       if (el) el.removeEventListener('scroll', onScroll)
       if (raf) cancelAnimationFrame(raf)
     }
+  }, [])
+
+  // Subtle parallax for overlay based on pointer movement
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      const w = window.innerWidth
+      const h = window.innerHeight
+      const nx = (e.clientX / w) * 2 - 1 // -1..1
+      const ny = (e.clientY / h) * 2 - 1 // -1..1
+      // Max translate ~10px on lg, ~6px on sm-md, ~4px on xs
+      const max = w >= 1024 ? 10 : w >= 640 ? 6 : 4
+      setOverlayParallax({ x: nx * max, y: ny * max })
+    }
+    window.addEventListener('pointermove', onMove)
+    return () => window.removeEventListener('pointermove', onMove)
   }, [])
 
   const streamText = (text: string, messageId: number) => {
@@ -191,8 +212,11 @@ export function AvatarSpaceChat() {
 
         {/* Subtle Solar System Overlay (responsive + scroll-fades) */}
         <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ opacity: overlayBaseOpacity * overlayFade }}
+          className="absolute inset-0 pointer-events-none will-change-transform"
+          style={{
+            opacity: overlayBaseOpacity * overlayFade,
+            transform: `translate3d(${overlayParallax.x}px, ${overlayParallax.y}px, 0)`
+          }}
         >
           <div className="solar-center glow"></div>
           {/* Orbits */}
