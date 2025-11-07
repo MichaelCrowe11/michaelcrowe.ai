@@ -149,23 +149,10 @@ export function AvatarSpaceChat() {
           <div className="absolute inset-0 -m-20 rounded-full bg-gold/20 blur-[120px] animate-pulse-slow"></div>
           <div className="absolute inset-0 -m-12 rounded-full bg-gold/15 blur-[60px]"></div>
           
-          {/* Logo container - WHITE BACKGROUND REMOVED */}
-          <svg className="absolute inset-0 w-0 h-0">
-            <defs>
-              <filter id="remove-white-chat">
-                <feColorMatrix
-                  type="matrix"
-                  values="1 0 0 0 0
-                          0 1 0 0 0
-                          0 0 1 0 0
-                          -1 -1 -1 1 0"
-                />
-              </filter>
-            </defs>
-          </svg>
-          <div className="relative w-72 h-72 flex items-center justify-center" style={{ filter: 'url(#remove-white-chat) drop-shadow(0 0 60px rgba(218, 165, 32, 0.9)) drop-shadow(0 0 30px rgba(218, 165, 32, 0.6))' }}>
+          {/* Logo container - TRANSPARENT VERSION */}
+          <div className="relative w-72 h-72 flex items-center justify-center" style={{ filter: 'drop-shadow(0 0 60px rgba(218, 165, 32, 0.9)) drop-shadow(0 0 30px rgba(218, 165, 32, 0.6))' }}>
             <Image
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/crowe-logic-logo-87FZNrbBWYjPIm7AaAVgQ2TQIx435b.png"
+              src="/crowe-logic-logo-transparent.png"
               alt="Crowe Logic"
               width={288}
               height={288}

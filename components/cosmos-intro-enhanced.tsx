@@ -363,23 +363,10 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
                   <div className="absolute inset-0 rounded-full border border-gold/30 animate-ping-slow"></div>
                   <div className="absolute inset-4 rounded-full border border-gold/20 animate-ping-slow" style={{ animationDelay: '1s' }}></div>
                   
-                  {/* Logo with METEOR entrance - WHITE BACKGROUND REMOVED */}
-                  <svg className="absolute inset-0 w-0 h-0">
-                    <defs>
-                      <filter id="remove-white">
-                        <feColorMatrix
-                          type="matrix"
-                          values="1 0 0 0 0
-                                  0 1 0 0 0
-                                  0 0 1 0 0
-                                  -1 -1 -1 1 0"
-                        />
-                      </filter>
-                    </defs>
-                  </svg>
-                  <div className="relative z-10 animate-meteor-entry" style={{ filter: 'url(#remove-white) drop-shadow(0 0 80px rgba(218, 165, 32, 1)) drop-shadow(0 0 40px rgba(218, 165, 32, 0.8))' }}>
+                  {/* Logo with METEOR entrance - TRANSPARENT VERSION */}
+                  <div className="relative z-10 animate-meteor-entry" style={{ filter: 'drop-shadow(0 0 80px rgba(218, 165, 32, 1)) drop-shadow(0 0 40px rgba(218, 165, 32, 0.8))' }}>
                     <Image
-                      src={config.branding.logoUrl}
+                      src="/crowe-logic-logo-transparent.png"
                       alt="Crowe Logic"
                       width={320}
                       height={320}
