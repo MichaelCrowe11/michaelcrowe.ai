@@ -23,6 +23,10 @@ export function AvatarSpaceChat() {
   const [input, setInput] = useState("")
   const [isListening, setIsListening] = useState(false)
   const [voiceEnabled, setVoiceEnabled] = useState(false)
+  const [avatarMode, setAvatarMode] = useState<'swirl' | 'classic'>(() => {
+    if (typeof window === 'undefined') return 'swirl'
+    return (localStorage.getItem('avatarMode') as 'swirl' | 'classic') || 'swirl'
+  })
   const recognitionRef = useRef<any>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
@@ -50,6 +54,13 @@ export function AvatarSpaceChat() {
       recognitionRef.current = r
     }
   }, [])
+
+  // Persist avatar mode
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try { localStorage.setItem('avatarMode', avatarMode) } catch {}
+    }
+  }, [avatarMode])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -250,13 +261,24 @@ export function AvatarSpaceChat() {
           </div>
         </div>
 
-        {/* AI Avatar Swirl Replaces Static Logo */}
+        {/* AI Avatar section */}
         <div className="relative z-10 flex items-center justify-center animate-float" aria-label="AI Avatar">
           {/* Multi-layer outer glow */}
           <div className="absolute inset-0 -m-20 rounded-full bg-gold/20 blur-[120px] animate-pulse-slow"></div>
           <div className="absolute inset-0 -m-12 rounded-full bg-gold/15 blur-[60px]"></div>
           <div className="relative" style={{ filter: 'drop-shadow(0 0 50px rgba(218,165,32,0.55)) drop-shadow(0 0 25px rgba(218,165,32,0.4))' }}>
-            <AIAvatarSwirl state={avatarState} size={220} />
+            {avatarMode === 'swirl' ? (
+              <AIAvatarSwirl state={avatarState} size={220} />
+            ) : (
+              <Image
+                src="/crowe-logic-logo-transparent.png"
+                alt="Crowe Logic"
+                width={288}
+                height={288}
+                className="w-72 h-72 object-contain"
+                priority
+              />
+            )}
           </div>
           <div className="absolute inset-4 rounded-full border border-gold/20 animate-ping-slow"></div>
           <div className="absolute inset-10 rounded-full border border-gold/10 animate-ping-slow" style={{ animationDelay: '1s' }}></div>
@@ -348,6 +370,12 @@ export function AvatarSpaceChat() {
 
             {/* Footer info */}
             <div className="flex items-center justify-center gap-4 mt-4 text-xs">
+              <button
+                onClick={() => setAvatarMode(avatarMode === 'swirl' ? 'classic' : 'swirl')}
+                className="px-3 py-1.5 rounded-full border border-white/15 text-white/80 hover:text-white/95 hover:border-white/30 transition"
+              >
+                Avatar: {avatarMode === 'swirl' ? 'Swirl' : 'Classic'}
+              </button>
               <button
                 onClick={() => setVoiceEnabled(!voiceEnabled)}
                 className={`px-3 py-1.5 rounded-full transition-all duration-300 ${
