@@ -1419,3 +1419,51 @@
 .animate-logo-pulse { animation: logo-pulse 1.4s ease-in-out infinite; }
 .animate-logo-glow { animation: logo-glow 1.2s ease-in-out infinite; }
 .animate-logo-success { animation: logo-success 900ms ease-out 1; }
+
+/* Enhanced Chat UI - Bright text that stands out above stars */
+.brightness-110 {
+  filter: brightness(1.1);
+}
+
+.brightness-125 {
+  filter: brightness(1.25);
+}
+
+.brightness-140 {
+  filter: brightness(1.4);
+}
+
+.brightness-150 {
+  filter: brightness(1.5);
+}
+
+/* Text shadows for better readability over starfield */
+.text-shadow-glow {
+  text-shadow: 
+    0 0 10px rgba(0, 0, 0, 0.8),
+    0 0 20px rgba(0, 0, 0, 0.6),
+    0 2px 4px rgba(0, 0, 0, 0.9);
+}
+
+/* Gold-framed message styles */
+.message-gold-frame {
+  background: linear-gradient(135deg, rgba(218,165,32,0.08) 0%, rgba(218,165,32,0.03) 100%);
+  border: 2px solid rgba(218,165,32,0.4);
+  box-shadow: 
+    0 0 20px rgba(218,165,32,0.2),
+    inset 0 0 20px rgba(218,165,32,0.05);
+}
+
+.message-gold-frame::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(135deg, rgba(218,165,32,0.6), rgba(218,165,32,0.2));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}

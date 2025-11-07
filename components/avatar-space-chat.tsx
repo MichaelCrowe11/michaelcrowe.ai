@@ -337,134 +337,137 @@ export function AvatarSpaceChat() {
         />
       )}
 
-      {/* Avatar Logo - Top half */}
-      <div className="absolute top-0 left-0 w-full h-[55vh] flex items-center justify-center">
-        {/* Starfield background */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="stars-layer-1"></div>
-          <div className="stars-layer-2"></div>
-          <div className="stars-layer-3"></div>
+      {/* Main Chat Container - ChatGPT/Claude Style */}
+      <div className="relative z-10 h-full flex flex-col max-w-4xl mx-auto">
+        {/* Header with Avatar */}
+        <div className="flex-shrink-0 py-6 px-4 sm:px-6 flex items-center justify-between border-b border-gold/20 bg-black/40 backdrop-blur-sm">
+          <div className="flex items-center gap-4">
+            {/* Bright, visible avatar */}
+            <div className="relative" style={{ 
+              filter: 'drop-shadow(0 0 40px rgba(218,165,32,0.8)) brightness(1.5)' 
+            }}>
+              {avatarMode === 'swirl' ? (
+                <AIAvatarSwirl state={avatarState} size={60} />
+              ) : avatarMode === 'minimal' ? (
+                <AIAvatar state={avatarState === 'responding' ? 'streaming' : avatarState === 'thinking' ? 'thinking' : avatarState === 'idle' ? 'idle' : 'completed'} size="md" />
+              ) : (
+                <Image
+                  src="/crowe-logic-logo-transparent.png"
+                  alt="Crowe Logic"
+                  width={60}
+                  height={60}
+                  className="w-15 h-15 object-contain brightness-150"
+                  priority
+                />
+              )}
+              <div className="absolute inset-0 rounded-full border-2 border-gold/30 animate-ping-slow"></div>
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-white brightness-150">Michael Crowe AI</h1>
+              <p className="text-sm text-gold/80 brightness-125">AI Strategy & Development Expert</p>
+            </div>
+          </div>
+
+          {/* Avatar Mode Switcher */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setAvatarMode('swirl')}
+              className={`px-3 py-1.5 rounded-lg text-xs transition ${avatarMode==='swirl' ? 'bg-gold/20 text-gold border border-gold/40' : 'text-white/60 hover:text-white/90 border border-white/10'}`}
+              title="Animated Swirl"
+            >Swirl</button>
+            <button
+              onClick={() => setAvatarMode('minimal')}
+              className={`px-3 py-1.5 rounded-lg text-xs transition ${avatarMode==='minimal' ? 'bg-gold/20 text-gold border border-gold/40' : 'text-white/60 hover:text-white/90 border border-white/10'}`}
+              title="Minimal"
+            >Minimal</button>
+          </div>
         </div>
 
-        {/* Subtle Solar System Overlay (responsive + scroll-fades) */}
-        <div
-          className="absolute inset-0 pointer-events-none will-change-transform"
-          style={{
-            opacity: overlayBaseOpacity * overlayFade,
-            transform: `translate3d(${overlayParallax.x}px, ${overlayParallax.y}px, 0)`
-          }}
-        >
-          <div className="solar-center glow"></div>
-          {/* Orbits */}
-          <div className="orbit-ring orbit-r1">
-            <div className="planet-dot planet-p1"></div>
-          </div>
-          <div className="orbit-ring orbit-r2">
-            <div className="planet-dot planet-p2"></div>
-          </div>
-          <div className="orbit-ring orbit-r3">
-            <div className="planet-dot planet-p3"></div>
-          </div>
-          <div className="orbit-ring orbit-r4">
-            <div className="planet-dot planet-p4"></div>
-          </div>
-        </div>
+        {/* Live region for screen readers */}
+        <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{liveText}</div>
 
-        {/* Top-right UI label */}
-        <div className="absolute top-6 right-6 z-10 pointer-events-none" aria-hidden="true">
-          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-gold/30 bg-black/30 backdrop-blur-sm shadow-glow-gold">
-            <div className="w-2 h-2 rounded-full bg-gold animate-pulse"></div>
-            <span className="text-xs sm:text-sm font-mono tracking-widest text-gold/90 uppercase">Orbital Interface Online</span>
-            <div className="w-2 h-2 rounded-full bg-gold/70 animate-pulse animation-delay-500"></div>
-          </div>
-        </div>
-
-        {/* AI Avatar section */}
-        <div className="relative z-10 flex items-center justify-center animate-float" aria-label="AI Avatar">
-          {/* Multi-layer outer glow */}
-          <div className="absolute inset-0 -m-20 rounded-full bg-gold/20 blur-[120px] animate-pulse-slow"></div>
-          <div className="absolute inset-0 -m-12 rounded-full bg-gold/15 blur-[60px]"></div>
-          <div className="relative" style={{ filter: 'drop-shadow(0 0 50px rgba(218,165,32,0.55)) drop-shadow(0 0 25px rgba(218,165,32,0.4))' }}>
-            {avatarMode === 'swirl' ? (
-              <AIAvatarSwirl state={avatarState} size={220} />
-            ) : avatarMode === 'minimal' ? (
-              <AIAvatar state={avatarState === 'responding' ? 'streaming' : avatarState === 'thinking' ? 'thinking' : avatarState === 'idle' ? 'idle' : 'completed'} size="lg" />
-            ) : (
-              <Image
-                src="/crowe-logic-logo-transparent.png"
-                alt="Crowe Logic"
-                width={288}
-                height={288}
-                className="w-72 h-72 object-contain"
-                priority
-              />
-            )}
-          </div>
-          <div className="absolute inset-4 rounded-full border border-gold/20 animate-ping-slow"></div>
-          <div className="absolute inset-10 rounded-full border border-gold/10 animate-ping-slow" style={{ animationDelay: '1s' }}></div>
-        </div>
-      </div>
-
-      {/* Chat Interface - Bottom half with premium polish */}
-      <div className="absolute bottom-0 left-0 w-full h-[45vh] bg-gradient-to-t from-black via-black/98 to-transparent backdrop-blur-sm">
-        <div className="max-w-4xl mx-auto h-full flex flex-col px-4 sm:px-6 pt-16">
-          
-          {/* Live region for screen readers */}
-          <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{liveText}</div>
-
-          {/* Messages with smooth scrolling */}
-          <div ref={messagesContainerRef} className="flex-1 overflow-y-auto space-y-4 pb-4 scroll-smooth" style={{
-            scrollbarWidth: 'thin',
-            scrollbarColor: 'rgba(218, 165, 32, 0.3) transparent'
-          }}>
+        {/* Messages Area - ChatGPT Style */}
+        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 scroll-smooth" style={{
+          scrollbarWidth: 'thin',
+          scrollbarColor: 'rgba(218, 165, 32, 0.4) transparent'
+        }}>
+          <div className="space-y-6 max-w-3xl mx-auto">
             {messages.map((msg, index) => (
               <div
                 key={msg.id}
-                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-reveal-up`}
-                style={{ animationDelay: `${index * 50}ms` }}
+                className={`flex gap-4 animate-reveal-up ${msg.role === 'assistant' ? 'items-start' : 'items-start'}`}
+                style={{ animationDelay: `${index * 30}ms` }}
               >
-                <div className="flex items-end gap-3 max-w-[85%] w-full">
-                  {msg.role === 'assistant' && (
-                    <div className="mt-1">
-                      <AIAvatar state={msg.streaming ? 'streaming' : 'completed'} size="sm" />
-                    </div>
-                  )}
+                {msg.role === 'assistant' && (
+                  <div className="flex-shrink-0 mt-1" style={{ 
+                    filter: 'drop-shadow(0 0 20px rgba(218,165,32,0.6)) brightness(1.4)' 
+                  }}>
+                    <AIAvatar state={msg.streaming ? 'streaming' : 'completed'} size="sm" />
+                  </div>
+                )}
 
-                  <div className={`relative flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'} w-full`}>
-                    <div className={`chat-bubble px-5 py-3 rounded-2xl transition-all duration-300 ${
-                      msg.role === 'user'
-                        ? 'from-user'
-                        : 'from-assistant'
-                    }`}>
-                      <div className="flex items-center gap-3">
-                        <div className="text-xs font-medium text-white/70 mr-1">{msg.role === 'user' ? 'You' : 'Assistant'}</div>
-                        <div className="text-sm leading-relaxed break-words">{msg.content || (msg.streaming ? '' : '')}</div>
-                        {msg.streaming && (
-                          <div className="ml-2">
-                            <TypingDots />
-                          </div>
+                <div className={`flex-1 ${msg.role === 'user' ? 'ml-12' : ''}`}>
+                  {/* Gold-framed message bubble */}
+                  <div className={`relative rounded-2xl p-4 ${
+                    msg.role === 'user'
+                      ? 'bg-gradient-to-br from-gold/10 to-gold/5 border-2 border-gold/40 shadow-lg shadow-gold/20'
+                      : 'bg-gradient-to-br from-white/5 to-white/2 border-2 border-gold/30 shadow-lg shadow-gold/10'
+                  }`}>
+                    {/* Glow effect */}
+                    <div className={`absolute -inset-1 rounded-2xl blur-xl opacity-30 ${
+                      msg.role === 'user' ? 'bg-gold/40' : 'bg-gold/20'
+                    }`} style={{ zIndex: -1 }}></div>
+                    
+                    {/* Content */}
+                    <div className="relative">
+                      <div className={`text-xs font-semibold mb-2 ${
+                        msg.role === 'user' ? 'text-gold brightness-125' : 'text-gold/90 brightness-110'
+                      }`}>
+                        {msg.role === 'user' ? 'You' : 'Michael Crowe'}
+                      </div>
+                      
+                      <div className={`text-base leading-relaxed ${
+                        msg.role === 'user' 
+                          ? 'text-white brightness-150 font-medium' 
+                          : 'text-white/95 brightness-140'
+                      }`}>
+                        {msg.content || ''}
+                        {msg.streaming && !msg.content && (
+                          <TypingDots />
                         )}
                       </div>
-                    </div>
 
-                    <div className="mt-1 text-[11px] text-white/40">
-                      {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {msg.streaming && msg.content && (
+                        <span className="inline-block w-2 h-5 ml-1 bg-gold animate-pulse"></span>
+                      )}
                     </div>
                   </div>
+
+                  <div className="mt-2 text-xs text-white/40 brightness-110 px-1">
+                    {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </div>
                 </div>
+
+                {msg.role === 'user' && (
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-gold/30 to-gold/10 border-2 border-gold/50 flex items-center justify-center mt-1 shadow-lg shadow-gold/20">
+                    <span className="text-white text-sm font-bold brightness-150">You</span>
+                  </div>
+                )}
               </div>
             ))}
             <div ref={messagesEndRef} />
           </div>
+        </div>
 
-          {/* Premium Input Area */}
-          <div className="pb-8 pt-4">
+        {/* Input Area - Fixed at Bottom */}
+        <div className="flex-shrink-0 border-t border-gold/20 bg-black/60 backdrop-blur-xl">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4">
             <div className="relative">
-              {/* Glow effect behind input */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-gold/20 via-gold/10 to-gold/20 rounded-3xl blur-xl opacity-50"></div>
+              {/* Gold glow behind input */}
+              <div className="absolute -inset-2 bg-gradient-to-r from-gold/20 via-gold/30 to-gold/20 rounded-3xl blur-2xl opacity-50"></div>
               
-              <div className="relative flex items-center gap-3 bg-gradient-to-br from-white/10 to-white/5 border border-white/20 rounded-3xl p-3 backdrop-blur-xl shadow-2xl">
-                <input
+              <div className="relative flex items-end gap-3 bg-gradient-to-br from-white/10 to-white/5 border-2 border-gold/40 rounded-3xl p-3 shadow-2xl shadow-gold/20">
+                <textarea
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => {
@@ -473,77 +476,63 @@ export function AvatarSpaceChat() {
                       handleSend()
                     }
                   }}
-                  placeholder="Ask Michael anything..."
-                  className="flex-1 bg-transparent px-4 py-3 text-white placeholder-white/50 focus:outline-none text-sm sm:text-base font-light"
+                  placeholder="Ask Michael anything about AI solutions..."
+                  className="flex-1 bg-transparent px-4 py-3 text-white brightness-150 placeholder-white/60 focus:outline-none text-base font-normal resize-none max-h-32"
                   aria-label="Chat input"
+                  rows={1}
+                  style={{ 
+                    minHeight: '24px',
+                    textShadow: '0 0 10px rgba(0,0,0,0.5)'
+                  }}
                 />
                 
-                <button
-                  onClick={toggleMic}
-                  className={`p-3 rounded-2xl transition-all duration-300 transform hover:scale-105 ${
-                    isListening 
-                      ? 'bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/50 animate-pulse' 
-                      : 'bg-white/10 hover:bg-white/20 border border-white/20'
-                  }`}
-                  aria-label="Toggle microphone"
-                  title={isListening ? 'Stop recording' : 'Start voice input'}
-                >
-                  {isListening ? (
-                    <MicOff className="w-5 h-5 text-white" />
-                  ) : (
-                    <Mic className="w-5 h-5 text-white/90" />
-                  )}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={toggleMic}
+                    className={`p-3 rounded-2xl transition-all duration-300 transform hover:scale-105 ${
+                      isListening 
+                        ? 'bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/50 animate-pulse' 
+                        : 'bg-white/10 hover:bg-white/20 border border-gold/30'
+                    }`}
+                    aria-label="Toggle microphone"
+                    title={isListening ? 'Stop recording' : 'Start voice input'}
+                  >
+                    {isListening ? (
+                      <MicOff className="w-5 h-5 text-white brightness-150" />
+                    ) : (
+                      <Mic className="w-5 h-5 text-gold brightness-125" />
+                    )}
+                  </button>
 
-                <button
-                  onClick={() => handleSend()}
-                  className="bg-gradient-to-r from-gold to-gold/90 hover:from-gold/90 hover:to-gold text-black font-semibold px-6 py-3 rounded-2xl transition-all duration-300 flex items-center gap-2 shadow-lg shadow-gold/30 transform hover:scale-105 active:scale-95"
-                  aria-label="Send message"
-                >
-                  <span className="hidden sm:inline">Send</span>
-                  <Send className="w-5 h-5" />
-                </button>
+                  <button
+                    onClick={() => handleSend()}
+                    disabled={!input.trim()}
+                    className="bg-gradient-to-r from-gold to-gold/90 hover:from-gold/90 hover:to-gold text-black font-semibold px-6 py-3 rounded-2xl transition-all duration-300 flex items-center gap-2 shadow-lg shadow-gold/40 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="Send message"
+                  >
+                    <Send className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Footer info */}
-            <div className="flex items-center justify-center gap-4 mt-4 text-xs">
+            {/* Footer Controls */}
+            <div className="flex items-center justify-between mt-3 px-2">
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setAvatarMode('swirl')}
-                  className={`px-3 py-1.5 rounded-full border transition ${avatarMode==='swirl' ? 'border-gold/40 text-gold' : 'border-white/15 text-white/70 hover:text-white/90 hover:border-white/30'}`}
-                  title="Animated Swirl"
-                  aria-pressed={avatarMode==='swirl'}
-                >Swirl</button>
-                <button
-                  onClick={() => setAvatarMode('classic')}
-                  className={`px-3 py-1.5 rounded-full border transition ${avatarMode==='classic' ? 'border-gold/40 text-gold' : 'border-white/15 text-white/70 hover:text-white/90 hover:border-white/30'}`}
-                  title="Classic Logo"
-                  aria-pressed={avatarMode==='classic'}
-                >Classic</button>
-                <button
-                  onClick={() => setAvatarMode('minimal')}
-                  className={`px-3 py-1.5 rounded-full border transition ${avatarMode==='minimal' ? 'border-gold/40 text-gold' : 'border-white/15 text-white/70 hover:text-white/90 hover:border-white/30'}`}
-                  title="Minimal"
-                  aria-pressed={avatarMode==='minimal'}
-                >Minimal</button>
+                  onClick={() => setVoiceEnabled(!voiceEnabled)}
+                  className={`px-3 py-1.5 rounded-full text-xs transition-all duration-300 ${
+                    voiceEnabled 
+                      ? 'bg-gold/20 text-gold border border-gold/40 shadow-lg shadow-gold/20' 
+                      : 'text-white/50 hover:text-white/80 border border-white/10'
+                  }`}
+                  title={ttsSupported ? (voiceEnabled ? 'Disable voice' : 'Enable voice') : 'Voice not supported in this browser'}
+                  disabled={!ttsSupported}
+                >
+                  🎤 Voice {voiceEnabled ? 'ON' : 'OFF'}
+                </button>
               </div>
-              <button
-                onClick={() => setVoiceEnabled(!voiceEnabled)}
-                className={`px-3 py-1.5 rounded-full transition-all duration-300 ${
-                  voiceEnabled 
-                    ? 'bg-gold/20 text-gold border border-gold/30' 
-                    : 'text-white/40 hover:text-white/60 border border-white/10'
-                }`}
-                title={ttsSupported ? (voiceEnabled ? 'Disable voice' : 'Enable voice') : 'Voice not supported in this browser'}
-                aria-disabled={!ttsSupported}
-                aria-pressed={voiceEnabled}
-                disabled={!ttsSupported}
-              >
-                🎤 Voice {voiceEnabled ? 'ON' : 'OFF'}
-              </button>
-              <span className="text-white/30">•</span>
-              <span className="text-white/40">Powered by Michael Crowe AI</span>
+              <span className="text-xs text-white/40 brightness-110">Powered by Michael Crowe AI</span>
             </div>
           </div>
         </div>
