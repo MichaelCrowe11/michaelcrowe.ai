@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Note: Checks disabled for v0.app compatibility and rapid iteration
-  // TODO: Re-enable for production: typescript: { ignoreBuildErrors: false }
+  // TypeScript: temporarily disabled due to pre-existing neural-nav Icon typing issue
+  // TODO: Fix neural-nav.tsx Icon type narrowing then re-enable strict checking
   typescript: {
     ignoreBuildErrors: true,
   },

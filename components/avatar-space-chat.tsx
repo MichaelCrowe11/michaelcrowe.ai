@@ -6,6 +6,8 @@ import { AIAvatarSwirl } from "@/components/ai-avatar-swirl"
 import { AIAvatar } from "@/components/ai-avatar"
 import Image from "next/image"
 import { useTTS } from "@/lib/use-tts"
+import { useMemo } from "react"
+import { ChatStars } from "@/components/chat-stars"
 
 interface Message {
   id: number
@@ -42,6 +44,9 @@ export function AvatarSpaceChat() {
   const { isSupported: ttsSupported, speak, cancel: cancelTTS } = useTTS({ rate: 0.9, pitch: 1 })
   const intervalsRef = useRef<number[]>([])
   const [liveText, setLiveText] = useState("")
+
+  // Feature flag for enhanced starfield
+  const enhancedStarsEnabled = typeof process !== 'undefined' && process.env.NEXT_PUBLIC_CHAT_STARS_ENHANCED === 'true'
 
   // Responsive + dynamic overlay opacity
   const [overlayBaseOpacity, setOverlayBaseOpacity] = useState(0.9)
@@ -242,6 +247,16 @@ export function AvatarSpaceChat() {
     }
   }
 
+  const TypingDots = () => {
+    return (
+      <div className="flex items-center gap-1">
+        <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" style={{ animationDelay: '0s' }} />
+        <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" style={{ animationDelay: '150ms' }} />
+        <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" style={{ animationDelay: '300ms' }} />
+      </div>
+    )
+  }
+
   // Accessibility: announce assistant message updates
   useEffect(() => {
     const lastAssistant = [...messages].reverse().find(m => m.role === 'assistant')
@@ -258,7 +273,16 @@ export function AvatarSpaceChat() {
 
   return (
     <div className="fixed inset-0 bg-black overflow-hidden">
-
+      {/* Enhanced starfield background (optional via feature flag) */}
+      {enhancedStarsEnabled && (
+        <ChatStars
+          enabled={true}
+          layerCount={4}
+          starsPerLayer={400}
+          twinkleSpeed={1.0}
+          parallaxStrength={0.3}
+        />
+      )}
 
       {/* Avatar Logo - Top half */}
       <div className="absolute top-0 left-0 w-full h-[55vh] flex items-center justify-center">
@@ -346,26 +370,33 @@ export function AvatarSpaceChat() {
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-reveal-up`}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <div className="flex items-start gap-3">
+                <div className="flex items-end gap-3 max-w-[85%] w-full">
                   {msg.role === 'assistant' && (
                     <div className="mt-1">
                       <AIAvatar state={msg.streaming ? 'streaming' : 'completed'} size="sm" />
                     </div>
                   )}
 
-                  <div
-                    className={`max-w-[85%] px-6 py-4 rounded-2xl backdrop-blur-md transition-all duration-300 hover:scale-[1.02] ${
+                  <div className={`relative flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'} w-full`}>
+                    <div className={`chat-bubble px-5 py-3 rounded-2xl transition-all duration-300 ${
                       msg.role === 'user'
-                        ? 'bg-gradient-to-br from-gold/25 to-gold/15 text-white border border-gold/40 shadow-lg shadow-gold/10'
-                        : 'bg-gradient-to-br from-white/10 to-white/5 text-white/95 border border-white/20 shadow-xl shadow-black/20'
-                    }`}
-                  >
-                    <p className="text-sm sm:text-base leading-relaxed">
-                      {msg.content}
-                      {msg.streaming && (
-                        <span className="inline-block w-0.5 h-5 ml-1 bg-gold animate-pulse" />
-                      )}
-                    </p>
+                        ? 'from-user'
+                        : 'from-assistant'
+                    }`}>
+                      <div className="flex items-center gap-3">
+                        <div className="text-xs font-medium text-white/70 mr-1">{msg.role === 'user' ? 'You' : 'Assistant'}</div>
+                        <div className="text-sm leading-relaxed break-words">{msg.content || (msg.streaming ? '' : '')}</div>
+                        {msg.streaming && (
+                          <div className="ml-2">
+                            <TypingDots />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mt-1 text-[11px] text-white/40">
+                      {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
                   </div>
                 </div>
               </div>

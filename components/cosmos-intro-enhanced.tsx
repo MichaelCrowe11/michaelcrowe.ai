@@ -12,6 +12,7 @@ import Image from "next/image"
 import { config } from "@/lib/config"
 import { FloatingAvatar } from "@/components/floating-avatar"
 import { createNoise2D } from "simplex-noise"
+import { logEvent, logError } from "@/lib/observability"
 
 // Feature flag to de-emphasize/remove Neural Network and Matrix phases (can be controlled via env)
 const ENABLE_NEURAL_MATRIX = typeof process !== 'undefined' && process.env.NEXT_PUBLIC_ENABLE_NEURAL_MATRIX === 'true'
@@ -73,12 +74,14 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
       if (!gl) {
         setWebglSupported(false)
         setIsLoading(false)
+        logEvent('intro-webgl-unsupported')
         setTimeout(() => onComplete(), 300)
         return
       }
     } catch {
       setWebglSupported(false)
       setIsLoading(false)
+      logEvent('intro-webgl-unsupported')
       setTimeout(() => onComplete(), 300)
       return
     }
@@ -115,6 +118,7 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
     const noise2D = createNoise2D()
 
     async function init() {
+      logEvent('intro-init')
       // Scene setup
       scene = new THREE.Scene()
       scene.background = new THREE.Color(0x000000)
@@ -1051,9 +1055,9 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
         scene.add(starSystem)
 
         setIsLoading(false)
+        logEvent('intro-loaded')
       } catch (error) {
-        // TODO: Implement proper error tracking (e.g., Sentry)
-        // Fallback: Set loading to false to prevent infinite loading state
+        logError(error, 'intro-init-failed')
         setIsLoading(false)
       }
 
@@ -1679,6 +1683,13 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
       if (animationId) cancelAnimationFrame(animationId)
     }
   }, [onComplete])
+
+  // Log phase transitions once per change
+  useEffect(() => {
+    if (phase) {
+      logEvent('intro-phase', { phase })
+    }
+  }, [phase])
 
   return (
     <div className="fixed inset-0 z-50 bg-black overflow-hidden">

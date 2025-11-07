@@ -264,7 +264,7 @@ export function NeuralNav() {
         {/* Navigation Items */}
         <nav className="relative flex flex-col items-start justify-center flex-1 py-8 px-3 space-y-1">
           {NAV_ITEMS.map((item, index) => {
-            const Icon = item.icon
+            const Icon: React.ElementType = item.icon
             const isActive = activeSection === item.section
 
             return (
@@ -306,7 +306,7 @@ export function NeuralNav() {
                     }`}
                     style={{
                       filter: isActive ? `drop-shadow(0 0 8px rgb(${item.color}))` : "none",
-                    }}
+                    } as React.CSSProperties}
                   />
                 </div>
 

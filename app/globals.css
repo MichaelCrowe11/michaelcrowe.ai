@@ -997,6 +997,32 @@
   box-shadow: 0 0 30px oklch(0.72 0.09 75 / 0.35);
 }
 
+/* Realistic chat bubble styles */
+.chat-bubble {
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.04);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.02);
+}
+
+.chat-bubble.from-user {
+  background: linear-gradient(180deg, rgba(218,165,32,0.12), rgba(218,165,32,0.06));
+  border: 1px solid rgba(218,165,32,0.12);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.02);
+}
+
+.chat-bubble.from-assistant {
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+.chat-bubble p { margin: 0 }
+
+/* Small timestamp */
+.chat-timestamp { font-size: 11px; color: rgba(255,255,255,0.35); }
+
 /* ==================================== */
 /*  END SIMPLE GLASS COMPONENTS ✨     */
 /* ==================================== */
@@ -1310,38 +1336,51 @@
     0 0 140px oklch(0.72 0.09 75 / 0.4);
 }
 
+/* Refined orbit rings: soft luminous bands instead of dashed borders */
 .orbit-ring {
   position: absolute;
   top: 50%;
   left: 50%;
-  border: 1px dashed oklch(0.98 0.005 265 / 0.25);
-  border-radius: 9999px;
   transform: translate(-50%, -50%);
-  animation: spin 36s linear infinite;
+  border-radius: 9999px;
+  pointer-events: none;
+  will-change: transform, opacity;
 }
 
-.orbit-r1 { width: 300px; height: 300px; animation-duration: 24s; }
-.orbit-r2 { width: 440px; height: 440px; animation-duration: 30s; }
-.orbit-r3 { width: 620px; height: 620px; animation-duration: 38s; }
-.orbit-r4 { width: 800px; height: 800px; animation-duration: 50s; }
+.orbit-ring::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 50% 50%, transparent 48%, rgba(255,255,255,0.02) 49%, rgba(218,165,32,0.04) 50%, rgba(218,165,32,0.02) 52%, transparent 54%);
+  box-shadow: 0 0 40px rgba(218,165,32,0.06), inset 0 0 8px rgba(255,255,255,0.02);
+  opacity: 0.9;
+}
 
+.orbit-r1 { width: 300px; height: 300px; animation: spin 24s linear infinite; }
+.orbit-r2 { width: 440px; height: 440px; animation: spin 30s linear infinite; }
+.orbit-r3 { width: 620px; height: 620px; animation: spin 38s linear infinite; }
+.orbit-r4 { width: 800px; height: 800px; animation: spin 50s linear infinite; }
+
+/* Planet dots with specular highlight and soft shadow to appear volumetric */
 .planet-dot {
   position: absolute;
   top: 50%;
   left: 50%;
   transform-origin: -50% -50%;
   transform: rotate(0deg) translateX(50%) translateY(-50%);
-  width: 10px;
-  height: 10px;
-  background: oklch(0.72 0.09 75);
+  width: 12px;
+  height: 12px;
   border-radius: 9999px;
-  box-shadow: 0 0 16px oklch(0.72 0.09 75 / 0.85), 0 0 30px oklch(0.72 0.09 75 / 0.35);
+  background: radial-gradient(circle at 30% 25%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.7) 4%, rgba(218,165,32,0.25) 15%, rgba(218,165,32,0.18) 40%, rgba(50,50,70,0.08) 100%);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.45), 0 0 30px rgba(218,165,32,0.2);
+  border: 1px solid rgba(255,255,255,0.06);
 }
 
-.planet-p1 { width: 8px; height: 8px; background: oklch(0.62 0.19 235); box-shadow: 0 0 16px oklch(0.62 0.19 235 / 0.8); }
-.planet-p2 { width: 10px; height: 10px; background: oklch(0.72 0.09 75); }
-.planet-p3 { width: 14px; height: 14px; background: oklch(0.58 0.14 150); box-shadow: 0 0 20px oklch(0.58 0.14 150 / 0.8); }
-.planet-p4 { width: 12px; height: 12px; background: oklch(0.65 0.08 210); box-shadow: 0 0 18px oklch(0.65 0.08 210 / 0.8); }
+.planet-p1 { width: 10px; height: 10px; background: radial-gradient(circle at 30% 25%, rgba(255,255,255,0.9) 0%, rgba(110,170,255,1) 30%); box-shadow: 0 6px 14px rgba(0,0,0,0.45), 0 0 20px rgba(110,170,255,0.25); }
+.planet-p2 { width: 12px; height: 12px; background: radial-gradient(circle at 28% 22%, rgba(255,255,255,0.92) 0%, rgba(218,165,32,1) 30%); }
+.planet-p3 { width: 16px; height: 16px; background: radial-gradient(circle at 25% 20%, rgba(255,255,255,0.92) 0%, rgba(150,110,200,1) 30%); box-shadow: 0 8px 20px rgba(0,0,0,0.5), 0 0 28px rgba(150,110,200,0.28); }
+.planet-p4 { width: 14px; height: 14px; background: radial-gradient(circle at 28% 22%, rgba(255,255,255,0.92) 0%, rgba(120,160,240,1) 30%); box-shadow: 0 7px 18px rgba(0,0,0,0.48), 0 0 24px rgba(120,160,240,0.22); }
 
 @keyframes spin {
   from { transform: translate(-50%, -50%) rotate(0deg); }
