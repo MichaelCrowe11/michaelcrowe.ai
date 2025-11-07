@@ -75,6 +75,10 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
     let nebulaClouds: THREE.Mesh[] = []
     let godRays: THREE.Mesh[] = []
     let lightOrbs: THREE.Mesh[] = []
+    let asteroids: THREE.Mesh[] = []
+    let meteors: THREE.Group[] = []
+    let dustClouds: THREE.Points[] = []
+    let shockwave: THREE.Mesh | null = null
     let animationId: number
     let startTime = Date.now()
     let vignette: HTMLDivElement | null = null
@@ -387,6 +391,256 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
         particles = new THREE.Points(particleGeometry, particleMaterial)
         scene.add(particles)
 
+        // Create explosive shockwave
+        const shockwaveGeometry = new THREE.SphereGeometry(1, 64, 64)
+        const shockwaveMaterial = new THREE.ShaderMaterial({
+          uniforms: {
+            time: { value: 0 },
+            opacity: { value: 0 }
+          },
+          vertexShader: `
+            varying vec3 vNormal;
+            varying vec3 vPosition;
+            void main() {
+              vNormal = normalize(normalMatrix * normal);
+              vPosition = position;
+              gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+          `,
+          fragmentShader: `
+            uniform float time;
+            uniform float opacity;
+            varying vec3 vNormal;
+            varying vec3 vPosition;
+
+            void main() {
+              float fresnel = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 2.0);
+              vec3 color = mix(vec3(1.0, 0.5, 0.0), vec3(1.0, 1.0, 0.3), fresnel);
+              float pulse = sin(time * 10.0) * 0.5 + 0.5;
+              float alpha = fresnel * opacity * pulse;
+              gl_FragColor = vec4(color, alpha);
+            }
+          `,
+          transparent: true,
+          blending: THREE.AdditiveBlending,
+          side: THREE.BackSide,
+          depthWrite: false
+        })
+        shockwave = new THREE.Mesh(shockwaveGeometry, shockwaveMaterial)
+        scene.add(shockwave)
+
+        // Create 3D asteroids/rocks
+        const asteroidCount = 50
+        for (let i = 0; i < asteroidCount; i++) {
+          // Random jagged rock shape
+          const asteroidGeometry = new THREE.DodecahedronGeometry(
+            Math.random() * 2 + 0.5,
+            Math.floor(Math.random() * 2)
+          )
+          
+          // Deform vertices for irregular shape
+          const positions = asteroidGeometry.attributes.position
+          for (let j = 0; j < positions.count; j++) {
+            const x = positions.getX(j)
+            const y = positions.getY(j)
+            const z = positions.getZ(j)
+            const noise = Math.random() * 0.4
+            positions.setXYZ(j, x * (1 + noise), y * (1 + noise), z * (1 + noise))
+          }
+          positions.needsUpdate = true
+          asteroidGeometry.computeVertexNormals()
+
+          const asteroidMaterial = new THREE.MeshStandardMaterial({
+            color: new THREE.Color().setHSL(0.05 + Math.random() * 0.1, 0.6, 0.3),
+            roughness: 0.9,
+            metalness: 0.2,
+            emissive: new THREE.Color(0x331100),
+            emissiveIntensity: 0.3
+          })
+
+          const asteroid = new THREE.Mesh(asteroidGeometry, asteroidMaterial)
+          asteroid.position.set(0, 0, 0) // Start at center
+          
+          // Random explosion velocity
+          const theta = Math.random() * Math.PI * 2
+          const phi = Math.random() * Math.PI
+          const speed = Math.random() * 40 + 20
+          asteroid.userData = {
+            velocity: new THREE.Vector3(
+              Math.sin(phi) * Math.cos(theta) * speed,
+              Math.sin(phi) * Math.sin(theta) * speed,
+              Math.cos(phi) * speed
+            ),
+            rotationSpeed: new THREE.Vector3(
+              (Math.random() - 0.5) * 0.1,
+              (Math.random() - 0.5) * 0.1,
+              (Math.random() - 0.5) * 0.1
+            )
+          }
+          
+          asteroids.push(asteroid)
+          scene.add(asteroid)
+        }
+
+        // Create dust clouds with particles
+        const dustCloudCount = 8
+        for (let c = 0; c < dustCloudCount; c++) {
+          const dustParticleCount = 2000
+          const dustGeometry = new THREE.BufferGeometry()
+          const dustPositions: number[] = []
+          const dustColors: number[] = []
+          const dustSizes: number[] = []
+
+          for (let i = 0; i < dustParticleCount; i++) {
+            dustPositions.push(0, 0, 0)
+            
+            // Brownish dust colors
+            const brightness = 0.3 + Math.random() * 0.3
+            dustColors.push(brightness * 0.8, brightness * 0.6, brightness * 0.4)
+            dustSizes.push(Math.random() * 2 + 0.5)
+          }
+
+          dustGeometry.setAttribute('position', new THREE.Float32BufferAttribute(dustPositions, 3))
+          dustGeometry.setAttribute('color', new THREE.Float32BufferAttribute(dustColors, 3))
+          dustGeometry.setAttribute('size', new THREE.Float32BufferAttribute(dustSizes, 1))
+
+          const dustMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+              time: { value: 0 },
+              opacity: { value: 0 },
+              cloudIndex: { value: c }
+            },
+            vertexShader: `
+              attribute float size;
+              attribute vec3 color;
+              varying vec3 vColor;
+              uniform float time;
+              uniform float opacity;
+              uniform float cloudIndex;
+
+              void main() {
+                vColor = color;
+                
+                // Expand outward in a specific direction per cloud
+                float angle = cloudIndex * 0.785; // 45 degrees apart
+                vec3 direction = vec3(cos(angle), sin(angle), sin(angle * 0.5));
+                vec3 pos = position + direction * time * 30.0;
+                
+                // Add turbulence
+                pos += vec3(
+                  sin(time * 2.0 + cloudIndex) * 5.0,
+                  cos(time * 1.5 + cloudIndex) * 5.0,
+                  sin(time * 1.8 + cloudIndex) * 5.0
+                );
+
+                vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+                gl_PointSize = size * (300.0 / -mvPosition.z) * opacity;
+                gl_Position = projectionMatrix * mvPosition;
+              }
+            `,
+            fragmentShader: `
+              varying vec3 vColor;
+              uniform float opacity;
+
+              void main() {
+                vec2 center = gl_PointCoord - vec2(0.5);
+                float dist = length(center);
+                if (dist > 0.5) discard;
+                
+                float alpha = (1.0 - dist * 2.0) * opacity * 0.6;
+                gl_FragColor = vec4(vColor, alpha);
+              }
+            `,
+            transparent: true,
+            blending: THREE.NormalBlending,
+            depthWrite: false
+          })
+
+          const dustCloud = new THREE.Points(dustGeometry, dustMaterial)
+          dustClouds.push(dustCloud)
+          scene.add(dustCloud)
+        }
+
+        // Create meteors with trails
+        const meteorCount = 15
+        for (let i = 0; i < meteorCount; i++) {
+          const meteorGroup = new THREE.Group()
+          
+          // Meteor head
+          const meteorGeometry = new THREE.SphereGeometry(0.8, 16, 16)
+          const meteorMaterial = new THREE.MeshStandardMaterial({
+            color: 0xff6600,
+            emissive: 0xff3300,
+            emissiveIntensity: 2.0,
+            roughness: 0.5
+          })
+          const meteorHead = new THREE.Mesh(meteorGeometry, meteorMaterial)
+          meteorGroup.add(meteorHead)
+
+          // Meteor trail
+          const trailGeometry = new THREE.ConeGeometry(0.5, 8, 8)
+          const trailMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+              time: { value: 0 }
+            },
+            vertexShader: `
+              varying float vHeight;
+              void main() {
+                vHeight = position.y / 8.0;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+              }
+            `,
+            fragmentShader: `
+              uniform float time;
+              varying float vHeight;
+
+              void main() {
+                float pulse = sin(time * 10.0) * 0.5 + 0.5;
+                vec3 color = mix(
+                  vec3(1.0, 0.3, 0.0),
+                  vec3(1.0, 0.8, 0.0),
+                  vHeight
+                );
+                float alpha = (1.0 - vHeight) * 0.8 * pulse;
+                gl_FragColor = vec4(color, alpha);
+              }
+            `,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            side: THREE.DoubleSide
+          })
+          const trail = new THREE.Mesh(trailGeometry, trailMaterial)
+          trail.rotation.x = Math.PI / 2
+          trail.position.z = -4
+          meteorGroup.add(trail)
+
+          // Random direction and speed
+          const theta = Math.random() * Math.PI * 2
+          const phi = Math.random() * Math.PI
+          const speed = Math.random() * 60 + 40
+          meteorGroup.userData = {
+            velocity: new THREE.Vector3(
+              Math.sin(phi) * Math.cos(theta) * speed,
+              Math.sin(phi) * Math.sin(theta) * speed,
+              Math.cos(phi) * speed
+            ),
+            startTime: Math.random() * 0.5 // Stagger start times
+          }
+
+          meteors.push(meteorGroup)
+          scene.add(meteorGroup)
+        }
+
+        // Add point lights for Big Bang illumination
+        const explosionLight = new THREE.PointLight(0xffa500, 0, 200)
+        explosionLight.position.set(0, 0, 0)
+        scene.add(explosionLight)
+        scene.userData.explosionLight = explosionLight
+
+        // Add ambient light for asteroids
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.3)
+        scene.add(ambientLight)
+
         // Create volumetric nebula clouds
         for (let i = 0; i < 5; i++) {
           const cloudGeometry = new THREE.SphereGeometry(30, 32, 32)
@@ -642,6 +896,78 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
                                                     (1 - explosionProgress) // Fade out as they expand
             }
 
+            // Animate shockwave
+            if (shockwave) {
+              const shockwaveMat = shockwave.material as THREE.ShaderMaterial
+              shockwaveMat.uniforms.time.value = explosionProgress * 5
+              shockwaveMat.uniforms.opacity.value = Math.min(1, explosionProgress * 3) * 
+                                                     (1 - Math.pow(explosionProgress, 2))
+              shockwave.scale.setScalar(1 + explosionProgress * 50)
+            }
+
+            // Animate asteroids
+            asteroids.forEach(asteroid => {
+              const vel = asteroid.userData.velocity as THREE.Vector3
+              asteroid.position.add(vel.clone().multiplyScalar(0.016 * explosionProgress))
+              
+              // Apply rotation
+              const rotSpeed = asteroid.userData.rotationSpeed as THREE.Vector3
+              asteroid.rotation.x += rotSpeed.x
+              asteroid.rotation.y += rotSpeed.y
+              asteroid.rotation.z += rotSpeed.z
+              
+              // Fade out as they move away
+              const dist = asteroid.position.length()
+              const mat = asteroid.material as THREE.MeshStandardMaterial
+              mat.opacity = Math.max(0, 1 - dist / 50)
+              mat.transparent = true
+            })
+
+            // Animate dust clouds
+            dustClouds.forEach(dustCloud => {
+              const dustMat = dustCloud.material as THREE.ShaderMaterial
+              dustMat.uniforms.time.value = explosionProgress
+              dustMat.uniforms.opacity.value = Math.min(1, explosionProgress * 2) * 
+                                                (1 - Math.pow(explosionProgress, 1.5))
+            })
+
+            // Animate meteors
+            meteors.forEach(meteor => {
+              const startTime = meteor.userData.startTime as number
+              const effectiveProgress = Math.max(0, explosionProgress - startTime)
+              
+              if (effectiveProgress > 0) {
+                const vel = meteor.userData.velocity as THREE.Vector3
+                meteor.position.copy(vel.clone().multiplyScalar(effectiveProgress * 0.03))
+                
+                // Point meteor in direction of travel
+                meteor.lookAt(meteor.position.clone().add(vel))
+                
+                // Update trail animation
+                const trail = meteor.children[1]
+                if (trail && trail.material) {
+                  const trailMat = trail.material as THREE.ShaderMaterial
+                  trailMat.uniforms.time.value = elapsed
+                }
+                
+                // Fade based on distance
+                const dist = meteor.position.length()
+                meteor.children.forEach(child => {
+                  if (child.material) {
+                    const mat = child.material as any
+                    mat.opacity = Math.max(0, 1 - dist / 60)
+                    mat.transparent = true
+                  }
+                })
+              }
+            })
+
+            // Explosion light
+            if (scene.userData.explosionLight) {
+              const light = scene.userData.explosionLight as THREE.PointLight
+              light.intensity = Math.pow(explosionProgress, 0.5) * 50 * (1 - explosionProgress)
+            }
+
             // Enhanced flash effect with color gradation
             if (elapsed < 5.3) {
               scene.background = new THREE.Color(0xffffff)
@@ -670,6 +996,36 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
             if (particles) {
               const particleMat = particles.material as THREE.ShaderMaterial
               particleMat.uniforms.opacity.value = Math.max(0, 1 - (elapsed - 8) / 2)
+            }
+
+            // Fade out Big Bang effects
+            if (shockwave) {
+              const shockwaveMat = shockwave.material as THREE.ShaderMaterial
+              shockwaveMat.uniforms.opacity.value = Math.max(0, 1 - (elapsed - 8) / 1.5)
+            }
+
+            asteroids.forEach(asteroid => {
+              const mat = asteroid.material as THREE.MeshStandardMaterial
+              mat.opacity = Math.max(0, 1 - (elapsed - 8) / 2)
+            })
+
+            dustClouds.forEach(dustCloud => {
+              const dustMat = dustCloud.material as THREE.ShaderMaterial
+              dustMat.uniforms.opacity.value = Math.max(0, 1 - (elapsed - 8) / 2)
+            })
+
+            meteors.forEach(meteor => {
+              meteor.children.forEach(child => {
+                if ((child as any).material) {
+                  const mat = (child as any).material
+                  mat.opacity = Math.max(0, 1 - (elapsed - 8) / 2)
+                }
+              })
+            })
+
+            if (scene.userData.explosionLight) {
+              const light = scene.userData.explosionLight as THREE.PointLight
+              light.intensity = Math.max(0, light.intensity - 1)
             }
 
             // Fade in nebula clouds
