@@ -1282,9 +1282,10 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
               cloudMat.uniforms.opacity.value = Math.max(0, 1 - transitionProgress)
             })
 
-            // Fade out planet system during transition
+            // Fade out planet system during transition (slightly slower for graceful handoff)
             if (planetSystem && accretionDisk && planetsMesh) {
-              const fade = Math.max(0, 1 - Math.min(1, transitionProgress))
+              const planetsFade = THREE.MathUtils.clamp((elapsed - 13) / 3, 0, 1)
+              const fade = 1 - planetsFade
               const diskMat = accretionDisk.material as THREE.ShaderMaterial
               diskMat.uniforms.opacity.value = fade
               const pm = planetsMesh.material as THREE.MeshStandardMaterial
@@ -1519,6 +1520,9 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
         if (phase === "big-bang") {
           bloomPass.strength = 3.0
           bloomPass.threshold = 0.3
+        } else if (phase === "cosmos-expand") {
+          bloomPass.strength = 1.8
+          bloomPass.threshold = 0.45
         } else if (phase === "neural-network") {
           bloomPass.strength = 2.0
           bloomPass.threshold = 0.4
@@ -1684,6 +1688,12 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
                   <p className="text-xl md:text-2xl text-white/90 font-normal max-w-2xl mx-auto mt-4">
                     I transform complexity into clarity
                   </p>
+                  {/* Planet formation inline cue */}
+                  <div className="mt-10 inline-flex items-center gap-3 px-4 py-2 border border-gold/20 rounded-full backdrop-blur-sm bg-black/20">
+                    <div className="w-2 h-2 rounded-full bg-gold animate-pulse"></div>
+                    <span className="text-xs md:text-sm text-gold/70 font-mono tracking-widest uppercase">Planetary Accretion Begins</span>
+                    <div className="w-2 h-2 rounded-full bg-gold animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                  </div>
                 </div>
                 <div className="flex items-center justify-center gap-4 text-xs md:text-sm text-white/40 font-mono mt-12">
                   <span>DRAG TO EXPLORE</span>
