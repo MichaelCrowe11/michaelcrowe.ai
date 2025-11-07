@@ -692,8 +692,8 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
           scene.add(cloud)
         }
 
-        // Create Neural Network visualization
-        neuralNetwork = new THREE.Group()
+  // Create Neural Network visualization
+  const network = new THREE.Group()
         
         // Create 3 layers of neurons
         const layers = [6, 8, 6] // Input, hidden, output
@@ -717,7 +717,7 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
             })
             const neuron = new THREE.Mesh(neuronGeometry, neuronMaterial)
             neuron.position.set(x, y, 0)
-            neuralNetwork.add(neuron)
+            network.add(neuron)
             neurons.push(neuron)
             
             // Glow effect
@@ -730,7 +730,7 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
             })
             const glow = new THREE.Mesh(glowGeometry, glowMaterial)
             glow.position.set(x, y, 0)
-            neuralNetwork.add(glow)
+            network.add(glow)
             
             // Connect to previous layer
             if (layerIndex > 0) {
@@ -750,15 +750,16 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
                   opacity: 0
                 })
                 const line = new THREE.Line(lineGeometry, lineMaterial)
-                neuralNetwork.add(line)
+                network.add(line)
                 connections.push(line)
               }
             }
           }
         })
         
-        neuralNetwork.visible = false
-        scene.add(neuralNetwork)
+        network.visible = false
+        scene.add(network)
+        neuralNetwork = network
 
         // Create animated data flows through neural network
         const flowCount = 20
@@ -944,17 +945,25 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
                 meteor.lookAt(meteor.position.clone().add(vel))
                 
                 // Update trail animation
-                const trail = meteor.children[1]
-                if (trail && trail.material) {
-                  const trailMat = trail.material as THREE.ShaderMaterial
+                const trailObj = meteor.children[1]
+                if (trailObj && trailObj instanceof THREE.Mesh) {
+                  const trailMat = trailObj.material as THREE.ShaderMaterial
                   trailMat.uniforms.time.value = elapsed
                 }
                 
                 // Fade based on distance
                 const dist = meteor.position.length()
                 meteor.children.forEach(child => {
-                  if (child.material) {
-                    const mat = child.material as any
+                  if (child instanceof THREE.Mesh) {
+                    const mat = child.material as THREE.Material
+                    mat.opacity = Math.max(0, 1 - dist / 60)
+                    mat.transparent = true
+                  } else if (child instanceof THREE.Line) {
+                    const mat = child.material as THREE.Material
+                    mat.opacity = Math.max(0, 1 - dist / 60)
+                    mat.transparent = true
+                  } else if (child instanceof THREE.Points) {
+                    const mat = child.material as THREE.Material
                     mat.opacity = Math.max(0, 1 - dist / 60)
                     mat.transparent = true
                   }
