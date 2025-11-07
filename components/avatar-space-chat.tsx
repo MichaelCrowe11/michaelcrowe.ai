@@ -144,7 +144,7 @@ export function AvatarSpaceChat() {
         </div>
 
         {/* Subtle Solar System Overlay */}
-        <div className="absolute inset-0 pointer-events-none opacity-70">
+        <div className="absolute inset-0 pointer-events-none opacity-90">
           <div className="solar-center glow"></div>
           {/* Orbits */}
           <div className="orbit-ring orbit-r1">
@@ -158,6 +158,15 @@ export function AvatarSpaceChat() {
           </div>
           <div className="orbit-ring orbit-r4">
             <div className="planet-dot planet-p4"></div>
+          </div>
+        </div>
+
+        {/* Top-right UI label */}
+        <div className="absolute top-6 right-6 z-10 pointer-events-none">
+          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-gold/30 bg-black/30 backdrop-blur-sm shadow-glow-gold">
+            <div className="w-2 h-2 rounded-full bg-gold animate-pulse"></div>
+            <span className="text-xs sm:text-sm font-mono tracking-widest text-gold/90 uppercase">Orbital Interface Online</span>
+            <div className="w-2 h-2 rounded-full bg-gold/70 animate-pulse animation-delay-500"></div>
           </div>
         </div>
 
