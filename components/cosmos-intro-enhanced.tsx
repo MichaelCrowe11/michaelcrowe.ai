@@ -34,7 +34,7 @@ interface StarCatalog {
   stars: Star[]
 }
 
-type IntroPhase = "age-of-possibilities" | "big-bang" | "cosmos-expand" | "neural-network" | "matrix-code" | "avatar-reveal" | "brand-message" | "complete"
+type IntroPhase = "age-of-possibilities" | "big-bang" | "cosmos-expand" | "neural-network" | "matrix-code" | "solar-system" | "avatar-reveal" | "brand-message" | "complete"
 
 export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -75,14 +75,19 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
     let nebulaClouds: THREE.Mesh[] = []
     let godRays: THREE.Mesh[] = []
     let lightOrbs: THREE.Mesh[] = []
-  let asteroids: THREE.Mesh[] = []
+    let asteroids: THREE.Mesh[] = []
     let meteors: THREE.Group[] = []
     let dustClouds: THREE.Points[] = []
     let shockwave: THREE.Mesh | null = null
-  // Planetary formation system
-  let planetSystem: THREE.Group | null = null
-  let accretionDisk: THREE.Mesh | null = null
-  let planetsMesh: THREE.InstancedMesh | null = null
+    // Planetary formation system
+    let planetSystem: THREE.Group | null = null
+    let accretionDisk: THREE.Mesh | null = null
+    let planetsMesh: THREE.InstancedMesh | null = null
+    
+    // Solar system phase containers
+    let starSystem: THREE.Group | null = null
+    let solarPlanets: THREE.Mesh[] = []
+    let orbitLines: THREE.LineLoop[] = []
     let animationId: number
     let startTime = Date.now()
     let vignette: HTMLDivElement | null = null
@@ -938,6 +943,65 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
 
         scene.add(planetSystem)
 
+        // Solar system: star + planets with orbit lines
+        starSystem = new THREE.Group()
+        starSystem.visible = false
+
+        // Central star
+        const starGeo = new THREE.SphereGeometry(2.5, 32, 32)
+        const starMat = new THREE.MeshBasicMaterial({ color: 0xffee88 })
+        const star = new THREE.Mesh(starGeo, starMat)
+        starSystem.add(star)
+
+        // Star glow (additive billboard-ish sphere)
+        const starGlowGeo = new THREE.SphereGeometry(4.5, 32, 32)
+        const starGlowMat = new THREE.MeshBasicMaterial({ color: 0xffcc66, transparent: true, opacity: 0.0 })
+        const starGlow = new THREE.Mesh(starGlowGeo, starGlowMat)
+        starSystem.add(starGlow)
+
+        // Orbits + planets (4-5 bodies)
+        const planetConfigs = [
+          { radius: 7, size: 0.8, color: 0x88aaff, speed: 0.6 },
+          { radius: 11, size: 1.2, color: 0xaaff88, speed: 0.4 },
+          { radius: 16, size: 1.8, color: 0xffaa66, speed: 0.3, ring: true },
+          { radius: 22, size: 1.4, color: 0x66ddff, speed: 0.25 }
+        ]
+
+        planetConfigs.forEach((cfg, idx) => {
+          // Orbit line
+          const orbitShape = new THREE.EllipseCurve(0, 0, cfg.radius, cfg.radius, 0, Math.PI * 2)
+          const points = orbitShape.getPoints(128).map(p => new THREE.Vector3(p.x, 0, p.y))
+          const orbitGeo = new THREE.BufferGeometry().setFromPoints(points)
+          const orbitMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.0 })
+          const orbit = new THREE.LineLoop(orbitGeo, orbitMat)
+          orbit.rotation.x = -Math.PI / 2
+          starSystem!.add(orbit)
+          orbitLines.push(orbit)
+
+          // Planet mesh
+          const pGeo = new THREE.SphereGeometry(cfg.size, 24, 24)
+          const pMat = new THREE.MeshStandardMaterial({ color: cfg.color, roughness: 0.7, metalness: 0.1, transparent: true, opacity: 0.0 })
+          const planet = new THREE.Mesh(pGeo, pMat)
+          planet.userData = { angle: Math.random() * Math.PI * 2, speed: cfg.speed }
+          starSystem!.add(planet)
+          solarPlanets.push(planet)
+
+          // Optional ring
+          if (cfg.ring) {
+            const ringG = new THREE.RingGeometry(cfg.size * 1.4, cfg.size * 2.2, 64)
+            const ringM = new THREE.MeshBasicMaterial({ color: 0xffddaa, transparent: true, opacity: 0.0, side: THREE.DoubleSide })
+            const ring = new THREE.Mesh(ringG, ringM)
+            ring.rotation.x = -Math.PI / 2
+            planet.add(ring)
+          }
+        })
+
+        // Lights for solar system
+        const sunLight = new THREE.PointLight(0xffeeaa, 0.0, 200)
+        starSystem.add(sunLight)
+
+        scene.add(starSystem)
+
         setIsLoading(false)
       } catch (error) {
         // TODO: Implement proper error tracking (e.g., Sentry)
@@ -1289,8 +1353,69 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
               const rayMat = ray.material as THREE.ShaderMaterial
               rayMat.uniforms.opacity.value = Math.max(0, 1 - (elapsed - 19) / 2)
             })
-          } else if (elapsed < 31) {
-            // Phase 6: Avatar reveal (23-31s) - Smooth star brightness increase
+          } else if (elapsed < 29) {
+            // Phase 6: Solar System (23-29s)
+            setPhase("solar-system")
+
+            // Fade out matrix, fade in solar system
+            const t = THREE.MathUtils.clamp((elapsed - 23) / 2, 0, 1)
+
+            // Dim stars a bit for solar system highlight
+            material.uniforms.opacity.value = 0.3 + 0.4 * (1 - t)
+
+            if (starSystem && orbitLines.length && solarPlanets.length) {
+              starSystem.visible = true
+
+              // Fade in orbit lines and planets
+              orbitLines.forEach(line => {
+                const lm = line.material as THREE.LineBasicMaterial
+                lm.opacity = t * 0.6
+              })
+              solarPlanets.forEach(planet => {
+                const pm = planet.material as THREE.MeshStandardMaterial
+                pm.opacity = t
+                // Update orbit
+                const { angle, speed } = planet.userData as { angle: number; speed: number }
+                const newAngle = angle + speed * 0.016
+                planet.userData.angle = newAngle
+                const orbit = orbitLines[solarPlanets.indexOf(planet)]
+                const radius = (orbit.geometry.getAttribute('position') as THREE.BufferAttribute).getX(0)
+                planet.position.set(Math.cos(newAngle) * Math.abs(radius), 0, Math.sin(newAngle) * Math.abs(radius))
+
+                // If has ring child, match opacity
+                if (planet.children.length) {
+                  planet.children.forEach(c => {
+                    if (c instanceof THREE.Mesh) {
+                      const cm = c.material as THREE.MeshBasicMaterial
+                      cm.opacity = t * 0.7
+                    }
+                  })
+                }
+              })
+
+              // Star glow and sun light
+              const starGlow = starSystem.children.find(o => o !== starSystem!.children[0] && o instanceof THREE.Mesh) as THREE.Mesh | undefined
+              if (starGlow) {
+                const sgm = starGlow.material as THREE.MeshBasicMaterial
+                sgm.opacity = t * 0.6
+              }
+              const sunLight = starSystem.children.find(o => o instanceof THREE.PointLight) as THREE.PointLight | undefined
+              if (sunLight) sunLight.intensity = t * 1.2
+            }
+
+            // Camera subtle orbit around the system
+            camera.position.z = 55
+            camera.position.x = Math.sin((elapsed - 23) * 0.3) * 6
+            camera.position.y = Math.cos((elapsed - 23) * 0.2) * 4
+            camera.lookAt(0, 0, 0)
+
+            // Soften god rays
+            godRays.forEach(ray => {
+              const rayMat = ray.material as THREE.ShaderMaterial
+              rayMat.uniforms.opacity.value = Math.max(0, 0.3 * (1 - t))
+            })
+          } else if (elapsed < 37) {
+            // Phase 7: Avatar reveal (29-37s) - Smooth star brightness increase
             setPhase("avatar-reveal")
             const brightnessProgress = Math.min(1, (elapsed - 23) / 2)
             material.uniforms.opacity.value = 0.4 + (brightnessProgress * 0.6) // 0.4 to 1.0
@@ -1300,14 +1425,42 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
             camera.position.x *= 0.9
             camera.position.y *= 0.9
             camera.lookAt(0, 0, 0)
-          } else if (elapsed < 36) {
-            // Phase 7: Brand message (31-36s)
+            // Fade out solar system as we move to avatar
+            if (starSystem && orbitLines.length && solarPlanets.length) {
+              const fade = THREE.MathUtils.clamp((elapsed - 29) / 2, 0, 1)
+              orbitLines.forEach(line => {
+                const lm = line.material as THREE.LineBasicMaterial
+                lm.opacity = Math.max(0, (1 - fade) * 0.6)
+              })
+              solarPlanets.forEach(planet => {
+                const pm = planet.material as THREE.MeshStandardMaterial
+                pm.opacity = Math.max(0, 1 - fade)
+                if (planet.children.length) {
+                  planet.children.forEach(c => {
+                    if (c instanceof THREE.Mesh) {
+                      const cm = c.material as THREE.MeshBasicMaterial
+                      cm.opacity = Math.max(0, 0.7 * (1 - fade))
+                    }
+                  })
+                }
+              })
+              const starGlow = starSystem.children.find(o => o !== starSystem!.children[0] && o instanceof THREE.Mesh) as THREE.Mesh | undefined
+              if (starGlow) {
+                const sgm = starGlow.material as THREE.MeshBasicMaterial
+                sgm.opacity = Math.max(0, 0.6 * (1 - fade))
+              }
+              const sunLight = starSystem.children.find(o => o instanceof THREE.PointLight) as THREE.PointLight | undefined
+              if (sunLight) sunLight.intensity = Math.max(0, 1.2 * (1 - fade))
+              if (fade === 1) starSystem.visible = false
+            }
+          } else if (elapsed < 42) {
+            // Phase 8: Brand message (37-42s)
             setPhase("brand-message")
             material.uniforms.opacity.value = 1
           } else {
-            // Phase 8: Complete - Fade to black
+            // Phase 9: Complete - Fade to black
             setPhase("complete")
-            const fadeOut = Math.min(1, (elapsed - 36) / 1)
+            const fadeOut = Math.min(1, (elapsed - 42) / 1)
             material.uniforms.opacity.value = 1 - fadeOut
             setTimeout(() => {
               onComplete()
@@ -1348,6 +1501,9 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
           bloomPass.threshold = 0.4
         } else if (phase === "matrix-code") {
           bloomPass.strength = 1.8
+          bloomPass.threshold = 0.5
+        } else if (phase === "solar-system") {
+          bloomPass.strength = 1.6
           bloomPass.threshold = 0.5
         } else if (phase === "avatar-reveal") {
           bloomPass.strength = 2.5
@@ -1638,6 +1794,28 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
                 </div>
               </div>
             )}
+
+              {/* Phase 6: Solar System - COSMIC FORMATION SHOWCASE */}
+              {phase === "solar-system" && (
+                <div className="text-center space-y-8 px-4 animate-fade-in">
+                  <div className="space-y-6 max-w-4xl mx-auto">
+                    <div className="inline-flex items-center gap-3 text-sm text-white/30 font-mono tracking-wider mb-2">
+                      <span className="w-8 h-px bg-white/30"></span>
+                      <span>FORMATION · ORBITS · EMERGENCE</span>
+                      <span className="w-8 h-px bg-white/30"></span>
+                    </div>
+                    <h2 className="text-5xl md:text-7xl font-bold text-white leading-tight tracking-tight">
+                      From Chaos
+                      <span className="block text-transparent bg-clip-text bg-gradient-to-r from-gold via-yellow-200 to-gold mt-2">
+                        Order Emerges
+                      </span>
+                    </h2>
+                    <p className="text-xl md:text-2xl text-white/70 font-light leading-relaxed max-w-2xl mx-auto">
+                      Accretion. Rotation. Harmony. Worlds take shape.
+                    </p>
+                  </div>
+                </div>
+              )}
 
             {/* Phase 6: Avatar Reveal - METEOR ENTRANCE */}
             {phase === "avatar-reveal" && (
