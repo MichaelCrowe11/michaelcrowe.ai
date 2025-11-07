@@ -24,7 +24,12 @@ export function AvatarSpaceChat() {
   const [voiceEnabled, setVoiceEnabled] = useState(false)
   const recognitionRef = useRef<any>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
   const idCounterRef = useRef(1)
+
+  // Responsive + dynamic overlay opacity
+  const [overlayBaseOpacity, setOverlayBaseOpacity] = useState(0.9)
+  const [overlayFade, setOverlayFade] = useState(1)
 
   useEffect(() => {
     const win = window as any
@@ -47,6 +52,47 @@ export function AvatarSpaceChat() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  // Set base overlay opacity based on viewport width
+  useEffect(() => {
+    const computeBase = () => {
+      const w = typeof window !== 'undefined' ? window.innerWidth : 1920
+      if (w >= 1024) return 0.9 // lg+
+      if (w >= 640) return 0.8  // sm–md
+      return 0.65               // xs
+    }
+    const applyBase = () => setOverlayBaseOpacity(computeBase())
+    applyBase()
+    window.addEventListener('resize', applyBase)
+    return () => window.removeEventListener('resize', applyBase)
+  }, [])
+
+  // Fade overlay as chat scroll increases (keeps focus on content)
+  useEffect(() => {
+    let raf: number | null = null
+    const onScroll = () => {
+      if (raf) return
+      raf = requestAnimationFrame(() => {
+        raf = null
+        const el = messagesContainerRef.current
+        if (!el) return
+        const t = el.scrollTop
+        // fade up to ~60% by 240px scroll; clamp to 0.4 min
+        const f = Math.max(0.4, 1 - Math.min(t / 240, 0.6))
+        setOverlayFade(f)
+      })
+    }
+    const el = messagesContainerRef.current
+    if (el) {
+      el.addEventListener('scroll', onScroll)
+      // initialize once
+      onScroll()
+    }
+    return () => {
+      if (el) el.removeEventListener('scroll', onScroll)
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [])
 
   const streamText = (text: string, messageId: number) => {
     const words = text.split(' ')
@@ -143,8 +189,11 @@ export function AvatarSpaceChat() {
           <div className="stars-layer-3"></div>
         </div>
 
-        {/* Subtle Solar System Overlay */}
-        <div className="absolute inset-0 pointer-events-none opacity-90">
+        {/* Subtle Solar System Overlay (responsive + scroll-fades) */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ opacity: overlayBaseOpacity * overlayFade }}
+        >
           <div className="solar-center glow"></div>
           {/* Orbits */}
           <div className="orbit-ring orbit-r1">
@@ -199,7 +248,7 @@ export function AvatarSpaceChat() {
         <div className="max-w-4xl mx-auto h-full flex flex-col px-4 sm:px-6 pt-16">
           
           {/* Messages with smooth scrolling */}
-          <div className="flex-1 overflow-y-auto space-y-4 pb-4 scroll-smooth" style={{
+          <div ref={messagesContainerRef} className="flex-1 overflow-y-auto space-y-4 pb-4 scroll-smooth" style={{
             scrollbarWidth: 'thin',
             scrollbarColor: 'rgba(218, 165, 32, 0.3) transparent'
           }}>
