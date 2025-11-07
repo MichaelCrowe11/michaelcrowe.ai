@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { Send, Mic, MicOff } from "lucide-react"
+import { AIAvatarSwirl } from "@/components/ai-avatar-swirl"
 import Image from "next/image"
 
 interface Message {
@@ -115,10 +116,14 @@ export function AvatarSpaceChat() {
     return () => window.removeEventListener('pointermove', onMove)
   }, [])
 
+  type AvatarState = 'idle' | 'thinking' | 'responding'
+  const [avatarState, setAvatarState] = useState<AvatarState>('idle')
+
   const streamText = (text: string, messageId: number) => {
     const words = text.split(' ')
     let currentIndex = 0
 
+    setAvatarState('responding')
     const interval = setInterval(() => {
       if (currentIndex < words.length) {
         const partialText = words.slice(0, currentIndex + 1).join(' ')
@@ -151,6 +156,7 @@ export function AvatarSpaceChat() {
             // ignore
           }
         }
+        setAvatarState('idle')
       }
     }, 50)
   }
@@ -183,6 +189,7 @@ export function AvatarSpaceChat() {
 
       const assistantMsgId = idCounterRef.current++
       setMessages(prev => [...prev, { id: assistantMsgId, role: 'assistant', content: '', streaming: true }])
+      setAvatarState('thinking')
       streamText(reply, assistantMsgId)
     }, 800)
   }
@@ -243,27 +250,16 @@ export function AvatarSpaceChat() {
           </div>
         </div>
 
-        {/* Floating Logo with enhanced glow - NO BACKGROUND */}
-        <div className="relative z-10 animate-float">
+        {/* AI Avatar Swirl Replaces Static Logo */}
+        <div className="relative z-10 flex items-center justify-center animate-float" aria-label="AI Avatar">
           {/* Multi-layer outer glow */}
           <div className="absolute inset-0 -m-20 rounded-full bg-gold/20 blur-[120px] animate-pulse-slow"></div>
           <div className="absolute inset-0 -m-12 rounded-full bg-gold/15 blur-[60px]"></div>
-          
-          {/* Logo container - TRANSPARENT VERSION */}
-          <div className="relative w-72 h-72 flex items-center justify-center" style={{ filter: 'drop-shadow(0 0 60px rgba(218, 165, 32, 0.9)) drop-shadow(0 0 30px rgba(218, 165, 32, 0.6))' }}>
-            <Image
-              src="/crowe-logic-logo-transparent.png"
-              alt="Crowe Logic"
-              width={288}
-              height={288}
-              className="w-full h-full object-contain"
-              priority
-            />
+          <div className="relative" style={{ filter: 'drop-shadow(0 0 50px rgba(218,165,32,0.55)) drop-shadow(0 0 25px rgba(218,165,32,0.4))' }}>
+            <AIAvatarSwirl state={avatarState} size={220} />
           </div>
-
-          {/* Animated glow rings */}
-          <div className="absolute inset-2 rounded-full border border-gold/30 animate-ping-slow"></div>
-          <div className="absolute inset-6 rounded-full border border-gold/15 animate-ping-slow" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute inset-4 rounded-full border border-gold/20 animate-ping-slow"></div>
+          <div className="absolute inset-10 rounded-full border border-gold/10 animate-ping-slow" style={{ animationDelay: '1s' }}></div>
         </div>
       </div>
 
