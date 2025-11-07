@@ -41,9 +41,10 @@ export function AvatarSpaceChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const idCounterRef = useRef(1)
-  const { isSupported: ttsSupported, speak, cancel: cancelTTS } = useTTS({ rate: 0.9, pitch: 1 })
+  const { isSupported: ttsSupported, speak, cancel: cancelTTS, speaking } = useTTS({ rate: 0.9, pitch: 1 })
   const intervalsRef = useRef<number[]>([])
   const [liveText, setLiveText] = useState("")
+  const [audioAmplitude, setAudioAmplitude] = useState(0)
 
   // Feature flag for enhanced starfield
   const enhancedStarsEnabled = typeof process !== 'undefined' && process.env.NEXT_PUBLIC_CHAT_STARS_ENHANCED === 'true'
@@ -263,6 +264,31 @@ export function AvatarSpaceChat() {
     if (lastAssistant) setLiveText(lastAssistant.content)
   }, [messages])
 
+  // Animate audio amplitude for starfield audio-reactive effects
+  useEffect(() => {
+    if (!speaking) {
+      // Fade out smoothly
+      const fadeOut = setInterval(() => {
+        setAudioAmplitude(prev => {
+          const next = Math.max(0, prev - 0.05)
+          if (next === 0) clearInterval(fadeOut)
+          return next
+        })
+      }, 20) // ~400ms to fade from 1 to 0
+      return () => clearInterval(fadeOut)
+    } else {
+      // Fade in quickly
+      const fadeIn = setInterval(() => {
+        setAudioAmplitude(prev => {
+          const next = Math.min(1, prev + 0.1)
+          if (next === 1) clearInterval(fadeIn)
+          return next
+        })
+      }, 20) // ~200ms to fade from 0 to 1
+      return () => clearInterval(fadeIn)
+    }
+  }, [speaking])
+
   // Cleanup streaming intervals on unmount
   useEffect(() => {
     return () => {
@@ -281,6 +307,8 @@ export function AvatarSpaceChat() {
           starsPerLayer={400}
           twinkleSpeed={1.0}
           parallaxStrength={0.3}
+          shootingStarRate={3}
+          audioAmplitude={audioAmplitude}
         />
       )}
 

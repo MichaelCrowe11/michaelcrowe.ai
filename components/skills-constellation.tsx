@@ -346,7 +346,10 @@ export function SkillsConstellation() {
             >
               <div className="bg-black/90 backdrop-blur-xl border rounded-lg p-4 shadow-2xl max-w-xs" style={{ borderColor: `rgb(${hoveredSkill.color})` }}>
                 <div className="flex items-center gap-3 mb-2">
-                  <hoveredSkill.icon className="w-5 h-5" style={{ color: `rgb(${hoveredSkill.color})` }} />
+                  {(() => {
+                    const IconComponent = hoveredSkill.icon as React.ComponentType<{ className?: string; style?: React.CSSProperties }>
+                    return <IconComponent className="w-5 h-5" style={{ color: `rgb(${hoveredSkill.color})` }} />
+                  })()}
                   <h4 className="font-bold text-white">{hoveredSkill.name}</h4>
                 </div>
                 <p className="text-sm text-gray-300 mb-3">{hoveredSkill.description}</p>
@@ -408,7 +411,10 @@ export function SkillsConstellation() {
                     className="w-10 h-10 rounded-lg flex items-center justify-center"
                     style={{ background: `rgba(${firstSkill.color}, 0.1)` }}
                   >
-                    <firstSkill.icon className="w-5 h-5" style={{ color: `rgb(${firstSkill.color})` }} />
+                    {(() => {
+                      const IconComponent = firstSkill.icon as React.ComponentType<{ className?: string; style?: React.CSSProperties }>
+                      return <IconComponent className="w-5 h-5" style={{ color: `rgb(${firstSkill.color})` }} />
+                    })()}
                   </div>
                   <h3 className="font-bold text-lg">{category}</h3>
                 </div>

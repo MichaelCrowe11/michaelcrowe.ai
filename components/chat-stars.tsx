@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 
 interface ChatStarsConfig {
   enabled?: boolean
@@ -10,6 +13,17 @@ interface ChatStarsConfig {
   twinkleSpeed?: number
   parallaxStrength?: number
   reducedMotion?: boolean
+  shootingStarRate?: number // Per minute
+  audioAmplitude?: number // 0-1 for audio-reactive effects
+  enableBloom?: boolean // Bloom postprocessing effect
+}
+
+interface ShootingStar {
+  id: number
+  line: THREE.Line
+  velocity: THREE.Vector3
+  spawnTime: number
+  lifetime: number
 }
 
 export function ChatStars({
@@ -19,6 +33,9 @@ export function ChatStars({
   twinkleSpeed = 1.0,
   parallaxStrength = 0.3,
   reducedMotion = false,
+  shootingStarRate = 3, // Per minute
+  audioAmplitude = 0, // 0-1
+  enableBloom, // Auto-detect if not specified
 }: ChatStarsConfig) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [webglSupported, setWebglSupported] = useState(true)
@@ -48,6 +65,9 @@ export function ChatStars({
     let camera: THREE.PerspectiveCamera
     let renderer: THREE.WebGLRenderer
     let starLayers: THREE.Points[] = []
+    let shootingStars: ShootingStar[] = []
+    let shootingStarIdCounter = 0
+    let lastShootingStarSpawn = 0
     let animationId: number
     let isVisible = true
 
@@ -74,6 +94,38 @@ export function ChatStars({
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)) // Cap for performance
       renderer.setClearColor(0x000000, 0)
       containerRef.current?.appendChild(renderer.domElement)
+
+      // Bloom postprocessing setup
+      let composer: EffectComposer | null = null
+      let useBloom = enableBloom
+      
+      // Auto-detect if bloom should be enabled based on device capability
+      if (useBloom === undefined) {
+        const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+        const isLowEnd = navigator.hardwareConcurrency !== undefined && navigator.hardwareConcurrency < 4
+        useBloom = !isMobile && !isLowEnd
+      }
+
+      if (useBloom) {
+        try {
+          composer = new EffectComposer(renderer)
+          
+          const renderPass = new RenderPass(scene, camera)
+          composer.addPass(renderPass)
+          
+          const bloomPass = new UnrealBloomPass(
+            new THREE.Vector2(window.innerWidth, window.innerHeight),
+            1.2,  // Strength
+            0.4,  // Radius
+            0.6   // Threshold
+          )
+          composer.addPass(bloomPass)
+        } catch (error) {
+          console.warn('Failed to initialize bloom postprocessing:', error)
+          composer = null
+          useBloom = false
+        }
+      }
 
       // Create star layers with varying depth
       const layerDepths = [
@@ -134,6 +186,7 @@ export function ChatStars({
             time: { value: 0 },
             twinkleSpeed: { value: prefersReducedMotion ? 0.1 : twinkleSpeed },
             opacity: { value: 0.8 },
+            audioBoost: { value: 0.0 }, // Audio-reactive brightness boost
           },
           vertexShader: `
             attribute float size;
@@ -159,6 +212,7 @@ export function ChatStars({
             uniform float time;
             uniform float twinkleSpeed;
             uniform float opacity;
+            uniform float audioBoost;
             varying vec3 vColor;
             varying float vSeed;
             
@@ -172,12 +226,15 @@ export function ChatStars({
               // Twinkle effect with per-star phase offset
               float twinkle = 0.6 + 0.4 * sin(time * twinkleSpeed + vSeed * 12.566);
               
+              // Audio-reactive boost (subtle pulse)
+              float audioPulse = 1.0 + audioBoost * 0.4;
+              
               // Soft glow
               float glow = 1.0 - smoothstep(0.0, 0.5, dist);
               glow = pow(glow, 1.5);
               
-              // Final color with twinkle and glow
-              vec3 finalColor = vColor * twinkle;
+              // Final color with twinkle, audio boost, and glow
+              vec3 finalColor = vColor * twinkle * audioPulse;
               float alpha = glow * opacity * twinkle;
               
               gl_FragColor = vec4(finalColor, alpha);
@@ -200,6 +257,9 @@ export function ChatStars({
         camera.aspect = window.innerWidth / window.innerHeight
         camera.updateProjectionMatrix()
         renderer.setSize(window.innerWidth, window.innerHeight)
+        if (composer) {
+          composer.setSize(window.innerWidth, window.innerHeight)
+        }
       }
       window.addEventListener('resize', handleResize)
 
@@ -227,6 +287,98 @@ export function ChatStars({
       }
       document.addEventListener('visibilitychange', handleVisibilityChange)
 
+      // Shooting star spawner function
+      function spawnShootingStar() {
+        if (prefersReducedMotion || reducedMotion) return // Skip if reduced motion
+
+        // Random starting position at edge of viewport
+        const edge = Math.floor(Math.random() * 4) // 0=top, 1=right, 2=bottom, 3=left
+        let startX = 0, startY = 0, startZ = -10
+        let velocityX = 0, velocityY = 0
+
+        switch (edge) {
+          case 0: // Top
+            startX = (Math.random() - 0.5) * 200
+            startY = 80
+            velocityX = (Math.random() - 0.5) * 40
+            velocityY = -60 - Math.random() * 40
+            break
+          case 1: // Right
+            startX = 100
+            startY = (Math.random() - 0.5) * 150
+            velocityX = -60 - Math.random() * 40
+            velocityY = (Math.random() - 0.5) * 40
+            break
+          case 2: // Bottom
+            startX = (Math.random() - 0.5) * 200
+            startY = -80
+            velocityX = (Math.random() - 0.5) * 40
+            velocityY = 60 + Math.random() * 40
+            break
+          case 3: // Left
+            startX = -100
+            startY = (Math.random() - 0.5) * 150
+            velocityX = 60 + Math.random() * 40
+            velocityY = (Math.random() - 0.5) * 40
+            break
+        }
+
+        const velocityZ = Math.random() * 10 + 5
+
+        // Create trail line
+        const trailLength = 20
+        const trailPoints: THREE.Vector3[] = []
+        for (let i = 0; i < trailLength; i++) {
+          trailPoints.push(new THREE.Vector3(startX, startY, startZ))
+        }
+
+        const trailGeometry = new THREE.BufferGeometry().setFromPoints(trailPoints)
+        
+        const trailMaterial = new THREE.ShaderMaterial({
+          uniforms: {
+            time: { value: 0 },
+            lifetime: { value: 2.0 + Math.random() * 1.5 }, // 2-3.5 seconds
+            color: { value: new THREE.Color(Math.random() > 0.7 ? 0xffd700 : 0xffffff) }
+          },
+          vertexShader: `
+            uniform float time;
+            uniform float lifetime;
+            varying float vAlpha;
+            
+            void main() {
+              vAlpha = 1.0 - (time / lifetime);
+              gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+          `,
+          fragmentShader: `
+            uniform vec3 color;
+            uniform float time;
+            uniform float lifetime;
+            varying float vAlpha;
+            
+            void main() {
+              float progress = time / lifetime;
+              float alpha = vAlpha * (1.0 - progress);
+              gl_FragColor = vec4(color, alpha);
+            }
+          `,
+          transparent: true,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+        })
+
+        const line = new THREE.Line(trailGeometry, trailMaterial)
+        scene.add(line)
+
+        shootingStars.push({
+          id: shootingStarIdCounter++,
+          line,
+          velocity: new THREE.Vector3(velocityX, velocityY, velocityZ),
+          spawnTime: Date.now() / 1000,
+          lifetime: (trailMaterial.uniforms.lifetime.value as number)
+        })
+      }
+
       // Animation loop
       const startTime = Date.now()
       function animate() {
@@ -237,10 +389,55 @@ export function ChatStars({
 
         const elapsed = (Date.now() - startTime) / 1000
 
+        // Spawn shooting stars based on rate
+        if (!prefersReducedMotion && !reducedMotion && shootingStarRate > 0) {
+          const spawnInterval = 60 / shootingStarRate // Convert per-minute to seconds
+          if (elapsed - lastShootingStarSpawn > spawnInterval) {
+            spawnShootingStar()
+            lastShootingStarSpawn = elapsed
+          }
+        }
+
+        // Update shooting stars
+        shootingStars = shootingStars.filter((star) => {
+          const age = elapsed - star.spawnTime
+          
+          if (age > star.lifetime) {
+            // Remove expired shooting star
+            star.line.geometry.dispose()
+            ;(star.line.material as THREE.Material).dispose()
+            scene.remove(star.line)
+            return false
+          }
+
+          // Update trail position
+          const positions = star.line.geometry.attributes.position
+          const trailLength = positions.count
+
+          // Move all points along velocity
+          for (let i = 0; i < trailLength; i++) {
+            const idx = i * 3
+            positions.array[idx] += star.velocity.x * 0.016
+            positions.array[idx + 1] += star.velocity.y * 0.016
+            positions.array[idx + 2] += star.velocity.z * 0.016
+          }
+          positions.needsUpdate = true
+
+          // Update shader time uniform
+          const material = star.line.material as THREE.ShaderMaterial
+          material.uniforms.time.value = age
+
+          return true
+        })
+
         // Update each layer
         starLayers.forEach((layer, idx) => {
           const material = layer.material as THREE.ShaderMaterial
           material.uniforms.time.value = elapsed
+          
+          // Update audio-reactive boost (stronger on near layers)
+          const layerAudioMultiplier = (idx + 1) / starLayers.length // 0.25, 0.5, 0.75, 1.0
+          material.uniforms.audioBoost.value = audioAmplitude * layerAudioMultiplier
 
           // Parallax effect based on mouse and scroll (if not reduced motion)
           if (!prefersReducedMotion && parallaxStrength > 0) {
@@ -253,7 +450,11 @@ export function ChatStars({
           }
         })
 
-        renderer.render(scene, camera)
+        if (composer) {
+          composer.render()
+        } else {
+          renderer.render(scene, camera)
+        }
         animationId = requestAnimationFrame(animate)
       }
       animate()
@@ -273,6 +474,12 @@ export function ChatStars({
           ;(layer.material as THREE.Material).dispose()
         })
         
+        shootingStars.forEach((star) => {
+          star.line.geometry.dispose()
+          ;(star.line.material as THREE.Material).dispose()
+          scene.remove(star.line)
+        })
+        
         renderer.dispose()
         containerRef.current?.removeChild(renderer.domElement)
       }
@@ -283,7 +490,7 @@ export function ChatStars({
     return () => {
       if (cleanup) cleanup()
     }
-  }, [enabled, layerCount, starsPerLayer, twinkleSpeed, parallaxStrength, reducedMotion])
+  }, [enabled, layerCount, starsPerLayer, twinkleSpeed, parallaxStrength, reducedMotion, shootingStarRate, audioAmplitude])
 
   if (!enabled || !webglSupported) {
     return null

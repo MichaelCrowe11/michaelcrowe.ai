@@ -157,7 +157,7 @@ export function SideNav() {
         {/* Navigation Items */}
         <nav className="relative flex flex-col items-start justify-center h-full py-8 px-4 space-y-2">
           {navItems.map((item) => {
-            const Icon = item.icon
+            const IconComponent = item.icon as React.ComponentType<{ className?: string }>
             const isActive = activeSection === item.section
 
             return (
@@ -177,7 +177,7 @@ export function SideNav() {
 
                 {/* Icon */}
                 <div className="relative">
-                  <Icon className={`w-6 h-6 transition-transform duration-300 ${isActive ? "scale-110" : "group-hover/item:scale-110"}`} />
+                  <IconComponent className={`w-6 h-6 transition-transform duration-300 ${isActive ? "scale-110" : "group-hover/item:scale-110"}`} />
                   {isActive && (
                     <div className="absolute inset-0 blur-md bg-gold/50 animate-pulse" />
                   )}

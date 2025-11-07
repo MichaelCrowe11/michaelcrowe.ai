@@ -264,7 +264,7 @@ export function NeuralNav() {
         {/* Navigation Items */}
         <nav className="relative flex flex-col items-start justify-center flex-1 py-8 px-3 space-y-1">
           {NAV_ITEMS.map((item, index) => {
-            const Icon: React.ElementType = item.icon
+            const IconComponent = item.icon as React.ComponentType<{ className?: string; style?: React.CSSProperties }>
             const isActive = activeSection === item.section
 
             return (
@@ -300,7 +300,7 @@ export function NeuralNav() {
 
                 {/* Icon with 3D effect */}
                 <div className="relative z-10">
-                  <Icon
+                  <IconComponent
                     className={`w-6 h-6 transition-all duration-500 ${
                       isActive ? "scale-125 rotate-12" : "group-hover/item:scale-110 group-hover/item:rotate-6"
                     }`}

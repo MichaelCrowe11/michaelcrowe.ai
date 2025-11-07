@@ -48,7 +48,6 @@ export function HeroPremium() {
         transition={{
           duration: 8,
           repeat: Infinity,
-          ease: "easeInOut",
         }}
       />
 
@@ -65,7 +64,6 @@ export function HeroPremium() {
         transition={{
           duration: 8,
           repeat: Infinity,
-          ease: "easeInOut",
           delay: 1,
         }}
       />
@@ -256,7 +254,6 @@ export function HeroPremium() {
           transition={{
             duration: 2,
             repeat: Infinity,
-            ease: "easeInOut",
           }}
           className="flex flex-col items-center gap-3 text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
         >
@@ -271,7 +268,6 @@ export function HeroPremium() {
               transition={{
                 duration: 1.5,
                 repeat: Infinity,
-                ease: "easeInOut",
               }}
             />
           </motion.div>

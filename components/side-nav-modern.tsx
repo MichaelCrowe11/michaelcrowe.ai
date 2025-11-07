@@ -71,7 +71,7 @@ export function SideNavModern() {
         {/* Navigation items */}
         <div className="relative flex flex-col gap-1 p-2">
           {navItems.map((item) => {
-            const Icon = item.icon
+            const IconComponent = item.icon as React.ComponentType<{ className?: string }>
             const isActive = activeSection === item.section
 
             return (
@@ -93,7 +93,7 @@ export function SideNavModern() {
 
                 {/* Icon */}
                 <div className="relative w-10 h-10 flex items-center justify-center">
-                  <Icon
+                  <IconComponent
                     className={`w-5 h-5 transition-colors ${
                       isActive ? "text-gold" : "text-muted-foreground group-hover:text-foreground"
                     }`}
