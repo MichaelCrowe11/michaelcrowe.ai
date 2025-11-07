@@ -5,9 +5,11 @@ import { Send, Mic, MicOff } from "lucide-react"
 import { AIAvatarSwirl } from "@/components/ai-avatar-swirl"
 import { AIAvatar } from "@/components/ai-avatar"
 import Image from "next/image"
+import { useElevenLabsTTS } from "@/lib/use-elevenlabs-tts"
 import { useTTS } from "@/lib/use-tts"
 import { useMemo } from "react"
 import { ChatStars } from "@/components/chat-stars"
+import { salesEngine } from "@/lib/sales-engine"
 
 interface Message {
   id: number
@@ -21,7 +23,7 @@ export function AvatarSpaceChat() {
     {
       id: 0,
       role: 'assistant',
-      content: "Hello! I'm Michael Crowe's AI assistant. Ask me anything about AI consulting, my portfolio, services, or how I can help transform your business.",
+      content: "Hey! Michael Crowe here—great to meet you. I help small businesses implement AI that actually drives results, not just buzzwords. Most people come to me frustrated because they've tried tools that don't work or consultants who overcharge and underdeliver. I'm different: I build real systems that make you money. Quick question to get started: what's the biggest bottleneck in your business right now?",
     }
   ])
   const [input, setInput] = useState("")
@@ -41,7 +43,21 @@ export function AvatarSpaceChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const idCounterRef = useRef(1)
-  const { isSupported: ttsSupported, speak, cancel: cancelTTS, speaking } = useTTS({ rate: 0.9, pitch: 1 })
+  
+  // Try ElevenLabs first, fallback to Web Speech API
+  const elevenLabs = useElevenLabsTTS({ 
+    // Voice ID will be pulled from ELEVENLABS_VOICE_ID env var on server
+    // This is just a fallback if not set
+    voiceId: '21m00Tcm4TlvDq8ikWAM',
+    stability: 0.5,
+    similarityBoost: 0.75,
+  })
+  const webSpeech = useTTS({ rate: 0.9, pitch: 1 })
+  
+  // Use ElevenLabs if available, otherwise fallback
+  const { speaking, speak, cancel: cancelTTS } = elevenLabs.hasApiKey ? elevenLabs : webSpeech
+  const ttsSupported = elevenLabs.hasApiKey || webSpeech.isSupported
+  
   const intervalsRef = useRef<number[]>([])
   const [liveText, setLiveText] = useState("")
   const [audioAmplitude, setAudioAmplitude] = useState(0)
@@ -214,22 +230,8 @@ export function AvatarSpaceChat() {
     setInput('')
 
     setTimeout(() => {
-      const lower = textToSend.toLowerCase()
-      let reply = "That's a great question. I specialize in building practical AI solutions for small businesses. What specific challenge are you looking to solve?"
-
-      if (lower.includes('price') || lower.includes('cost') || lower.includes('pricing')) {
-        reply = "My pricing is tailored to your needs. I offer three main tiers: Consultation ($2,500-5,000), Custom Development ($10,000-50,000+), and Managed AI Services ($3,000-10,000/month). Let's schedule a discovery call to discuss your specific requirements and I'll provide a detailed proposal."
-      } else if (lower.includes('portfolio') || lower.includes('work') || lower.includes('project')) {
-        reply = "I've built AI systems across multiple industries: restaurant chatbots that handle 24/7 customer service, pharmaceutical compliance automation, e-commerce recommendation engines, and custom analytics dashboards. Each project focuses on measurable ROI. What industry are you in?"
-      } else if (lower.includes('service') || lower.includes('help') || lower.includes('do')) {
-        reply = "I offer three core services: AI Strategy & Consulting (audit your business and identify AI opportunities), Custom AI Development (build production-ready systems), and Managed AI Services (ongoing optimization and support). Which area interests you most?"
-      } else if (lower.includes('hello') || lower.includes('hi') || lower.includes('hey')) {
-        reply = "Hey there! Great to meet you. I'm Michael Crowe—I help small businesses implement AI that actually drives results. What brings you here today?"
-      } else if (lower.includes('who') || lower.includes('about') || lower.includes('you')) {
-        reply = "I'm a self-taught developer who scaled a business from a garage to serving millions. Now I focus on helping small businesses leverage AI without the enterprise complexity. I believe in practical solutions that deliver ROI, not buzzwords. What would you like to know?"
-      } else if (lower.includes('contact') || lower.includes('schedule') || lower.includes('call') || lower.includes('meeting')) {
-        reply = "I'd love to chat! The best way to get started is to schedule a free 30-minute discovery call. During this call, we'll discuss your business challenges, explore potential AI solutions, and see if we're a good fit. Ready to book a time?"
-      }
+      // Use sales engine to generate high-converting response
+      const reply = salesEngine.generateResponse(textToSend)
 
       const assistantMsgId = idCounterRef.current++
       setMessages(prev => [...prev, { id: assistantMsgId, role: 'assistant', content: '', streaming: true }])
