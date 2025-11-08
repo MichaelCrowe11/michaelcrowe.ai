@@ -216,7 +216,7 @@ export function AvatarSpaceChat() {
     return () => clearInterval(interval)
   }, [messages])
 
-  const streamText = (text: string, messageId: number) {
+  const streamText = (text: string, messageId: number) => {
     const words = text.split(' ')
     let currentIndex = 0
 
