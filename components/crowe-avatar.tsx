@@ -51,8 +51,23 @@ export function CroweAvatar({
     const centerX = size / 2
     const centerY = size / 2
 
-    // Code characters for the storm
-    const codeChars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン{}[]<>/\\|!@#$%^&*()'.split('')
+    // Real AI/ML/Web Dev code snippets
+    const codeSnippets = [
+      // Python AI/ML
+      'import torch', 'import tensorflow', 'np.array', 'model.fit()', 'df.head()',
+      'sklearn', 'pandas', 'numpy', 'keras', 'pytorch', 'train_test_split',
+      'from transformers', 'import openai', 'import anthropic', '.predict()',
+      // React/Next.js
+      'useState', 'useEffect', 'onClick', 'className', 'return', 'export default',
+      'async', 'await', 'fetch', 'const', 'let', 'function', '=>', 'import',
+      'React.FC', '<div>', '</>', 'props', 'children', 'map', 'filter',
+      // Node.js/JavaScript  
+      'require', 'module.exports', 'app.get', 'res.json', 'req.body',
+      'express', 'next', 'api', 'POST', 'GET', 'console.log',
+      // AI specific
+      'GPT-4', 'Claude', 'embedding', 'vector', 'neural', 'training',
+      'inference', 'tokens', 'prompt', 'completion', 'fine-tune'
+    ]
 
     // Code particle system
     class CodeParticle {
@@ -74,10 +89,10 @@ export function CroweAvatar({
         this.orbitSpeed = (Math.random() > 0.5 ? 1 : -1) * (0.5 + Math.random() * 1.5)
         this.x = centerX + Math.cos(this.angle) * this.radius
         this.y = centerY + Math.sin(this.angle) * this.radius
-        this.char = codeChars[Math.floor(Math.random() * codeChars.length)]
+        this.char = codeSnippets[Math.floor(Math.random() * codeSnippets.length)]
         this.opacity = 0.3 + Math.random() * 0.4
         this.color = Math.random() > 0.7 ? '#d4af37' : '#ffffff'
-        this.size = 8 + Math.random() * 6
+        this.size = 8 + Math.random() * 4
       }
 
       update(streamingActive: boolean, intensity: number) {
@@ -100,7 +115,7 @@ export function CroweAvatar({
 
         // Randomly change character during intense streaming
         if (streamingActive && intensity > 0.5 && Math.random() > 0.95) {
-          this.char = codeChars[Math.floor(Math.random() * codeChars.length)]
+          this.char = codeSnippets[Math.floor(Math.random() * codeSnippets.length)]
         }
       }
 

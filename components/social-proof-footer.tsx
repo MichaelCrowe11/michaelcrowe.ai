@@ -6,11 +6,11 @@ export function SocialProofFooter() {
   const [currentProof, setCurrentProof] = useState(0)
   
   const proofPoints = [
-    { icon: "💰", text: "$470K/year proven results", color: "text-green-400" },
-    { icon: "🤖", text: "150+ AI agents deployed", color: "text-blue-400" },
-    { icon: "⭐", text: "300K+ social following", color: "text-gold" },
-    { icon: "🔬", text: "Pharmaceutical AI systems", color: "text-purple-400" },
-    { icon: "🍄", text: "18+ years mycology expertise", color: "text-emerald-400" },
+    { icon: "REVENUE", text: "$470K/year proven results", color: "text-green-400" },
+    { icon: "AGENTS", text: "150+ AI agents deployed", color: "text-blue-400" },
+    { icon: "REACH", text: "300K+ social following", color: "text-gold" },
+    { icon: "PHARMA", text: "Pharmaceutical AI systems", color: "text-purple-400" },
+    { icon: "EXPERT", text: "18+ years mycology expertise", color: "text-emerald-400" },
   ]
 
   useEffect(() => {
@@ -35,7 +35,9 @@ export function SocialProofFooter() {
           }`}
         >
           <div className="flex items-center gap-2 text-sm font-medium">
-            <span className="text-lg">{proof.icon}</span>
+            <span className="text-2xl font-bold mr-3 text-gold">
+              {proof.icon}
+            </span>
             <span className={`${proof.color} brightness-125`}>{proof.text}</span>
           </div>
         </div>

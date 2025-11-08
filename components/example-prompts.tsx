@@ -7,22 +7,22 @@ interface ExamplePromptsProps {
 
 const prompts = [
   {
-    emoji: "🤖",
+    icon: "→",
     text: "What can you help me automate?",
     category: "automation"
   },
   {
-    emoji: "💰",
+    icon: "$",
     text: "How much does consulting cost?",
     category: "pricing"
   },
   {
-    emoji: "🚀",
+    icon: "AI",
     text: "Tell me about CroweLM AI",
     category: "product"
   },
   {
-    emoji: "📅",
+    icon: "CAL",
     text: "Book a discovery call",
     category: "booking"
   },
@@ -57,8 +57,8 @@ export function ExamplePrompts({ onPromptClick, className = "" }: ExamplePrompts
 
             {/* Content */}
             <div className="relative z-10 flex items-start gap-2">
-              <span className="text-xl flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
-                {prompt.emoji}
+              <span className="text-lg font-bold text-gold flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                {prompt.icon}
               </span>
               <span className="text-sm text-white/90 brightness-140 leading-snug font-medium">
                 {prompt.text}

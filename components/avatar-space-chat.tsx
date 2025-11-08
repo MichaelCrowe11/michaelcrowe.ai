@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { Send, Mic, MicOff } from "lucide-react"
 import { CroweAvatar } from "@/components/crowe-avatar"
-import { FlyingRaven } from "@/components/flying-raven"
+import { StreamingCursorAvatar } from "@/components/streaming-cursor-avatar"
 import Image from "next/image"
 import { useElevenLabsTTS } from "@/lib/use-elevenlabs-tts"
 import { useTTS } from "@/lib/use-tts"
@@ -41,6 +41,7 @@ export function AvatarSpaceChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const streamingMessageRef = useRef<HTMLDivElement>(null)
   const idCounterRef = useRef(1)
   
   // Try ElevenLabs first, fallback to Web Speech API
@@ -312,10 +313,11 @@ export function AvatarSpaceChat() {
 
   return (
     <div className="fixed inset-0 bg-black overflow-hidden">
-      {/* Flying Raven during text streaming */}
-      <FlyingRaven 
-        isActive={messages.some(m => m.streaming)}
-        targetElement={inputRef.current}
+      {/* Crowe Logic Avatar follows cursor during text streaming */}
+      <StreamingCursorAvatar 
+        isStreaming={messages.some(m => m.streaming)}
+        streamingText={messages.find(m => m.streaming)?.content || ''}
+        messageElement={streamingMessageRef.current}
       />
 
       {/* Enhanced starfield background (optional via feature flag) */}
@@ -358,7 +360,7 @@ export function AvatarSpaceChat() {
             rel="noopener noreferrer"
             className="hidden sm:flex glass-button metallic-shine bg-gradient-to-r from-gold to-gold/90 hover:from-gold/90 hover:to-gold text-black font-semibold px-6 py-3 rounded-xl transition-all duration-300 items-center gap-2 shadow-lg shadow-gold/40 transform hover:scale-105 active:scale-95 text-sm"
           >
-            📅 Book Call
+            CAL Book Call
           </a>
         </div>
 
@@ -390,11 +392,13 @@ export function AvatarSpaceChat() {
 
                 <div className={`flex-1 ${msg.role === 'user' ? 'ml-12' : ''}`}>
                   {/* Premium Glass message bubble */}
-                  <div className={`relative rounded-2xl p-4 message-glass-card glass-reflection ${
-                    msg.role === 'user'
-                      ? 'gold-border metallic-shine'
-                      : 'border-gold/20'
-                  }`}>
+                  <div 
+                    ref={msg.streaming ? streamingMessageRef : null}
+                    className={`relative rounded-2xl p-4 message-glass-card glass-reflection ${
+                      msg.role === 'user'
+                        ? 'gold-border metallic-shine'
+                        : 'border-gold/20'
+                    }`}>
                     {/* Glow effect */}
                     <div className={`absolute -inset-1 rounded-2xl blur-xl opacity-30 ${
                       msg.role === 'user' ? 'bg-gold/40' : 'bg-gold/20'
