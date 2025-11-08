@@ -23,7 +23,7 @@ export function AnimatedAIAvatar({
   className = "" 
 }: AnimatedAIAvatarProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const animationFrameRef = useRef<number | undefined>()
+  const animationFrameRef = useRef<number | undefined>(undefined)
   const particlesRef = useRef<any[]>([])
   const timeRef = useRef(0)
   const [mounted, setMounted] = useState(false)

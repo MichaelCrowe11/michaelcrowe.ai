@@ -19,13 +19,23 @@ export async function POST(request: NextRequest) {
     const systemPrompt = generateSystemPrompt('sales')
 
     // Try Anthropic Claude FIRST (primary provider)
+    // Support both direct Anthropic API and Vercel AI Gateway
     const anthropicKey = process.env.ANTHROPIC_API_KEY
-    if (anthropicKey) {
+    const vercelAIGatewayKey = process.env.VERCEL_AI_GATEWAY_KEY
+    
+    if (anthropicKey || vercelAIGatewayKey) {
       try {
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
+        // Use Vercel AI Gateway if available, otherwise direct Anthropic API
+        const apiUrl = vercelAIGatewayKey 
+          ? 'https://gateway.ai.cloudflare.com/v1/anthropic/messages'
+          : 'https://api.anthropic.com/v1/messages'
+        
+        const apiKey = vercelAIGatewayKey || anthropicKey
+        
+        const response = await fetch(apiUrl, {
           method: 'POST',
           headers: {
-            'x-api-key': anthropicKey,
+            'x-api-key': apiKey!,
             'anthropic-version': '2023-06-01',
             'Content-Type': 'application/json',
           },
