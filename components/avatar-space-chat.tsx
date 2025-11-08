@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useRef } from "react"
 import { Send, Mic, MicOff } from "lucide-react"
-import { AIAvatarSwirl } from "@/components/ai-avatar-swirl"
-import { AIAvatar } from "@/components/ai-avatar"
+import { AnimatedAIAvatar } from "@/components/animated-ai-avatar"
 import Image from "next/image"
 import { useElevenLabsTTS } from "@/lib/use-elevenlabs-tts"
 import { useTTS } from "@/lib/use-tts"
 import { useMemo } from "react"
 import { ChatStars } from "@/components/chat-stars"
+import { ExamplePrompts } from "@/components/example-prompts"
+import { SocialProofFooter } from "@/components/social-proof-footer"
 import { salesEngine } from "@/lib/sales-engine"
 
 interface Message {
@@ -35,10 +36,6 @@ export function AvatarSpaceChat() {
       return v ? v === 'true' : false
     } catch { return false }
   })
-  const [avatarMode, setAvatarMode] = useState<'swirl' | 'classic' | 'minimal'>(() => {
-    if (typeof window === 'undefined') return 'swirl'
-    return (localStorage.getItem('avatarMode') as 'swirl' | 'classic' | 'minimal') || 'swirl'
-  })
   const recognitionRef = useRef<any>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
@@ -61,6 +58,7 @@ export function AvatarSpaceChat() {
   const intervalsRef = useRef<number[]>([])
   const [liveText, setLiveText] = useState("")
   const [audioAmplitude, setAudioAmplitude] = useState(0)
+  const [avatarState, setAvatarState] = useState<'idle' | 'thinking' | 'responding'>('idle')
 
   // Feature flag for enhanced starfield
   const enhancedStarsEnabled = typeof process !== 'undefined' && process.env.NEXT_PUBLIC_CHAT_STARS_ENHANCED === 'true'
@@ -89,12 +87,6 @@ export function AvatarSpaceChat() {
   }, [])
 
   // Persist avatar mode
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try { localStorage.setItem('avatarMode', avatarMode) } catch {}
-    }
-  }, [avatarMode])
-
   // Persist voice toggle and stop any ongoing TTS when turned off
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -170,9 +162,6 @@ export function AvatarSpaceChat() {
     return () => window.removeEventListener('pointermove', onMove)
   }, [])
 
-  type AvatarState = 'idle' | 'thinking' | 'responding'
-  const [avatarState, setAvatarState] = useState<AvatarState>('idle')
-
   const streamText = (text: string, messageId: number) => {
     const words = text.split(' ')
     let currentIndex = 0
@@ -203,17 +192,14 @@ export function AvatarSpaceChat() {
           speak(text, {
             onStart: () => setAvatarState('responding'),
             onEnd: () => {
-              setAvatarState('completed' as any)
               setTimeout(() => setAvatarState('idle'), 1000)
             },
             onError: () => {
-              setAvatarState('completed' as any)
               setTimeout(() => setAvatarState('idle'), 1000)
             }
           })
         } else {
           // No TTS: finish visually
-          setAvatarState('completed' as any)
           setTimeout(() => setAvatarState('idle'), 1000)
         }
       }
@@ -342,45 +328,30 @@ export function AvatarSpaceChat() {
         {/* Header with Avatar - Premium Glass */}
         <div className="flex-shrink-0 py-6 px-4 sm:px-6 flex items-center justify-between glass-gold glass-shimmer border-b-0">
           <div className="flex items-center gap-4">
-            {/* Bright, visible avatar */}
-            <div className="relative" style={{ 
-              filter: 'drop-shadow(0 0 40px rgba(218,165,32,0.8)) brightness(1.5)' 
-            }}>
-              {avatarMode === 'swirl' ? (
-                <AIAvatarSwirl state={avatarState} size={60} />
-              ) : avatarMode === 'minimal' ? (
-                <AIAvatar state={avatarState === 'responding' ? 'streaming' : avatarState === 'thinking' ? 'thinking' : avatarState === 'idle' ? 'idle' : 'completed'} size="md" />
-              ) : (
-                <Image
-                  src="/crowe-logic-logo-transparent.png"
-                  alt="Crowe Logic"
-                  width={60}
-                  height={60}
-                  className="w-15 h-15 object-contain brightness-150"
-                  priority
-                />
-              )}
-              <div className="absolute inset-0 rounded-full border-2 border-gold/30 animate-ping-slow"></div>
+            {/* Spectacular Animated Avatar */}
+            <div className="relative">
+              <AnimatedAIAvatar 
+                isStreaming={avatarState === 'thinking' || messages.some(m => m.streaming)}
+                audioAmplitude={audioAmplitude}
+                size={80}
+                className="brightness-110"
+              />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white brightness-150">Michael Crowe AI</h1>
-              <p className="text-sm text-gold/80 brightness-125">AI Strategy & Development Expert</p>
+              <h1 className="text-2xl font-bold text-white brightness-150 tracking-tight">Michael Crowe AI</h1>
+              <p className="text-sm text-gold/90 brightness-125 font-medium mt-0.5">AI Strategy & Development Expert</p>
             </div>
           </div>
 
-          {/* Avatar Mode Switcher */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setAvatarMode('swirl')}
-              className={`px-3 py-1.5 rounded-lg text-xs transition glass-button ${avatarMode==='swirl' ? 'bg-gold/20 text-gold border-gold/40' : 'text-white/60 hover:text-white/90'}`}
-              title="Animated Swirl"
-            >Swirl</button>
-            <button
-              onClick={() => setAvatarMode('minimal')}
-              className={`px-3 py-1.5 rounded-lg text-xs transition glass-button ${avatarMode==='minimal' ? 'bg-gold/20 text-gold border-gold/40' : 'text-white/60 hover:text-white/90'}`}
-              title="Minimal"
-            >Minimal</button>
-          </div>
+          {/* Book Call CTA */}
+          <a
+            href="https://michaelcrowe.ai/calendar"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden sm:flex glass-button metallic-shine bg-gradient-to-r from-gold to-gold/90 hover:from-gold/90 hover:to-gold text-black font-semibold px-6 py-3 rounded-xl transition-all duration-300 items-center gap-2 shadow-lg shadow-gold/40 transform hover:scale-105 active:scale-95 text-sm"
+          >
+            📅 Book Call
+          </a>
         </div>
 
         {/* Live region for screen readers */}
@@ -399,10 +370,12 @@ export function AvatarSpaceChat() {
                 style={{ animationDelay: `${index * 30}ms` }}
               >
                 {msg.role === 'assistant' && (
-                  <div className="flex-shrink-0 mt-1" style={{ 
-                    filter: 'drop-shadow(0 0 20px rgba(218,165,32,0.6)) brightness(1.4)' 
-                  }}>
-                    <AIAvatar state={msg.streaming ? 'streaming' : 'completed'} size="sm" />
+                  <div className="flex-shrink-0 mt-1">
+                    <AnimatedAIAvatar 
+                      isStreaming={msg.streaming || false}
+                      size={40}
+                      className="brightness-110"
+                    />
                   </div>
                 )}
 
@@ -462,6 +435,16 @@ export function AvatarSpaceChat() {
         {/* Premium Glass Input Area - Fixed at Bottom */}
         <div className="flex-shrink-0 border-t border-gold/20 glass-dark">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4">
+            {/* Example Prompts - Show when chat is empty */}
+            {messages.length <= 1 && (
+              <ExamplePrompts 
+                onPromptClick={(prompt) => {
+                  setInput(prompt)
+                  handleSend(prompt)
+                }}
+              />
+            )}
+
             <div className="relative">
               {/* Gold glow behind input */}
               <div className="absolute -inset-2 bg-gradient-to-r from-gold/20 via-gold/30 to-gold/20 rounded-3xl blur-2xl opacity-50"></div>
@@ -521,7 +504,7 @@ export function AvatarSpaceChat() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setVoiceEnabled(!voiceEnabled)}
-                  className={`glass-button px-3 py-1.5 rounded-full text-xs transition-all duration-300 ${
+                  className={`glass-button px-3 py-1.5 rounded-full text-xs transition-all duration-300 font-medium ${
                     voiceEnabled 
                       ? 'bg-gold/20 text-gold border-gold/40' 
                       : 'bg-white/5 text-white/60 border-white/20'
@@ -532,7 +515,11 @@ export function AvatarSpaceChat() {
                   🎤 Voice {voiceEnabled ? 'ON' : 'OFF'}
                 </button>
               </div>
-              <span className="text-xs text-white/40 brightness-110">Powered by Michael Crowe AI</span>
+
+              {/* Social Proof Footer */}
+              <div className="hidden sm:block">
+                <SocialProofFooter />
+              </div>
             </div>
           </div>
         </div>
