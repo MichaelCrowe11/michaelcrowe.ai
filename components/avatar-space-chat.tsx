@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react"
 import { Send, Mic, MicOff } from "lucide-react"
 import { CroweAvatar } from "@/components/crowe-avatar"
-import { StreamingCursorAvatar } from "@/components/streaming-cursor-avatar"
 import Image from "next/image"
 import { useElevenLabsTTS } from "@/lib/use-elevenlabs-tts"
 import { useTTS } from "@/lib/use-tts"
@@ -43,6 +42,7 @@ export function AvatarSpaceChat() {
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const streamingMessageRef = useRef<HTMLDivElement>(null)
   const idCounterRef = useRef(1)
+  const [cursorPosition, setCursorPosition] = useState<{ x: number; y: number } | null>(null)
   
   // Try ElevenLabs first, fallback to Web Speech API
   const elevenLabs = useElevenLabsTTS({ 
@@ -61,7 +61,7 @@ export function AvatarSpaceChat() {
   const intervalsRef = useRef<number[]>([])
   const [liveText, setLiveText] = useState("")
   const [audioAmplitude, setAudioAmplitude] = useState(0)
-  const [avatarState, setAvatarState] = useState<'idle' | 'thinking' | 'responding'>('idle')
+  const [avatarState, setAvatarState] = useState<'idle' | 'thinking' | 'streaming'>('idle')
 
   // Feature flag for enhanced starfield
   const enhancedStarsEnabled = typeof process !== 'undefined' && process.env.NEXT_PUBLIC_CHAT_STARS_ENHANCED === 'true'
@@ -165,7 +165,58 @@ export function AvatarSpaceChat() {
     return () => window.removeEventListener('pointermove', onMove)
   }, [])
 
-  const streamText = (text: string, messageId: number) => {
+  // Track cursor position in streaming message for avatar
+  useEffect(() => {
+    const isStreaming = messages.some(m => m.streaming)
+    if (!isStreaming || !streamingMessageRef.current) {
+      setCursorPosition(null)
+      return
+    }
+
+    const updateCursorPosition = () => {
+      const messageEl = streamingMessageRef.current
+      if (!messageEl) return
+
+      const selection = window.getSelection()
+      if (!selection || selection.rangeCount === 0) {
+        // Fallback: use end of message element
+        const rect = messageEl.getBoundingClientRect()
+        const containerRect = messagesContainerRef.current?.getBoundingClientRect()
+        if (containerRect) {
+          setCursorPosition({
+            x: rect.right - containerRect.left - 50,
+            y: rect.bottom - containerRect.top - 25
+          })
+        }
+        return
+      }
+
+      try {
+        const range = selection.getRangeAt(0).cloneRange()
+        range.collapse(false) // Move to end
+        const rects = range.getClientRects()
+        if (rects.length > 0) {
+          const rect = rects[rects.length - 1]
+          const containerRect = messagesContainerRef.current?.getBoundingClientRect()
+          if (containerRect) {
+            setCursorPosition({
+              x: rect.right - containerRect.left,
+              y: rect.top - containerRect.top
+            })
+          }
+        }
+      } catch (e) {
+        // Ignore errors
+      }
+    }
+
+    const interval = setInterval(updateCursorPosition, 50)
+    updateCursorPosition()
+
+    return () => clearInterval(interval)
+  }, [messages])
+
+  const streamText = (text: string, messageId: number) {
     const words = text.split(' ')
     let currentIndex = 0
 
@@ -193,7 +244,7 @@ export function AvatarSpaceChat() {
 
         if (voiceEnabled && ttsSupported) {
           speak(text, {
-            onStart: () => setAvatarState('responding'),
+            onStart: () => setAvatarState('streaming'),
             onEnd: () => {
               setTimeout(() => setAvatarState('idle'), 1000)
             },
@@ -313,13 +364,6 @@ export function AvatarSpaceChat() {
 
   return (
     <div className="fixed inset-0 bg-black overflow-hidden">
-      {/* Crowe Logic Avatar follows cursor during text streaming */}
-      <StreamingCursorAvatar 
-        isStreaming={messages.some(m => m.streaming)}
-        streamingText={messages.find(m => m.streaming)?.content || ''}
-        messageElement={streamingMessageRef.current}
-      />
-
       {/* Enhanced starfield background (optional via feature flag) */}
       {enhancedStarsEnabled && (
         <ChatStars
@@ -341,10 +385,10 @@ export function AvatarSpaceChat() {
             {/* Code Storm Raven Avatar */}
             <div className="relative">
               <CroweAvatar 
-                isStreaming={avatarState === 'thinking' || messages.some(m => m.streaming)}
-                streamingIntensity={audioAmplitude}
+                state={messages.some(m => m.streaming) ? 'streaming' : avatarState}
                 size={100}
                 className="brightness-110"
+                cursorPosition={cursorPosition}
               />
             </div>
             <div>
@@ -382,8 +426,7 @@ export function AvatarSpaceChat() {
                 {msg.role === 'assistant' && (
                   <div className="flex-shrink-0 mt-1">
                     <CroweAvatar 
-                      isStreaming={msg.streaming || false}
-                      streamingIntensity={msg.streaming ? 0.7 : 0}
+                      state={msg.streaming ? 'streaming' : 'idle'}
                       size={45}
                       className="brightness-110"
                     />
