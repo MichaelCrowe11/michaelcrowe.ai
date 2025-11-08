@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'claude-sonnet-4-5-20250929', // Latest Claude Sonnet 4.5
+            model: 'claude-3-5-sonnet-20241022', // Latest Claude 3.5 Sonnet
             max_tokens: 1024,
             temperature: 0.8,
             system: systemPrompt,
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
           const data = await response.json()
           return NextResponse.json({
             message: data.content[0].text,
-            provider: 'anthropic-claude-4.5',
+            provider: 'anthropic-claude',
           })
         } else {
           const errorData = await response.text()
