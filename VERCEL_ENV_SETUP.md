@@ -11,14 +11,25 @@ ELEVENLABS_VOICE_ID=your_voice_id
 ```
 **Get yours:** https://elevenlabs.io/app/settings/api-keys
 
-### 🤖 AI Chat (Choose One - Recommended: OpenAI)
+### 🤖 AI Chat (Choose One - Recommended: Anthropic via Vercel Gateway)
+
+**Option 1: Vercel AI Gateway (Recommended - better rate limits & caching)**
 ```bash
-OPENAI_API_KEY=your_openai_key
-# OR
+VERCEL_AI_GATEWAY_KEY=your_vercel_ai_gateway_key
+```
+Set this up in Vercel dashboard under "AI Gateway" settings. Provides automatic caching, rate limiting, and better performance.
+
+**Option 2: Direct Anthropic API**
+```bash
 ANTHROPIC_API_KEY=your_anthropic_key
 ```
-**Get OpenAI:** https://platform.openai.com/api-keys
 **Get Anthropic:** https://console.anthropic.com/settings/keys
+
+**Option 3: OpenAI (fallback)**
+```bash
+OPENAI_API_KEY=your_openai_key
+```
+**Get OpenAI:** https://platform.openai.com/api-keys
 
 ### 📧 Email Service (Choose One - Recommended: Resend)
 ```bash

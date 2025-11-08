@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from "react"
 import { Send, Mic, MicOff } from "lucide-react"
-import { AnimatedAIAvatar } from "@/components/animated-ai-avatar"
+import { CroweAvatar } from "@/components/crowe-avatar"
+import { FlyingRaven } from "@/components/flying-raven"
 import Image from "next/image"
 import { useElevenLabsTTS } from "@/lib/use-elevenlabs-tts"
 import { useTTS } from "@/lib/use-tts"
@@ -39,6 +40,7 @@ export function AvatarSpaceChat() {
   const recognitionRef = useRef<any>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
   const idCounterRef = useRef(1)
   
   // Try ElevenLabs first, fallback to Web Speech API
@@ -310,6 +312,12 @@ export function AvatarSpaceChat() {
 
   return (
     <div className="fixed inset-0 bg-black overflow-hidden">
+      {/* Flying Raven during text streaming */}
+      <FlyingRaven 
+        isActive={messages.some(m => m.streaming)}
+        targetElement={inputRef.current}
+      />
+
       {/* Enhanced starfield background (optional via feature flag) */}
       {enhancedStarsEnabled && (
         <ChatStars
@@ -328,12 +336,12 @@ export function AvatarSpaceChat() {
         {/* Header with Avatar - Premium Glass */}
         <div className="flex-shrink-0 py-6 px-4 sm:px-6 flex items-center justify-between glass-gold glass-shimmer border-b-0">
           <div className="flex items-center gap-4">
-            {/* Spectacular Animated Avatar */}
+            {/* Code Storm Raven Avatar */}
             <div className="relative">
-              <AnimatedAIAvatar 
+              <CroweAvatar 
                 isStreaming={avatarState === 'thinking' || messages.some(m => m.streaming)}
-                audioAmplitude={audioAmplitude}
-                size={80}
+                streamingIntensity={audioAmplitude}
+                size={100}
                 className="brightness-110"
               />
             </div>
@@ -371,9 +379,10 @@ export function AvatarSpaceChat() {
               >
                 {msg.role === 'assistant' && (
                   <div className="flex-shrink-0 mt-1">
-                    <AnimatedAIAvatar 
+                    <CroweAvatar 
                       isStreaming={msg.streaming || false}
-                      size={40}
+                      streamingIntensity={msg.streaming ? 0.7 : 0}
+                      size={45}
                       className="brightness-110"
                     />
                   </div>
@@ -451,6 +460,7 @@ export function AvatarSpaceChat() {
               
               <div className="relative flex items-end gap-3 message-glass-card gold-border p-3 shadow-2xl shadow-gold/20">
                 <textarea
+                  ref={inputRef}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => {
