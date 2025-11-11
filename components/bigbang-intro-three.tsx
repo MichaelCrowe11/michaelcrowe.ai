@@ -44,11 +44,13 @@ function getDeviceType(): "desktop" | "tablet" | "mobile" {
   return "desktop"
 }
 
-// Particles Component using Three.js
+// Particles Component using Three.js (Memory Optimized)
 function ParticleSystem({ phase }: { phase: string }) {
   const pointsRef = useRef<THREE.Points>(null)
   const velocitiesRef = useRef<number[]>([])
   const timeRef = useRef(0)
+  const geometryRef = useRef<THREE.BufferGeometry | null>(null)
+  const materialRef = useRef<THREE.PointsMaterial | null>(null)
 
   // Initialize particles
   useEffect(() => {
@@ -108,7 +110,23 @@ function ParticleSystem({ phase }: { phase: string }) {
     geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3))
     geometry.setAttribute("size", new THREE.Float32BufferAttribute(sizes, 1))
 
+    // Store references for cleanup
+    geometryRef.current = geometry
+    if (pointsRef.current.material instanceof THREE.Material) {
+      materialRef.current = pointsRef.current.material as THREE.PointsMaterial
+    }
+
     velocitiesRef.current = velocities
+
+    // Memory cleanup on unmount
+    return () => {
+      if (geometryRef.current) {
+        geometryRef.current.dispose()
+      }
+      if (materialRef.current) {
+        materialRef.current.dispose()
+      }
+    }
   }, [])
 
   // Animation loop
@@ -213,7 +231,7 @@ export function BigBangIntroThree({ onComplete }: BigBangIntroThreeProps) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black overflow-hidden">
-      {/* Three.js Canvas for 3D particles */}
+      {/* Three.js Canvas for 3D particles (Performance Optimized) */}
       <div className="absolute inset-0">
         <Canvas
           camera={{
@@ -222,8 +240,16 @@ export function BigBangIntroThree({ onComplete }: BigBangIntroThreeProps) {
             far: CONFIG.camera.far,
             position: [0, 0, CONFIG.camera.positionZ],
           }}
-          gl={{ alpha: true, antialias: false }}
+          gl={{
+            alpha: true,
+            antialias: false,
+            powerPreference: "high-performance",
+            stencil: false,
+            depth: false
+          }}
           dpr={Math.min(window.devicePixelRatio, 2)}
+          performance={{ min: 0.5 }}
+          frameloop="always"
         >
           <ParticleSystem phase={phase} />
         </Canvas>

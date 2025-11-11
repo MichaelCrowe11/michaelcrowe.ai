@@ -216,6 +216,7 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
 
       // Handle window resize
       const handleResize = () => {
+        if (!camera || !renderer) return
         camera.aspect = window.innerWidth / window.innerHeight
         camera.updateProjectionMatrix()
         renderer.setSize(window.innerWidth, window.innerHeight)
@@ -230,7 +231,7 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
         const elapsed = (Date.now() - startTime) / 1000
         if (controls) controls.update()
 
-        if (stars && camera && renderer) {
+        if (stars && camera && renderer && scene) {
           const material = stars.material as THREE.ShaderMaterial
 
           // Phase timeline
@@ -272,7 +273,7 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
             setPhase("cosmos-expand")
             material.uniforms.explosionFactor.value = 1
             material.uniforms.opacity.value = 1
-            controls.enabled = true
+            if (controls) controls.enabled = true
 
             // Reset camera shake
             camera.position.x = 0
@@ -297,9 +298,9 @@ export function CosmosIntro({ onComplete }: { onComplete: () => void }) {
           }
 
           material.uniforms.time.value = elapsed
-        }
 
-        renderer.render(scene, camera)
+          renderer.render(scene, camera)
+        }
       }
 
       animate()

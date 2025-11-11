@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Send, X, Minimize2, Maximize2, Loader2 } from "lucide-react"
+import { GlassmorphismOrbs } from "./glassmorphism-orbs"
 
 interface Message {
   role: "user" | "assistant"
@@ -61,10 +62,18 @@ export function ChatInterfaceEnhanced({
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
-      className={`fixed bottom-4 right-4 z-50 bg-card/95 backdrop-blur-xl border border-border rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 ${
+      className={`fixed bottom-4 right-4 z-50 backdrop-blur-xl border border-border rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 ${
         isMinimized ? "w-80 h-16" : "w-96 h-[600px]"
       }`}
+      style={{
+        background: "linear-gradient(135deg, rgba(36, 36, 36, 0.7) 0%, rgba(24, 24, 24, 0.8) 100%)",
+      }}
     >
+      {/* Glassmorphism Orbs Background */}
+      {!isMinimized && <GlassmorphismOrbs />}
+
+      {/* Content wrapper with relative positioning */}
+      <div className="relative z-10 h-full flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card/50">
         <div className="flex items-center gap-3">
@@ -188,6 +197,7 @@ export function ChatInterfaceEnhanced({
           </form>
         </>
       )}
+      </div>
     </motion.div>
   )
 }

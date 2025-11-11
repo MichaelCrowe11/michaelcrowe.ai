@@ -1,15 +1,25 @@
+import bundleAnalyzer from '@next/bundle-analyzer'
+
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+})
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Note: Checks disabled for v0.app compatibility and rapid iteration
-  // TODO: Re-enable for production: typescript: { ignoreBuildErrors: false }
+  // TypeScript checks - temporarily allowing errors for Framer Motion compatibility
+  // TODO: Fix remaining Framer Motion type issues in hero-premium.tsx and other files
   typescript: {
     ignoreBuildErrors: true,
   },
   experimental: {
     turbopackUseSystemTlsCerts: true,
   },
+  // Next.js Image Optimization ENABLED for better performance
   images: {
-    unoptimized: true,
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60,
     remotePatterns: [
       {
         protocol: 'https',
@@ -18,7 +28,12 @@ const nextConfig = {
       },
     ],
   },
-  // Security Headers
+  // Enable compression
+  compress: true,
+  // Production optimizations
+  poweredByHeader: false,
+  generateEtags: true,
+  // Security & Performance Headers
   async headers() {
     return [
       {
@@ -46,15 +61,15 @@ const nextConfig = {
           },
           {
             key: 'Strict-Transport-Security',
-            value: 'max-age=31536000; includeSubDomains',
+            value: 'max-age=31536000; includeSubDomains; preload',
           },
           {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
               "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live https://va.vercel-scripts.com",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "font-src 'self' https://fonts.gstatic.com",
+              "style-src 'self' 'unsafe-inline'",
+              "font-src 'self' data:",
               "img-src 'self' data: blob: https://hebbkx1anhila5yf.public.blob.vercel-storage.com",
               "connect-src 'self' https://vercel.live https://va.vercel-scripts.com",
               "frame-src 'self'",
@@ -66,8 +81,36 @@ const nextConfig = {
           },
         ],
       },
+      // Cache static assets aggressively
+      {
+        source: '/fonts/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/images/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=86400, s-maxage=31536000, stale-while-revalidate',
+          },
+        ],
+      },
     ]
   },
 }
 
-export default nextConfig
+export default withBundleAnalyzer(nextConfig)
