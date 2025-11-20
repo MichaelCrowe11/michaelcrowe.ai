@@ -8,6 +8,7 @@ import { Footer } from "@/components/footer"
 import { StarfieldBackground } from "@/components/starfield-background"
 import { FireworkStars } from "@/components/firework-stars"
 import { StructuredData } from "@/components/structured-data"
+import { AIChatAssistant } from "@/components/ai-chat-assistant"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk" })
@@ -94,6 +95,9 @@ export default function RootLayout({
           {children}
           <Footer />
         </div>
+
+        {/* AI Sales Assistant - Always available */}
+        <AIChatAssistant />
 
         <Analytics />
       </body>
