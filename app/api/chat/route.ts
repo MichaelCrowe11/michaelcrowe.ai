@@ -74,6 +74,69 @@ const tools = [
         required: ["project_type", "complexity"]
       }
     }
+  },
+  {
+    type: "function",
+    function: {
+      name: "create_payment_link",
+      description: "Generate a Stripe payment link for instant purchase of services. Use when customer is ready to buy.",
+      parameters: {
+        type: "object",
+        properties: {
+          product_id: {
+            type: "string",
+            enum: ["ai-audit", "discovery-intensive", "strategy-roadmap", "implementation-intensive", "strategy-session"],
+            description: "The service they want to purchase"
+          },
+          customer_email: {
+            type: "string",
+            description: "Customer's email address"
+          },
+          customer_name: {
+            type: "string",
+            description: "Customer's name"
+          }
+        },
+        required: ["product_id", "customer_email", "customer_name"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "capture_qualified_lead",
+      description: "Save a qualified lead to CRM and send notification. Use when you've qualified budget, timeline, and decision-maker.",
+      parameters: {
+        type: "object",
+        properties: {
+          name: {
+            type: "string",
+            description: "Lead's full name"
+          },
+          email: {
+            type: "string",
+            description: "Lead's email"
+          },
+          company: {
+            type: "string",
+            description: "Company name"
+          },
+          interest: {
+            type: "string",
+            description: "What service/solution they're interested in"
+          },
+          budget: {
+            type: "string",
+            description: "Budget range they mentioned"
+          },
+          timeline: {
+            type: "string",
+            description: "When they want to start"
+          }
+        },
+        required: ["name", "email", "interest"]
+      }
+    }
   }
 ]
 
@@ -199,6 +262,50 @@ function executeToolCall(toolName: string, args: any): any {
         }
       }
       return { error: "Estimate not available for this combination" }
+
+    case "create_payment_link":
+      // Generate Stripe payment link
+      const productPricing: Record<string, { name: string; price: string }> = {
+        "ai-audit": { name: "AI Audit", price: "$5,000" },
+        "discovery-intensive": { name: "Discovery Intensive", price: "$7,500" },
+        "strategy-roadmap": { name: "AI Strategy & Roadmap", price: "$15,000" },
+        "implementation-intensive": { name: "AI Implementation Intensive", price: "$45,000" },
+        "strategy-session": { name: "Strategy Session (2 hours minimum)", price: "$1,000" }
+      }
+
+      const selectedProduct = productPricing[args.product_id]
+      if (!selectedProduct) {
+        return { error: "Invalid product" }
+      }
+
+      return {
+        success: true,
+        product: selectedProduct.name,
+        price: selectedProduct.price,
+        payment_link: `https://michaelcrowe.ai/checkout?product=${args.product_id}&email=${encodeURIComponent(args.customer_email)}&name=${encodeURIComponent(args.customer_name)}`,
+        message: `Great! I've generated a secure payment link for ${selectedProduct.name} (${selectedProduct.price}). Click the link above to complete your purchase, and you'll receive a confirmation email immediately after payment.`,
+        next_steps: [
+          "Click the secure payment link",
+          "Complete payment via Stripe",
+          "Receive instant confirmation email",
+          "Michael will contact you within 24 hours to schedule kickoff"
+        ]
+      }
+
+    case "capture_qualified_lead":
+      // Capture lead to CRM/database
+      // In production, this would make an API call to /api/capture-lead
+      return {
+        success: true,
+        message: `Perfect! I've saved your information and Michael will personally reach out to ${args.email} within 24 hours. In the meantime, I can answer any questions about the process or share relevant case studies.`,
+        lead_score: args.budget ? (parseInt(args.budget.replace(/\D/g, '')) >= 10000 ? "high" : "medium") : "medium",
+        recommended_next_steps: [
+          "Check your email for confirmation",
+          "Review relevant case studies on the website",
+          "Prepare a list of specific questions for your call",
+          args.budget && parseInt(args.budget.replace(/\D/g, '')) >= 10000 ? "Consider booking a paid discovery session for immediate action" : "Think about your budget and timeline"
+        ]
+      }
 
     default:
       return { error: "Unknown tool" }

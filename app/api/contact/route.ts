@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { config } from '@/lib/config'
+import { Resend } from 'resend'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 // Contact form validation schema
 const contactFormSchema = z.object({
@@ -62,26 +65,166 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = contactFormSchema.parse(body)
 
-    // TODO: Integrate with email service
-    // Example with Resend:
-    // const { data, error } = await resend.emails.send({
-    //   from: config.api.emailFrom,
-    //   to: config.api.emailTo,
-    //   subject: `New Contact Form Submission from ${validatedData.name}`,
-    //   html: generateEmailTemplate(validatedData),
-    // })
+    // Send email notification using Resend
+    if (process.env.RESEND_API_KEY) {
+      try {
+        const emailHtml = `
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: linear-gradient(135deg, #C9A961 0%, #8B7355 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; }
+                .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+                .field { margin-bottom: 20px; }
+                .label { font-weight: bold; color: #666; font-size: 12px; text-transform: uppercase; margin-bottom: 5px; }
+                .value { font-size: 16px; color: #333; }
+                .message-box { background: white; padding: 15px; border-left: 4px solid #C9A961; margin-top: 10px; }
+                .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #666; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1 style="margin: 0;">🚀 New Contact Form Submission</h1>
+                  <p style="margin: 10px 0 0 0; opacity: 0.9;">michaelcrowe.ai</p>
+                </div>
+                <div class="content">
+                  <div class="field">
+                    <div class="label">Name</div>
+                    <div class="value">${validatedData.name}</div>
+                  </div>
 
-    // For now, log the submission (remove in production with actual email service)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Contact form submission (dev mode):', {
+                  <div class="field">
+                    <div class="label">Email</div>
+                    <div class="value"><a href="mailto:${validatedData.email}">${validatedData.email}</a></div>
+                  </div>
+
+                  ${validatedData.company ? `
+                  <div class="field">
+                    <div class="label">Company</div>
+                    <div class="value">${validatedData.company}</div>
+                  </div>
+                  ` : ''}
+
+                  ${validatedData.phone ? `
+                  <div class="field">
+                    <div class="label">Phone</div>
+                    <div class="value"><a href="tel:${validatedData.phone}">${validatedData.phone}</a></div>
+                  </div>
+                  ` : ''}
+
+                  ${validatedData.service ? `
+                  <div class="field">
+                    <div class="label">Service Interest</div>
+                    <div class="value">${validatedData.service}</div>
+                  </div>
+                  ` : ''}
+
+                  <div class="field">
+                    <div class="label">Message</div>
+                    <div class="message-box">${validatedData.message.replace(/\n/g, '<br>')}</div>
+                  </div>
+
+                  <div class="footer">
+                    <p><strong>Next Steps:</strong></p>
+                    <ol>
+                      <li>Reply within 24 hours</li>
+                      <li>Qualify the lead (budget, timeline, decision maker)</li>
+                      <li>Send calendar link for discovery call</li>
+                      <li>Add to HubSpot CRM</li>
+                    </ol>
+                    <p style="margin-top: 20px;">Received at: ${new Date().toLocaleString('en-US', { timeZone: 'America/Phoenix' })} (Arizona Time)</p>
+                  </div>
+                </div>
+              </div>
+            </body>
+          </html>
+        `
+
+        await resend.emails.send({
+          from: 'Michael Crowe AI <noreply@michaelcrowe.ai>',
+          to: 'michael@crowelogic.com',
+          replyTo: validatedData.email,
+          subject: `💼 New Lead: ${validatedData.name}${validatedData.company ? ` from ${validatedData.company}` : ''}`,
+          html: emailHtml,
+        })
+
+        // Send auto-reply to customer
+        const customerEmailHtml = `
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: linear-gradient(135deg, #C9A961 0%, #8B7355 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; text-align: center; }
+                .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+                .highlight { background: linear-gradient(135deg, rgba(201, 169, 97, 0.1) 0%, rgba(139, 115, 85, 0.1) 100%); padding: 20px; border-radius: 8px; border-left: 4px solid #C9A961; margin: 20px 0; }
+                .button { display: inline-block; background: linear-gradient(135deg, #C9A961 0%, #8B7355 100%); color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; margin: 10px 0; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1 style="margin: 0;">Thanks for Reaching Out! 🚀</h1>
+                </div>
+                <div class="content">
+                  <p>Hi ${validatedData.name},</p>
+
+                  <p>Thank you for your interest in AI automation for your business. I've received your message and will personally review it within the next 24 hours.</p>
+
+                  <div class="highlight">
+                    <p><strong>What happens next:</strong></p>
+                    <ol>
+                      <li>I'll review your specific needs and challenges</li>
+                      <li>Prepare relevant case studies and examples</li>
+                      <li>Send you a calendar link to schedule our call</li>
+                      <li>Come prepared with actionable insights for your business</li>
+                    </ol>
+                  </div>
+
+                  <p>In the meantime, feel free to:</p>
+                  <ul>
+                    <li><strong>Explore my portfolio:</strong> <a href="https://michaelcrowe.ai">michaelcrowe.ai</a></li>
+                    <li><strong>Connect on LinkedIn:</strong> <a href="https://www.linkedin.com/in/michael-crowe-b4b567256/">Michael Crowe</a></li>
+                    <li><strong>Call directly:</strong> <a href="tel:+14803225761">480-322-5761</a></li>
+                  </ul>
+
+                  <p>Looking forward to our conversation!</p>
+
+                  <p style="margin-top: 30px;">
+                    <strong>Michael Crowe</strong><br>
+                    AI Systems Architect<br>
+                    <a href="mailto:michael@crowelogic.com">michael@crowelogic.com</a><br>
+                    <a href="tel:+14803225761">480-322-5761</a>
+                  </p>
+                </div>
+              </div>
+            </body>
+          </html>
+        `
+
+        await resend.emails.send({
+          from: 'Michael Crowe <michael@michaelcrowe.ai>',
+          to: validatedData.email,
+          subject: 'Thanks for reaching out! I\'ll be in touch within 24 hours',
+          html: customerEmailHtml,
+        })
+
+      } catch (emailError) {
+        console.error('Failed to send email:', emailError)
+        // Continue even if email fails - still return success to user
+      }
+    } else {
+      // Development mode - just log
+      console.log('Contact form submission (RESEND_API_KEY not configured):', {
         name: validatedData.name,
         email: validatedData.email,
         timestamp: new Date().toISOString(),
       })
     }
-
-    // Simulate email sending delay
-    await new Promise(resolve => setTimeout(resolve, 500))
 
     return NextResponse.json(
       {

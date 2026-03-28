@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
+import { Resend } from "resend"
+
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,13 +27,19 @@ export async function POST(req: NextRequest) {
 
     console.log("New lead captured:", leadData)
 
-    // Send email notification (integrate with Resend, SendGrid, etc.)
+    // Send email notification
     await sendLeadNotification(leadData)
 
-    // TODO: Add CRM integration here
-    // Example with HubSpot:
-    // const hubspotContact = await createHubSpotContact(leadData)
-    // const hubspotDeal = await createHubSpotDeal(leadData, hubspotContact.id)
+    // Add to HubSpot CRM
+    if (process.env.HUBSPOT_API_KEY) {
+      try {
+        const hubspotContact = await createHubSpotContact(leadData)
+        console.log("HubSpot contact created:", hubspotContact?.id)
+      } catch (error) {
+        console.error("HubSpot integration error:", error)
+        // Continue even if HubSpot fails
+      }
+    }
 
     return NextResponse.json({
       success: true,
@@ -44,34 +53,109 @@ export async function POST(req: NextRequest) {
 }
 
 async function sendLeadNotification(lead: any) {
-  // Email notification implementation
-  // Integrate with your email service
+  if (!process.env.RESEND_API_KEY) {
+    console.log("Lead notification (RESEND_API_KEY not configured):", lead)
+    return { success: false, reason: "No API key" }
+  }
 
-  const emailBody = `
-    New Lead from MichaelCrowe.ai
+  try {
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #C9A961 0%, #8B7355 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+            .field { margin-bottom: 15px; }
+            .label { font-weight: bold; color: #666; font-size: 12px; text-transform: uppercase; }
+            .value { font-size: 16px; color: #333; margin-top: 3px; }
+            .priority { display: inline-block; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+            .high-priority { background: #ef4444; color: white; }
+            .medium-priority { background: #f59e0b; color: white; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1 style="margin: 0;">🎯 New Lead Captured</h1>
+              <p style="margin: 10px 0 0 0; opacity: 0.9;">From AI Chat Assistant</p>
+            </div>
+            <div class="content">
+              <div style="margin-bottom: 20px;">
+                ${lead.budget && parseInt(lead.budget.replace(/\D/g, '')) >= 10000 ? '<span class="priority high-priority">HIGH VALUE LEAD</span>' : '<span class="priority medium-priority">QUALIFIED LEAD</span>'}
+              </div>
 
-    Name: ${lead.name || "Not provided"}
-    Email: ${lead.email}
-    Company: ${lead.company || "Not provided"}
-    Interest: ${lead.interest || "Not specified"}
-    Budget: ${lead.budget || "Not specified"}
-    Timeline: ${lead.timeline || "Not specified"}
-    Source: ${lead.source}
-    Timestamp: ${lead.timestamp}
-  `
+              <div class="field">
+                <div class="label">Name</div>
+                <div class="value">${lead.name || "Not provided"}</div>
+              </div>
 
-  console.log("Lead notification:", emailBody)
+              <div class="field">
+                <div class="label">Email</div>
+                <div class="value"><a href="mailto:${lead.email}">${lead.email}</a></div>
+              </div>
 
-  // TODO: Send actual email
-  // Example with Resend:
-  // await resend.emails.send({
-  //   from: 'leads@michaelcrowe.ai',
-  //   to: 'michael@crowelogic.com',
-  //   subject: `🚀 New Lead: ${lead.company || lead.name}`,
-  //   text: emailBody
-  // })
+              ${lead.company ? `
+              <div class="field">
+                <div class="label">Company</div>
+                <div class="value">${lead.company}</div>
+              </div>
+              ` : ''}
 
-  return { success: true }
+              <div class="field">
+                <div class="label">Interest</div>
+                <div class="value">${lead.interest || "Not specified"}</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Budget</div>
+                <div class="value">${lead.budget || "Not specified"}</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Timeline</div>
+                <div class="value">${lead.timeline || "Not specified"}</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Source</div>
+                <div class="value">${lead.source}</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Captured At</div>
+                <div class="value">${new Date(lead.timestamp).toLocaleString('en-US', { timeZone: 'America/Phoenix' })} (Arizona Time)</div>
+              </div>
+
+              <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+                <p><strong>🚀 Action Items:</strong></p>
+                <ol>
+                  <li>Respond within 1 hour (while they're hot!)</li>
+                  <li>Send calendar link for discovery call</li>
+                  <li>Add to HubSpot with proper tags</li>
+                  <li>Prepare relevant case studies</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </body>
+      </html>
+    `
+
+    await resend.emails.send({
+      from: 'AI Assistant <leads@michaelcrowe.ai>',
+      to: 'michael@crowelogic.com',
+      subject: `🎯 New ${lead.budget && parseInt(lead.budget.replace(/\D/g, '')) >= 10000 ? 'HIGH-VALUE' : 'Qualified'} Lead: ${lead.name}${lead.company ? ` from ${lead.company}` : ''}`,
+      html: emailHtml,
+    })
+
+    return { success: true }
+  } catch (error) {
+    console.error("Failed to send lead notification:", error)
+    return { success: false, error }
+  }
 }
 
 // Helper function for HubSpot integration (example)
