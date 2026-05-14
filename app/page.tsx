@@ -2,9 +2,10 @@
 
 import { useState, useEffect, lazy, Suspense } from "react"
 import { ErrorBoundary } from "@/components/error-boundary"
-import { HeroPremium } from "@/components/hero-premium"
-import { WhyWorkSection } from "@/components/why-work-section"
-import { ServicesPricing } from "@/components/services-pricing"
+import { HeroPolished } from "@/components/hero-polished"
+import { PremiumOffers } from "@/components/premium-offers"
+import { SocialProofPolished } from "@/components/social-proof-polished"
+import { BookingSection } from "@/components/booking-section"
 
 // Lazy load BigBangIntroThree (uses Three.js - client-side only)
 const BigBangIntroThree = lazy(() => import("@/components/bigbang-intro-three").then(m => ({ default: m.BigBangIntroThree })))
@@ -14,12 +15,8 @@ import { SideNavModern } from "@/components/side-nav-modern"
 import { ChatAvatarFunctional } from "@/components/chat-avatar-functional"
 
 const PortfolioShowcase = lazy(() => import("@/components/portfolio-showcase").then(m => ({ default: m.PortfolioShowcase })))
-const SkillsConstellation = lazy(() => import("@/components/skills-constellation").then(m => ({ default: m.SkillsConstellation })))
-const InteractiveSkillsShowcase = lazy(() => import("@/components/interactive-skills-showcase").then(m => ({ default: m.InteractiveSkillsShowcase })))
-const DifferenceSection = lazy(() => import("@/components/difference-section").then(m => ({ default: m.DifferenceSection })))
-const StorySection = lazy(() => import("@/components/story-section").then(m => ({ default: m.StorySection })))
 const ProcessSection = lazy(() => import("@/components/process-section").then(m => ({ default: m.ProcessSection })))
-const WhoThisIsForSection = lazy(() => import("@/components/who-this-is-for-section").then(m => ({ default: m.WhoThisIsForSection })))
+const StorySection = lazy(() => import("@/components/story-section").then(m => ({ default: m.StorySection })))
 const FinalCTASection = lazy(() => import("@/components/final-cta-section").then(m => ({ default: m.FinalCTASection })))
 
 // Loading fallback component
@@ -32,7 +29,6 @@ function SectionLoader() {
 }
 
 export default function Home() {
-  // Check if user has seen the intro - enable it on first visit
   const [showIntro, setShowIntro] = useState(false)
   const [introComplete, setIntroComplete] = useState(true)
   const [mounted, setMounted] = useState(false)
@@ -40,16 +36,10 @@ export default function Home() {
   useEffect(() => {
     setMounted(true)
 
-    // Only check sessionStorage on client
     if (typeof window === 'undefined') return
 
-    // Check if user has seen the Big Bang intro
     const hasSeenIntro = sessionStorage.getItem("hasSeenBigBangIntro")
-
-    // Show intro only on first visit
-    // To always show intro, set: showIntro = !hasSeenIntro
-    // To never show intro (current behavior), set: showIntro = false
-    const enableIntro = false // Change to true to enable intro on first visit
+    const enableIntro = false
 
     if (!hasSeenIntro && enableIntro) {
       setShowIntro(true)
@@ -58,7 +48,6 @@ export default function Home() {
       sessionStorage.setItem("hasSeenBigBangIntro", "true")
     }
 
-    // Safety fallback: Force show main content after 15 seconds if intro hasn't completed
     const safetyTimeout = setTimeout(() => {
       if (!introComplete) {
         sessionStorage.setItem("hasSeenCosmosIntro", "true")
@@ -87,49 +76,43 @@ export default function Home() {
         </Suspense>
       )}
 
-      {/* Modern Side Navigation - No lazy loading */}
+      {/* Modern Side Navigation */}
       <SideNavModern />
 
       <main className="min-h-screen">
-        {/* Above-the-fold content - not lazy loaded */}
-        <HeroPremium />
-        <WhyWorkSection />
-        <ServicesPricing />
+        {/* 1. Hero - Bold opening, clear value, immediate booking CTA */}
+        <HeroPolished />
 
-        {/* Below-the-fold content - lazy loaded */}
-        <Suspense fallback={<SectionLoader />}>
-          <PortfolioShowcase />
-        </Suspense>
+        {/* 2. Social Proof - Build trust early with results */}
+        <SocialProofPolished />
 
-        <Suspense fallback={<SectionLoader />}>
-          <SkillsConstellation />
-        </Suspense>
-
-        <Suspense fallback={<SectionLoader />}>
-          <InteractiveSkillsShowcase />
-        </Suspense>
-
-        <Suspense fallback={<SectionLoader />}>
-          <DifferenceSection />
-        </Suspense>
-
+        {/* 3. Story - Why Michael, what makes the approach different */}
         <Suspense fallback={<SectionLoader />}>
           <StorySection />
         </Suspense>
 
+        {/* 4. Portfolio - Show the work */}
+        <Suspense fallback={<SectionLoader />}>
+          <PortfolioShowcase />
+        </Suspense>
+
+        {/* 5. Process - How working together looks */}
         <Suspense fallback={<SectionLoader />}>
           <ProcessSection />
         </Suspense>
 
-        <Suspense fallback={<SectionLoader />}>
-          <WhoThisIsForSection />
-        </Suspense>
+        {/* 6. Offers - Now they're warm, present pricing with psychology */}
+        <PremiumOffers />
 
+        {/* 7. Booking - Direct path to action via Calendly */}
+        <BookingSection />
+
+        {/* 8. Final CTA - Last call to action */}
         <Suspense fallback={<SectionLoader />}>
           <FinalCTASection />
         </Suspense>
 
-        {/* Chat Avatar - No lazy loading for instant availability */}
+        {/* Chat Avatar - Always available */}
         <ChatAvatarFunctional />
       </main>
     </ErrorBoundary>

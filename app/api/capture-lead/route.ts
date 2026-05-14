@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
 import { Resend } from "resend"
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+let resendInstance: Resend | null = null
+function getResend(): Resend | null {
+  if (!process.env.RESEND_API_KEY) return null
+  if (!resendInstance) {
+    resendInstance = new Resend(process.env.RESEND_API_KEY)
+  }
+  return resendInstance
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -53,7 +60,8 @@ export async function POST(req: NextRequest) {
 }
 
 async function sendLeadNotification(lead: any) {
-  if (!process.env.RESEND_API_KEY) {
+  const resend = getResend()
+  if (!resend) {
     console.log("Lead notification (RESEND_API_KEY not configured):", lead)
     return { success: false, reason: "No API key" }
   }

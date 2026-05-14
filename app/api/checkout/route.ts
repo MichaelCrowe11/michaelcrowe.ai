@@ -1,73 +1,114 @@
 import { NextRequest, NextResponse } from "next/server"
 import Stripe from "stripe"
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2024-12-18.acacia",
-})
+// Lazy initialization - only create Stripe instance when needed
+let stripeInstance: Stripe | null = null
+function getStripe(): Stripe {
+  if (!stripeInstance) {
+    const key = process.env.STRIPE_SECRET_KEY
+    if (!key) {
+      throw new Error("STRIPE_SECRET_KEY not configured")
+    }
+    stripeInstance = new Stripe(key, {
+      apiVersion: "2024-12-18.acacia",
+    })
+  }
+  return stripeInstance
+}
 
-// Product catalog with pricing
+// Product catalog with high-converting pricing & psychology
 const PRODUCTS = {
+  "ai-roadmap-call": {
+    name: "AI Roadmap Intensive",
+    price: 250000, // $2,500 in cents
+    description: "90-min strategy call + 25-page custom AI roadmap delivered in 7 days",
+    mode: "payment" as const,
+    features: [
+      "90-minute deep-dive strategy call with Michael",
+      "Custom 25-page AI implementation roadmap (7-day delivery)",
+      "Prioritized list of 5-7 high-ROI AI opportunities",
+      "Technology stack recommendations + build vs. buy analysis",
+      "ROI projections with conservative and aggressive scenarios",
+      "30-day Slack access for follow-up questions",
+      "100% credited toward AI System Sprint if upgraded within 30 days"
+    ]
+  },
+  "ai-system-sprint": {
+    name: "AI System Sprint",
+    price: 2500000, // $25,000 in cents
+    description: "One production-ready AI system built and deployed in 4 weeks",
+    mode: "payment" as const,
+    features: [
+      "Discovery sprint: Define system, KPIs, integration points (Week 1)",
+      "Custom AI architecture using Crowe Logic methodology",
+      "Production-grade build with monitoring & error handling",
+      "Full integration with existing tools (CRM, ERP, comms)",
+      "Team training: 2 sessions for adoption",
+      "60 days post-launch optimization included",
+      "Direct Slack access to Michael throughout",
+      "Lifetime access to source code"
+    ]
+  },
+  "crowe-logic-implementation": {
+    name: "Crowe Logic Implementation",
+    price: 7500000, // $75,000 in cents
+    description: "Complete AI transformation: 5-7 connected systems in 12 weeks",
+    mode: "payment" as const,
+    features: [
+      "Full enterprise AI architecture design",
+      "5-7 production AI systems built and integrated",
+      "Crowe Logic agent orchestration framework",
+      "Enterprise integrations (Salesforce, HubSpot, custom APIs)",
+      "Team training: 6 sessions with leadership and operators",
+      "Quarterly optimization included for 12 months",
+      "Priority access (12hr response) for 6 months",
+      "Co-development of internal AI playbook"
+    ]
+  },
+  "executive-ai-partnership": {
+    name: "Executive AI Partnership",
+    price: 1500000, // $15,000/month in cents
+    description: "Fractional Chief AI Officer - monthly partnership (6-month minimum)",
+    mode: "subscription" as const,
+    recurring: { interval: "month" as const },
+    features: [
+      "20 hours/month of strategic guidance",
+      "Weekly 60-min executive sessions",
+      "Unlimited async access (Slack, 12hr SLA)",
+      "Board-level AI presentations and reporting",
+      "Vendor evaluation and contract negotiation support",
+      "Network introductions",
+      "Quarterly AI strategy reviews",
+      "First-call rights on new implementation projects"
+    ]
+  },
   "ai-audit": {
-    name: "AI Audit",
+    name: "AI Opportunity Audit",
     price: 500000, // $5,000 in cents
-    description: "1-week async audit of your operations with AI opportunity identification",
+    description: "1-week async audit identifying 3-5 highest-ROI AI opportunities",
+    mode: "payment" as const,
     features: [
       "Async audit of current operations",
-      "Video walkthrough of 3-5 AI opportunities",
+      "Video walkthrough of 3-5 AI opportunities specific to your business",
       "Prioritization matrix (effort vs. impact)",
-      "60-minute live Q&A"
+      "Implementation cost & ROI estimates",
+      "60-minute live Q&A session",
+      "30-day email support for clarifications"
     ]
   },
-  "discovery-intensive": {
-    name: "Discovery Intensive",
-    price: 750000, // $7,500 in cents
-    description: "3 full days of deep-dive consultation with proof-of-concept",
+  "ai-playbook": {
+    name: "The Crowe Logic Playbook",
+    price: 199700, // $1,997 in cents
+    description: "Self-paced course: The exact framework I use with $25K+ clients",
+    mode: "payment" as const,
     features: [
-      "3 full days of deep-dive consultation",
-      "Immediate AI opportunity identification",
-      "Quick-win implementation plan",
-      "Proof-of-concept for one automation",
-      "Fully credited toward Implementation Intensive if upgraded within 30 days"
-    ]
-  },
-  "strategy-roadmap": {
-    name: "AI Strategy & Roadmap",
-    price: 1500000, // $15,000 in cents
-    description: "2-week comprehensive AI strategy and implementation roadmap",
-    features: [
-      "Full business & technical audit (2-3 days deep dive)",
-      "Custom AI strategy aligned with your business goals",
-      "Detailed 25-page implementation roadmap with ROI projections",
-      "Technology stack recommendations",
-      "Build vs. buy analysis",
-      "2-hour executive presentation",
-      "90 days of strategic support"
-    ]
-  },
-  "implementation-intensive": {
-    name: "AI Implementation Intensive",
-    price: 4500000, // $45,000 in cents
-    description: "6-week intensive: 5-7 automations built and deployed",
-    features: [
-      "Everything in Strategy & Roadmap, PLUS:",
-      "Custom AI solution architecture leveraging Crowe Logic methodology",
-      "5-7 high-impact automations built and deployed",
-      "Integration with existing enterprise systems",
-      "Team training and documentation",
-      "60 days post-launch optimization",
-      "Direct access to Michael throughout"
-    ]
-  },
-  "strategy-session": {
-    name: "Strategy Session",
-    price: 50000, // $500 in cents (per hour, minimum 2 hours)
-    description: "Architecture planning and technical consultation",
-    features: [
-      "$500/hour strategy consultation",
-      "2 hour minimum",
-      "Architecture planning",
-      "Technical guidance",
-      "Can be applied toward larger engagements"
+      "12-hour video course (10 modules)",
+      "All templates, prompts, and frameworks",
+      "Lifetime access + updates",
+      "Private community access",
+      "Monthly office hours with Michael",
+      "Certificate of completion",
+      "30-day money-back guarantee"
     ]
   }
 }
@@ -92,27 +133,34 @@ export async function POST(req: NextRequest) {
 
     const product = PRODUCTS[productId as keyof typeof PRODUCTS]
     const origin = req.headers.get("origin") || "https://michaelcrowe.ai"
+    const isSubscription = product.mode === "subscription"
+
+    // Build line items - subscriptions need recurring config
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
+      {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: product.name,
+            description: product.description,
+            metadata: {
+              features: product.features.join(" | ")
+            }
+          },
+          unit_amount: product.price,
+          ...(isSubscription && "recurring" in product
+            ? { recurring: { interval: product.recurring!.interval } }
+            : {}),
+        },
+        quantity,
+      },
+    ]
 
     // Create Stripe Checkout Session
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
+    const session = await getStripe().checkout.sessions.create({
+      mode: isSubscription ? "subscription" : "payment",
       payment_method_types: ["card"],
-      line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: product.name,
-              description: product.description,
-              metadata: {
-                features: product.features.join(", ")
-              }
-            },
-            unit_amount: product.price,
-          },
-          quantity,
-        },
-      ],
+      line_items: lineItems,
       customer_email: customerInfo?.email,
       metadata: {
         productId,
@@ -129,9 +177,18 @@ export async function POST(req: NextRequest) {
       },
       custom_text: {
         submit: {
-          message: "You'll receive a confirmation email with next steps after payment."
+          message: isSubscription
+            ? "You'll receive a welcome email with onboarding details after subscription is created."
+            : "You'll receive a confirmation email with next steps after payment."
         }
-      }
+      },
+      ...(isSubscription
+        ? {
+            subscription_data: {
+              metadata: { productId },
+            },
+          }
+        : {}),
     })
 
     return NextResponse.json({
@@ -161,7 +218,7 @@ export async function WEBHOOK(req: NextRequest) {
 
   try {
     const body = await req.text()
-    const event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
+    const event = getStripe().webhooks.constructEvent(body, signature, webhookSecret)
 
     // Handle different event types
     switch (event.type) {

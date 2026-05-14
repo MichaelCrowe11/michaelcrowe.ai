@@ -3,7 +3,14 @@ import { z } from 'zod'
 import { config } from '@/lib/config'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+let resendInstance: Resend | null = null
+function getResend(): Resend | null {
+  if (!process.env.RESEND_API_KEY) return null
+  if (!resendInstance) {
+    resendInstance = new Resend(process.env.RESEND_API_KEY)
+  }
+  return resendInstance
+}
 
 // Contact form validation schema
 const contactFormSchema = z.object({
@@ -66,7 +73,8 @@ export async function POST(request: NextRequest) {
     const validatedData = contactFormSchema.parse(body)
 
     // Send email notification using Resend
-    if (process.env.RESEND_API_KEY) {
+    const resend = getResend()
+    if (resend) {
       try {
         const emailHtml = `
           <!DOCTYPE html>

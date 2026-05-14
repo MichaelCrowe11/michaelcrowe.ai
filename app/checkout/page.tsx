@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { loadStripe } from "@stripe/stripe-js"
 import { motion } from "framer-motion"
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "")
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const searchParams = useSearchParams()
   const productId = searchParams.get("product")
   const email = searchParams.get("email")
@@ -233,5 +233,19 @@ export default function CheckoutPage() {
         </div>
       </motion.div>
     </main>
+  )
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="w-8 h-8 text-gold animate-spin" />
+        </div>
+      }
+    >
+      <CheckoutContent />
+    </Suspense>
   )
 }
