@@ -2,8 +2,18 @@
 
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Check, ArrowRight, Sparkles, Zap, Rocket, Crown, Search, Lightbulb } from "lucide-react"
+import { Check, ArrowRight, Sparkles, Zap, Rocket, Crown, Search, Lightbulb, type LucideIcon } from "lucide-react"
 import Link from "next/link"
+import { coreTiers, entryPoints, MINIMUM_ENGAGEMENT, type OfferIcon } from "@/lib/offer-data"
+
+const iconMap: Record<OfferIcon, LucideIcon> = {
+  Sparkles,
+  Zap,
+  Rocket,
+  Crown,
+  Search,
+  Lightbulb,
+}
 
 const container = {
   hidden: { opacity: 0 },
@@ -27,113 +37,7 @@ const item = {
 }
 
 export function ServicesPricing() {
-  const mainServices = [
-    {
-      icon: Sparkles,
-      name: "AI Strategy & Roadmap",
-      price: "$15,000",
-      duration: "2 Weeks",
-      tagline: "Know exactly where AI fits in your business",
-      features: [
-        "Full business & technical audit (2-3 days deep dive)",
-        "Custom AI strategy aligned with your business goals",
-        "Detailed 25-page implementation roadmap with ROI projections",
-        "Technology stack recommendations",
-        "Build vs. buy analysis",
-        "2-hour executive presentation",
-        "90 days of strategic support",
-      ],
-      outcome: "Know exactly where AI fits, what to build first, and what ROI to expect.",
-      highlighted: false,
-      borderColor: "border-gold/30",
-      bgGradient: "from-gold/5 to-gold/10",
-    },
-    {
-      icon: Zap,
-      name: "AI Implementation Intensive",
-      price: "$45,000",
-      duration: "6 Weeks",
-      tagline: "Get 5-7 automations built and deployed",
-      features: [
-        "Everything in Strategy & Roadmap, PLUS:",
-        "Custom AI solution architecture leveraging Crowe Logic methodology",
-        "5-7 high-impact automations built and deployed",
-        "Integration with existing enterprise systems",
-        "Team training and documentation",
-        "60 days post-launch optimization",
-        "Direct access to me throughout",
-      ],
-      outcome: "50-100+ hours/week saved across your organization. Systems that actually work.",
-      highlighted: true,
-      borderColor: "border-gold",
-      bgGradient: "from-gold/10 to-accent/10",
-    },
-    {
-      icon: Rocket,
-      name: "Executive AI Advisory",
-      price: "$15,000/mo",
-      duration: "6-month minimum",
-      tagline: "Your interim Chief AI Officer",
-      features: [
-        "15 hours/month of direct strategic guidance",
-        "Unlimited async access (Slack/email, 12hr response time)",
-        "Weekly 1-hour strategy calls",
-        "Quarterly roadmap reviews",
-        "Introduction to my network (vendors, partners, investors)",
-        "Priority access for implementation projects",
-        "Act as your interim Chief AI Officer",
-      ],
-      outcome: "Limited to 3 clients maximum",
-      highlighted: false,
-      borderColor: "border-accent/30",
-      bgGradient: "from-accent/5 to-accent/10",
-    },
-    {
-      icon: Crown,
-      name: "Custom Platform Development",
-      price: "$100,000+",
-      duration: "3-6 months",
-      tagline: "Enterprise-grade AI infrastructure",
-      features: [
-        "Industry-specific AI agent frameworks",
-        "Custom Crowe Logic implementations",
-        "Proprietary automation platforms",
-        "Enterprise-grade AI infrastructure",
-      ],
-      outcome: "This is what I've built for my own companies. Now available for select clients.",
-      highlighted: false,
-      borderColor: "border-purple-500/30",
-      bgGradient: "from-purple-500/5 to-purple-500/10",
-    },
-  ]
-
-  const entryPoints = [
-    {
-      icon: Search,
-      name: "Discovery Intensive",
-      price: "$7,500",
-      duration: "3 Days",
-      features: [
-        "3 full days of deep-dive consultation",
-        "Immediate AI opportunity identification",
-        "Quick-win implementation plan",
-        "Proof-of-concept for one automation",
-        "Fully credited toward Implementation Intensive if you upgrade within 30 days",
-      ],
-    },
-    {
-      icon: Lightbulb,
-      name: "AI Audit",
-      price: "$5,000",
-      duration: "1 Week",
-      features: [
-        "Async audit of your current operations",
-        "Video walkthrough of 3-5 AI opportunities specific to your business",
-        "Prioritization matrix (effort vs. impact)",
-        "60-minute live Q&A",
-      ],
-    },
-  ]
+  const mainServices = coreTiers
 
   return (
     <section id="services-pricing" className="section-spacing relative overflow-hidden">
@@ -160,7 +64,7 @@ export function ServicesPricing() {
           </p>
           <div className="inline-block px-6 py-3 rounded-xl bg-gradient-to-r from-gold/10 to-accent/10 border border-gold/20">
             <p className="text-lg font-semibold text-foreground">
-              Minimum engagement: <span className="text-gold">$5,000</span>
+              Minimum engagement: <span className="text-gold">{MINIMUM_ENGAGEMENT}</span>
             </p>
           </div>
         </motion.div>
@@ -173,59 +77,72 @@ export function ServicesPricing() {
           viewport={{ once: true }}
           className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16"
         >
-          {mainServices.map((service, idx) => (
+          {mainServices.map((service) => {
+            const Icon = iconMap[service.icon]
+            return (
             <motion.div
-              key={service.name}
+              key={service.id}
               variants={item}
               className={`relative ${service.highlighted ? "lg:col-span-2" : ""}`}
             >
               <div
-                className={`glass-card rounded-2xl p-8 h-full border-2 ${service.borderColor} bg-gradient-to-br ${service.bgGradient} relative overflow-hidden group hover:scale-[1.02] transition-all duration-300`}
+                className={`glass-card rounded-2xl p-8 h-full border-2 ${service.borderColor} bg-gradient-to-br ${service.bgGradient} relative overflow-hidden group hover:scale-[1.02] transition-all duration-300 ${service.highlighted ? "shadow-glow-gold lg:flex lg:gap-10" : "flex flex-col"}`}
               >
                 {service.highlighted && (
-                  <div className="absolute top-4 right-4 px-4 py-1.5 rounded-full bg-gold/20 border border-gold/40">
+                  <div className="absolute top-4 right-4 px-4 py-1.5 rounded-full bg-gold/20 border border-gold/40 z-10">
                     <span className="text-sm font-bold text-gold">MOST POPULAR</span>
                   </div>
                 )}
 
-                {/* Icon */}
-                <div className="mb-6">
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-gold/30 to-accent/20 flex items-center justify-center">
-                    <service.icon className="w-8 h-8 text-gold" />
+                <div className={service.highlighted ? "lg:flex-1" : ""}>
+                  {/* Icon */}
+                  <div className="mb-6">
+                    <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-gold/30 to-accent/20 flex items-center justify-center">
+                      <Icon className="w-8 h-8 text-gold" />
+                    </div>
+                  </div>
+
+                  {/* Header */}
+                  <div className="mb-6">
+                    <h3 className="text-2xl font-bold glow-text mb-2">{service.name}</h3>
+                    <p className="text-muted-foreground mb-4">{service.tagline}</p>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-bold text-gold">{service.price}</span>
+                      <span className="text-muted-foreground">| {service.duration}</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Header */}
-                <div className="mb-6">
-                  <h3 className="text-2xl font-bold glow-text mb-2">{service.name}</h3>
-                  <p className="text-muted-foreground mb-4">{service.tagline}</p>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-gold">{service.price}</span>
-                    <span className="text-muted-foreground">| {service.duration}</span>
+                <div className={service.highlighted ? "lg:flex-1 lg:flex lg:flex-col" : "flex flex-col flex-1"}>
+                  {/* Features */}
+                  <div className="mb-6">
+                    <p className="text-sm font-semibold text-foreground mb-4">What You Get:</p>
+                    <ul className="space-y-3">
+                      {service.features.map((feature, featureIdx) => (
+                        <li key={featureIdx} className="flex items-start gap-3">
+                          <Check className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
+                          <span className="text-sm text-muted-foreground">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                </div>
 
-                {/* Features */}
-                <div className="mb-6">
-                  <p className="text-sm font-semibold text-foreground mb-4">What You Get:</p>
-                  <ul className="space-y-3">
-                    {service.features.map((feature, featureIdx) => (
-                      <li key={featureIdx} className="flex items-start gap-3">
-                        <Check className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
-                        <span className="text-sm text-muted-foreground">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Outcome */}
-                <div className="pt-6 border-t border-border/50">
-                  <p className="text-sm font-semibold text-gold mb-2">Outcome:</p>
-                  <p className="text-sm text-muted-foreground italic">{service.outcome}</p>
+                  {/* Outcome */}
+                  <div className="pt-6 border-t border-border/50 mt-auto">
+                    <p className="text-sm font-semibold text-gold mb-2">Outcome:</p>
+                    <p className="text-sm text-muted-foreground italic mb-6">{service.outcome}</p>
+                    <Button asChild className="glass-button w-full h-11 font-semibold group/btn">
+                      <Link href="/contact" className="flex items-center justify-center gap-2">
+                        <span>Get Started</span>
+                        <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
               </div>
             </motion.div>
-          ))}
+            )
+          })}
         </motion.div>
 
         {/* Alternative Entry Points */}
@@ -241,19 +158,21 @@ export function ServicesPricing() {
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {entryPoints.map((entry, idx) => (
+            {entryPoints.map((entry, idx) => {
+              const Icon = iconMap[entry.icon]
+              return (
               <motion.div
-                key={entry.name}
+                key={entry.id}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.1 * idx }}
               >
-                <div className="glass-card rounded-2xl p-8 h-full border border-gold/20 hover:border-gold/40 transition-all duration-300 hover:scale-[1.02]">
+                <div className="glass-card rounded-2xl p-8 h-full border border-gold/20 hover:border-gold/40 transition-all duration-300 hover:scale-[1.02] flex flex-col">
                   {/* Icon */}
                   <div className="mb-4">
                     <div className="w-12 h-12 rounded-lg bg-gold/10 flex items-center justify-center">
-                      <entry.icon className="w-6 h-6 text-gold" />
+                      <Icon className="w-6 h-6 text-gold" />
                     </div>
                   </div>
 
@@ -267,7 +186,7 @@ export function ServicesPricing() {
                   </div>
 
                   {/* Features */}
-                  <ul className="space-y-2">
+                  <ul className="space-y-2 mb-6">
                     {entry.features.map((feature, featureIdx) => (
                       <li key={featureIdx} className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" />
@@ -275,9 +194,17 @@ export function ServicesPricing() {
                       </li>
                     ))}
                   </ul>
+
+                  <Button asChild variant="outline" className="mt-auto w-full h-11 border-gold/40 text-gold hover:bg-gold/10 hover:text-gold font-semibold group/btn">
+                    <Link href="/contact" className="flex items-center justify-center gap-2">
+                      <span>Book This</span>
+                      <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                    </Link>
+                  </Button>
                 </div>
               </motion.div>
-            ))}
+              )
+            })}
           </div>
         </motion.div>
 
