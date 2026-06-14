@@ -1,0 +1,11 @@
+.git
+.github
+node_modules
+.next
+out
+dist
+.env*
+!.env.local.example
+*.md
+.vercel
+.dockerignore
