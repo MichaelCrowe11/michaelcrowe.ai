@@ -190,9 +190,9 @@ export class SalesEngine {
   private getPricingResponse(input: string): string {
     // Value-first pricing strategy
     const responses = [
-      "Great question! Before we dive into pricing, let me ask: what's the biggest bottleneck in your business right now? I want to make sure I show you the exact solution that'll move the needle. Here's the reality—my clients typically see 3-10x ROI within the first 6 months. I offer three tiers: **AI Consulting** ($2,500-5,000 for strategy), **Custom AI Development** ($10,000-50,000+ for production systems), and **Managed AI Services** ($3,000-10,000/month for ongoing optimization). Which challenge would make the biggest impact if we solved it together?",
-      
-      "I love that you're thinking about investment! Here's what I've learned: businesses that hesitate lose $10,000-100,000+ per year to inefficiency. My pricing reflects the value I deliver—not hourly rates. **Recent client**: a restaurant owner invested $15,000 in an AI chatbot, now saves 30 hours/week and captures $8,000/month in additional orders. That's a 6-week payback. For your situation, I'd need to understand your current pain points to recommend the right tier. What's costing you the most right now—time, money, or missed opportunities?",
+      "Great question! Before we dive into pricing, let me ask: what's the biggest bottleneck in your business right now? I want to make sure I point you to the engagement that'll actually move the needle. Here's how I work—my minimum engagement is **$5,000**, and clients typically see 3-10x ROI within the first 6 months. The core paths are: **AI Strategy & Roadmap** ($15,000, 2 weeks), **AI Implementation Intensive** ($45,000, 6 weeks—my most popular), and **Executive AI Advisory** ($15,000/mo) where I act as your interim Chief AI Officer. Which challenge would make the biggest impact if we solved it together?",
+
+      "I love that you're thinking about investment! Here's what I've learned: businesses that hesitate lose $10,000-100,000+ per year to inefficiency. My pricing reflects the value I deliver, not hourly rates. If you want to start small, I offer an **AI Audit** ($5,000, 1 week) or a **Discovery Intensive** ($7,500, 3 days, fully credited toward implementation if you upgrade). From there, the **Implementation Intensive** ($45,000) gets 5-7 automations built and deployed—usually 50-100+ hours/week saved. For enterprise infrastructure, custom platform builds start at $100,000+. What's costing you the most right now—time, money, or missed opportunities?",
     ]
     return responses[Math.floor(Math.random() * responses.length)]
   }
@@ -218,7 +218,7 @@ export class SalesEngine {
   }
 
   private getServicesResponse(): string {
-    return "I offer three core services, each designed to drive real ROI: **1) AI Strategy & Consulting** ($2,500-5,000)—I'll audit your business, identify your biggest AI opportunities, and hand you a roadmap. Most clients find 5-10 areas to improve. **2) Custom AI Development** ($10,000-50,000+)—I build production-ready systems that actually work: chatbots, automation, analytics, recommendation engines. **3) Managed AI Services** ($3,000-10,000/month)—Ongoing optimization and support so your systems keep improving. Here's the key: I don't sell technology. I sell outcomes. What's the #1 problem you'd pay to solve?"
+    return "I offer a clear ladder of engagements, each built to drive real ROI: **1) AI Strategy & Roadmap** ($15,000, 2 weeks)—a full audit plus a detailed implementation roadmap with ROI projections. **2) AI Implementation Intensive** ($45,000, 6 weeks)—my most popular: I build and deploy 5-7 high-impact automations integrated with your systems. **3) Executive AI Advisory** ($15,000/mo)—I act as your interim Chief AI Officer (limited to 3 clients). And **4) Custom Platform Development** ($100,000+) for enterprise-grade AI infrastructure. Want to test the waters first? An **AI Audit** ($5,000) or **Discovery Intensive** ($7,500) is the perfect entry point. I don't sell technology—I sell outcomes. What's the #1 problem you'd pay to solve?"
   }
 
   private getCommitmentResponse(): string {

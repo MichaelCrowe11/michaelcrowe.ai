@@ -150,8 +150,10 @@ export default function ContactPage() {
               <CardContent className="pt-6 pb-6 px-6">
                 <h3 className="font-bold mb-2">How much does it cost?</h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  Every project is different. After our consultation, I'll provide a clear proposal with pricing based
-                  on your specific needs. Most projects range from $5,000-$30,000 depending on complexity.
+                  My minimum engagement is $5,000. Most clients start with an AI Audit ($5,000) or Discovery Intensive
+                  ($7,500), then move into a Strategy & Roadmap ($15,000) or the Implementation Intensive ($45,000).
+                  Enterprise platform builds start at $100,000+. After our consultation, I'll recommend the right fit
+                  and provide a clear proposal.
                 </p>
               </CardContent>
             </Card>

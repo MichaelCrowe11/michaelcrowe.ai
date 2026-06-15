@@ -4,12 +4,8 @@ node_modules
 .next
 out
 dist
-.env
-.env.*
+.env*
 !.env.local.example
-.vercel
-fly.toml
 *.md
-Dockerfile
+.vercel
 .dockerignore
-.gcloudignore

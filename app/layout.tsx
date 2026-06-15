@@ -15,7 +15,7 @@ const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space
 export const metadata: Metadata = {
   title: "Michael Crowe - AI Implementation Consultant | Crowe Logic & CriOS Nova",
   description:
-    "AI consultant who's built production systems generating $470k+/year. Crowe Logic framework, 150+ AI agents for drug discovery. Implementation in weeks, not years. $15k-500k engagements.",
+    "AI consultant who's built production systems generating $470k+/year. Crowe Logic framework, 150+ AI agents for drug discovery. Implementation in weeks, not years. Engagements from $5k to $100k+.",
   keywords: [
     "AI consultant",
     "AI implementation consultant",

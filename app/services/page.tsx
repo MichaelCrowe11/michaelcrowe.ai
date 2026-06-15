@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { MessageSquare, Calendar, Mail, BarChart3, Phone, Sparkles, ArrowRight } from "lucide-react"
 import Link from "next/link"
+import { ServicesPricing } from "@/components/services-pricing"
 
 export const metadata = {
   title: "AI Automation Services | Michael Crowe",
@@ -143,18 +144,8 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-primary text-primary-foreground">
-        <div className="container mx-auto max-w-3xl text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-balance">Not Sure Which Service You Need?</h2>
-          <p className="text-lg text-primary-foreground/80 mb-8 leading-relaxed text-pretty">
-            Let's talk about your business challenges. I'll help you figure out exactly what AI can do for you.
-          </p>
-          <Button asChild size="lg" className="bg-gold text-gold-foreground hover:bg-gold/90">
-            <Link href="/contact">Schedule Free Discovery Call</Link>
-          </Button>
-        </div>
-      </section>
+      {/* Investment / Pricing Offer */}
+      <ServicesPricing />
     </main>
   )
 }
