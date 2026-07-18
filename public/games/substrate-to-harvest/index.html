@@ -1,0 +1,2495 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<meta name="theme-color" content="#1a1410" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="description" content="Substrate to Harvest — a mushroom cultivation tycoon game by Southwest Mushrooms and Crowe Logic, Inc." />
+<title>Substrate to Harvest · Southwest Mushrooms</title>
+<link rel="icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><circle cx="16" cy="12" r="10" fill="%23c9a961"/><rect x="12" y="16" width="8" height="12" rx="3" fill="%23f4e8d0"/></svg>' />
+<style>
+  /* ============ RESET + BASE ============ */
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
+    background:radial-gradient(ellipse at top,#241a13 0%,#0f0a07 70%);
+    color:#f4e8d0;
+    font-size:14px;
+    line-height:1.4;
+    user-select:none;
+    -webkit-user-select:none;
+    -webkit-font-smoothing:antialiased;
+  }
+  .num{font-family:"SF Mono","Menlo","Monaco","Courier New",monospace;font-variant-numeric:tabular-nums}
+  .serif{font-family:"Iowan Old Style","Palatino Linotype","Book Antiqua",Palatino,serif}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+  /* ============ THEME TOKENS ============ */
+  :root{
+    --bg:#1a1410;
+    --bg-2:#241a13;
+    --panel:#2a1e15;
+    --panel-hi:#3b2b1e;
+    --line:#4a3728;
+    --ink:#f4e8d0;
+    --ink-dim:#c9b598;
+    --ink-mute:#8b7355;
+    --gold:#c9a961;
+    --gold-hi:#e8c880;
+    --tan:#d4a574;
+    --umber:#8b6f47;
+    --myc:#f4e8d0;
+    --ok:#7ec876;
+    --warn:#e8b04b;
+    --bad:#c8615c;
+    --contam-tricho:#5abf6e;
+    --contam-cobweb:#a89b8a;
+    --contam-bacterial:#c9a940;
+    --contam-neuro:#e88a3c;
+    --shadow-hi:0 8px 24px rgba(0,0,0,.4),0 2px 6px rgba(0,0,0,.3);
+    --shadow-md:0 4px 12px rgba(0,0,0,.3);
+    --radius:14px;
+    --radius-sm:8px;
+    --safe-b:env(safe-area-inset-bottom,0px);
+    --safe-t:env(safe-area-inset-top,0px);
+  }
+
+  /* ============ APP SHELL ============ */
+  #app{
+    position:fixed;inset:0;
+    display:flex;flex-direction:column;
+    padding-top:var(--safe-t);
+    padding-bottom:var(--safe-b);
+  }
+
+  /* ============ TOP STATUS BAR ============ */
+  .status-bar{
+    display:grid;
+    grid-template-columns:1fr auto 1fr;
+    align-items:center;
+    padding:10px 14px;
+    background:linear-gradient(180deg,rgba(58,42,29,.9),rgba(30,22,15,.9));
+    border-bottom:1px solid var(--line);
+    gap:12px;
+    backdrop-filter:blur(20px);
+  }
+  .status-left,.status-right{display:flex;gap:14px;align-items:center;font-size:13px}
+  .status-right{justify-content:flex-end}
+  .stat{display:flex;align-items:center;gap:5px;line-height:1}
+  .stat .lbl{color:var(--ink-mute);font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .stat.money{color:var(--gold-hi);font-weight:600}
+  .stat.rep{color:var(--tan)}
+  .stat.day{color:var(--ink-dim)}
+  .status-center{display:flex;flex-direction:column;align-items:center;gap:2px}
+  .brand-mark{display:flex;align-items:center;gap:6px}
+  .brand-mark svg{width:18px;height:18px}
+  .brand-mark .name{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+  .time-controls{display:flex;gap:2px;background:rgba(0,0,0,.35);border-radius:99px;padding:2px}
+  .time-controls button{
+    padding:2px 8px;font-size:10px;border-radius:99px;color:var(--ink-mute);
+    min-width:22px;font-weight:600;letter-spacing:.02em;
+  }
+  .time-controls button.active{background:var(--gold);color:#000}
+
+  /* ============ MAIN CONTENT ============ */
+  .main{
+    flex:1;
+    overflow-y:auto;
+    overflow-x:hidden;
+    padding:14px 14px 20px;
+    -webkit-overflow-scrolling:touch;
+    scroll-behavior:smooth;
+  }
+
+  .view{display:none;animation:fadeIn .3s ease}
+  .view.active{display:block}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+  .view-title{
+    display:flex;justify-content:space-between;align-items:baseline;
+    margin-bottom:10px;
+  }
+  .view-title h2{font-size:22px;font-weight:700;letter-spacing:-.01em}
+  .view-title .sub{color:var(--ink-mute);font-size:12px}
+
+  /* ============ CARDS ============ */
+  .card{
+    background:linear-gradient(160deg,var(--panel) 0%,var(--bg-2) 100%);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:14px;
+    box-shadow:var(--shadow-md);
+    margin-bottom:10px;
+    position:relative;
+    overflow:hidden;
+  }
+  .card.hi{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),var(--shadow-hi)}
+  .card.warn{border-color:var(--warn)}
+  .card.bad{border-color:var(--bad)}
+
+  .card-header{
+    display:flex;justify-content:space-between;align-items:flex-start;gap:10px;
+    margin-bottom:10px;
+  }
+  .card-title{font-size:15px;font-weight:600;letter-spacing:-.005em}
+  .card-sub{color:var(--ink-mute);font-size:11px;margin-top:2px;line-height:1.35}
+
+  .chip{
+    display:inline-flex;align-items:center;gap:4px;
+    padding:2px 8px;font-size:10px;font-weight:600;
+    border-radius:99px;text-transform:uppercase;letter-spacing:.06em;
+    background:rgba(201,169,97,.15);color:var(--gold);
+  }
+  .chip.ok{background:rgba(126,200,118,.15);color:var(--ok)}
+  .chip.warn{background:rgba(232,176,75,.15);color:var(--warn)}
+  .chip.bad{background:rgba(200,97,92,.18);color:var(--bad)}
+  .chip.stage-colonizing{background:rgba(139,111,71,.2);color:var(--tan)}
+  .chip.stage-fruiting{background:rgba(126,200,118,.15);color:var(--ok)}
+  .chip.stage-ready{background:rgba(201,169,97,.2);color:var(--gold-hi)}
+
+  /* ============ PROGRESS BARS ============ */
+  .bar{
+    height:6px;background:rgba(0,0,0,.4);border-radius:99px;overflow:hidden;position:relative;
+  }
+  .bar > span{
+    display:block;height:100%;
+    background:linear-gradient(90deg,var(--umber),var(--gold));
+    border-radius:99px;transition:width .3s ease;
+  }
+  .bar.contam > span{background:linear-gradient(90deg,var(--warn),var(--bad))}
+  .bar.small{height:4px}
+
+  /* ============ BATCH VISUAL ============ */
+  .batch-visual{
+    height:100px;margin-bottom:10px;
+    background:radial-gradient(circle at 50% 65%,rgba(139,111,71,.25),transparent 60%),linear-gradient(180deg,#1a120c,#0f0a07);
+    border-radius:10px;
+    position:relative;overflow:hidden;
+    display:flex;justify-content:center;align-items:flex-end;
+    padding-bottom:8px;
+  }
+  .batch-visual svg{width:100%;height:100%;position:absolute;inset:0}
+  .substrate-block{
+    fill:#8b6f47;stroke:#5c4a30;stroke-width:1;
+  }
+  .mycelium-fill{fill:var(--myc);opacity:.6}
+  .contam-blob{opacity:.9}
+
+  /* ============ CONDITIONS ============ */
+  .conditions{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:6px;
+    margin-top:10px;
+  }
+  .cond{
+    background:rgba(0,0,0,.3);border-radius:8px;padding:6px 8px;text-align:center;
+    border:1px solid transparent;
+  }
+  .cond.ok{border-color:rgba(126,200,118,.3);background:rgba(126,200,118,.08)}
+  .cond.warn{border-color:rgba(232,176,75,.35);background:rgba(232,176,75,.08)}
+  .cond.bad{border-color:rgba(200,97,92,.4);background:rgba(200,97,92,.1)}
+  .cond .k{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-mute)}
+  .cond .v{font-size:14px;font-weight:700;margin-top:2px}
+  .cond .u{font-size:9px;color:var(--ink-mute)}
+
+  /* ============ SLIDERS ============ */
+  .slider-row{margin:8px 0}
+  .slider-row .top{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;color:var(--ink-dim)}
+  .slider-row .top strong{color:var(--ink);font-weight:600}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;
+    width:100%;height:22px;background:transparent;cursor:pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track{
+    height:4px;background:linear-gradient(90deg,var(--line),var(--umber));border-radius:99px;
+  }
+  input[type=range]::-moz-range-track{
+    height:4px;background:linear-gradient(90deg,var(--line),var(--umber));border-radius:99px;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;
+    width:20px;height:20px;border-radius:50%;
+    background:linear-gradient(180deg,var(--gold-hi),var(--gold));
+    border:2px solid #2a1e15;margin-top:-8px;
+    box-shadow:0 2px 6px rgba(0,0,0,.4);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:20px;height:20px;border-radius:50%;border:2px solid #2a1e15;
+    background:linear-gradient(180deg,var(--gold-hi),var(--gold));
+    box-shadow:0 2px 6px rgba(0,0,0,.4);
+  }
+
+  /* ============ ACTION BUTTONS ============ */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    padding:10px 14px;border-radius:10px;
+    font-size:13px;font-weight:600;letter-spacing:.01em;
+    transition:transform .1s,filter .1s;
+    min-height:40px;
+  }
+  .btn:active{transform:scale(.96)}
+  .btn.primary{
+    background:linear-gradient(180deg,var(--gold-hi),var(--gold));
+    color:#1a1410;
+    box-shadow:0 2px 8px rgba(201,169,97,.4);
+  }
+  .btn.primary:disabled{
+    background:#3a2e22;color:var(--ink-mute);box-shadow:none;
+  }
+  .btn.ghost{
+    background:transparent;color:var(--ink);
+    border:1px solid var(--line);
+  }
+  .btn.ghost:active{background:rgba(201,169,97,.08)}
+  .btn.danger{
+    background:transparent;color:var(--bad);border:1px solid rgba(200,97,92,.4);
+  }
+  .btn.full{width:100%}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  .btn-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .btn-row .btn{flex:1;min-width:0}
+
+  /* ============ SHOP GRID ============ */
+  .grid{display:grid;gap:10px}
+  .grid-2{grid-template-columns:repeat(2,1fr)}
+  .grid-3{grid-template-columns:repeat(3,1fr)}
+  @media (max-width:420px){.grid-3{grid-template-columns:repeat(2,1fr)}}
+
+  .shop-item{
+    background:var(--panel);border:1px solid var(--line);
+    border-radius:12px;padding:12px;
+    display:flex;flex-direction:column;gap:6px;
+    position:relative;
+  }
+  .shop-item.locked{opacity:.5}
+  .shop-item .icn{
+    height:44px;display:flex;align-items:center;justify-content:center;
+    margin-bottom:4px;
+  }
+  .shop-item .icn svg{width:100%;height:100%}
+  .shop-item .nm{font-weight:600;font-size:12px}
+  .shop-item .dsc{font-size:10px;color:var(--ink-mute);flex:1}
+  .shop-item .pr{color:var(--gold-hi);font-weight:700;font-size:13px}
+  .shop-item .lock-note{font-size:9px;color:var(--warn);margin-top:2px}
+
+  /* ============ BOTTOM NAV ============ */
+  .nav{
+    display:grid;grid-template-columns:repeat(5,1fr);
+    background:linear-gradient(0deg,rgba(15,10,7,.98),rgba(30,22,15,.95));
+    border-top:1px solid var(--line);
+    backdrop-filter:blur(20px);
+    padding-bottom:var(--safe-b);
+  }
+  .nav button{
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+    padding:8px 4px;color:var(--ink-mute);
+    font-size:10px;letter-spacing:.02em;
+    position:relative;
+    min-height:52px;
+  }
+  .nav button.active{color:var(--gold)}
+  .nav button.active::before{
+    content:"";position:absolute;top:0;left:20%;right:20%;height:2px;
+    background:var(--gold);border-radius:99px;
+  }
+  .nav button svg{width:22px;height:22px}
+  .nav button .badge{
+    position:absolute;top:4px;right:calc(50% - 18px);
+    background:var(--bad);color:#fff;
+    font-size:9px;font-weight:700;
+    min-width:14px;height:14px;padding:0 4px;
+    border-radius:99px;display:flex;align-items:center;justify-content:center;
+  }
+
+  /* ============ MODAL ============ */
+  .modal-scrim{
+    position:fixed;inset:0;background:rgba(10,7,4,.75);
+    display:flex;align-items:flex-end;justify-content:center;
+    z-index:100;opacity:0;pointer-events:none;
+    transition:opacity .25s;
+    backdrop-filter:blur(6px);
+    padding-bottom:var(--safe-b);
+  }
+  .modal-scrim.open{opacity:1;pointer-events:auto}
+  .modal{
+    background:linear-gradient(180deg,var(--panel-hi),var(--panel));
+    border:1px solid var(--line);
+    border-radius:20px 20px 0 0;
+    width:100%;max-width:520px;max-height:88vh;overflow-y:auto;
+    padding:18px 18px 24px;
+    transform:translateY(30px);
+    transition:transform .25s cubic-bezier(.22,1,.36,1);
+    box-shadow:0 -8px 32px rgba(0,0,0,.5);
+  }
+  .modal-scrim.open .modal{transform:translateY(0)}
+  @media (min-width:640px){
+    .modal-scrim{align-items:center}
+    .modal{border-radius:20px;max-height:80vh}
+  }
+  .modal-handle{
+    width:36px;height:4px;background:var(--line);
+    border-radius:99px;margin:0 auto 12px;
+  }
+  .modal h3{font-size:18px;margin-bottom:6px}
+  .modal .close-x{
+    position:absolute;top:12px;right:12px;
+    width:32px;height:32px;border-radius:50%;
+    background:rgba(0,0,0,.3);color:var(--ink-mute);
+    display:flex;align-items:center;justify-content:center;
+  }
+
+  /* ============ TOAST / NOTIFICATION ============ */
+  .toast-stack{
+    position:fixed;top:calc(var(--safe-t) + 60px);left:14px;right:14px;
+    z-index:200;pointer-events:none;
+    display:flex;flex-direction:column;gap:6px;
+  }
+  .toast{
+    background:linear-gradient(180deg,var(--panel-hi),var(--panel));
+    border:1px solid var(--line);
+    border-left:3px solid var(--gold);
+    border-radius:10px;
+    padding:10px 12px;
+    font-size:12px;
+    box-shadow:var(--shadow-md);
+    animation:toastIn .3s ease, toastOut .3s ease forwards;
+    animation-delay:0s, 3.5s;
+    pointer-events:auto;
+  }
+  .toast.ok{border-left-color:var(--ok)}
+  .toast.warn{border-left-color:var(--warn)}
+  .toast.bad{border-left-color:var(--bad)}
+  .toast.info{border-left-color:var(--gold)}
+  .toast .t{font-weight:600;margin-bottom:2px}
+  .toast .m{color:var(--ink-dim);font-size:11px}
+  @keyframes toastIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes toastOut{to{opacity:0;transform:translateY(-8px)}}
+
+  /* ============ CODEX ============ */
+  .codex-list{display:flex;flex-direction:column;gap:6px}
+  .codex-entry{
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:12px;cursor:pointer;
+    display:flex;align-items:center;gap:10px;
+  }
+  .codex-entry .icn{width:36px;height:36px;flex-shrink:0}
+  .codex-entry .info{flex:1;min-width:0}
+  .codex-entry .info .nm{font-weight:600;font-size:13px}
+  .codex-entry .info .cat{font-size:10px;color:var(--ink-mute);text-transform:uppercase;letter-spacing:.06em}
+  .codex-body{font-size:13px;line-height:1.55;color:var(--ink-dim)}
+  .codex-body h4{color:var(--gold-hi);font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:14px 0 4px}
+  .codex-body p{margin:6px 0}
+  .codex-body em{color:var(--ink);font-style:italic}
+  .codex-body ul{padding-left:16px;margin:6px 0}
+  .codex-body li{margin:3px 0}
+
+  /* ============ SPLASH ============ */
+  #splash{
+    position:fixed;inset:0;z-index:1000;
+    background:radial-gradient(circle at 50% 40%,#3a2b1e 0%,#0f0a07 80%);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:20px;transition:opacity .6s ease, visibility .6s;
+  }
+  #splash.hidden{opacity:0;visibility:hidden;pointer-events:none}
+  .splash-logo{
+    width:120px;height:120px;
+    animation:splashPulse 2.2s ease-in-out infinite;
+    filter:drop-shadow(0 4px 24px rgba(201,169,97,.4));
+  }
+  @keyframes splashPulse{
+    0%,100%{transform:scale(1)}
+    50%{transform:scale(1.05)}
+  }
+  .splash-title{
+    font-size:26px;font-weight:800;margin-top:20px;
+    letter-spacing:.02em;text-align:center;
+    background:linear-gradient(135deg,var(--gold-hi),var(--tan));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .splash-tagline{
+    color:var(--ink-mute);font-size:13px;margin-top:6px;text-align:center;
+    max-width:280px;line-height:1.5;
+  }
+  .splash-brand{
+    color:var(--ink-mute);font-size:10px;letter-spacing:.15em;
+    text-transform:uppercase;margin-top:auto;padding-top:20px;text-align:center;
+  }
+  .splash-brand strong{color:var(--gold);font-weight:600}
+  .splash-cta{
+    margin-top:30px;padding:12px 28px;
+    background:linear-gradient(180deg,var(--gold-hi),var(--gold));
+    color:#1a1410;border-radius:99px;font-weight:700;
+    font-size:14px;letter-spacing:.02em;
+    box-shadow:0 4px 20px rgba(201,169,97,.3);
+    animation:splashCta 1.5s ease-in-out 1s infinite alternate;
+  }
+  @keyframes splashCta{
+    from{transform:translateY(0)}
+    to{transform:translateY(-2px)}
+  }
+  .splash-mode-row{display:flex;gap:8px;margin-top:12px}
+  .splash-mode{
+    padding:8px 16px;font-size:11px;color:var(--ink-dim);
+    border:1px solid var(--line);border-radius:99px;
+  }
+  .splash-mode:active{background:rgba(201,169,97,.1)}
+
+  /* ============ ACHIEVEMENT POP ============ */
+  .achievement-pop{
+    position:fixed;top:calc(var(--safe-t) + 60px);left:50%;transform:translate(-50%,-40px);
+    background:linear-gradient(180deg,var(--panel-hi),var(--panel));
+    border:1px solid var(--gold);
+    border-radius:14px;padding:12px 18px;
+    z-index:300;opacity:0;pointer-events:none;
+    box-shadow:0 4px 24px rgba(201,169,97,.4),0 0 0 3px rgba(201,169,97,.1);
+    transition:all .4s cubic-bezier(.22,1,.36,1);
+    text-align:center;max-width:280px;
+  }
+  .achievement-pop.show{opacity:1;transform:translate(-50%,0)}
+  .achievement-pop .ttl{font-size:10px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;font-weight:700}
+  .achievement-pop .nm{font-size:14px;font-weight:700;margin-top:2px}
+  .achievement-pop .rw{font-size:11px;color:var(--ink-mute);margin-top:2px}
+
+  /* ============ UTILITY ============ */
+  .flex{display:flex;gap:8px;align-items:center}
+  .flex-between{display:flex;justify-content:space-between;align-items:center}
+  .flex-col{display:flex;flex-direction:column;gap:8px}
+  .center{text-align:center}
+  .mt{margin-top:8px}
+  .mt-lg{margin-top:16px}
+  .hidden{display:none !important}
+  .empty-state{
+    text-align:center;padding:32px 16px;color:var(--ink-mute);
+    font-size:13px;line-height:1.6;
+  }
+  .empty-state svg{width:56px;height:56px;opacity:.4;margin-bottom:8px}
+
+  .contract-timer{
+    font-size:10px;color:var(--warn);font-weight:600;
+    display:inline-flex;align-items:center;gap:3px;
+  }
+  .contract-timer.urgent{color:var(--bad)}
+
+  .money-hint{color:var(--gold-hi);font-weight:700}
+
+  .divider{height:1px;background:var(--line);margin:14px 0}
+
+  /* Selection UI for creating a batch */
+  .select-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;margin-top:8px}
+  .select-item{
+    padding:10px;border:1px solid var(--line);border-radius:10px;
+    text-align:center;cursor:pointer;transition:all .15s;
+    background:rgba(0,0,0,.2);
+  }
+  .select-item.selected{border-color:var(--gold);background:rgba(201,169,97,.1);box-shadow:0 0 0 1px var(--gold)}
+  .select-item.locked{opacity:.4;cursor:not-allowed}
+  .select-item .ic{width:36px;height:36px;margin:0 auto 4px}
+  .select-item .n{font-size:11px;font-weight:600}
+  .select-item .p{font-size:10px;color:var(--ink-mute);margin-top:2px}
+
+  /* Sale channel */
+  .channel-card{
+    background:var(--panel);border:1px solid var(--line);
+    border-radius:12px;padding:12px;margin-bottom:8px;
+  }
+  .channel-card .flex-between{margin-bottom:6px}
+  .channel-card .hdr{font-weight:600;font-size:13px}
+  .channel-card .rate{color:var(--gold-hi);font-weight:700}
+  .channel-card .meta{font-size:11px;color:var(--ink-mute)}
+
+  /* Contract card */
+  .contract-card{
+    background:var(--panel);border:1px solid var(--line);
+    border-left:3px solid var(--gold);
+    border-radius:10px;padding:10px 12px;margin-bottom:6px;
+  }
+  .contract-card.due{border-left-color:var(--bad)}
+
+  /* Info line */
+  .info-line{
+    display:flex;justify-content:space-between;font-size:12px;padding:6px 0;
+    border-bottom:1px solid rgba(74,55,40,.4);
+  }
+  .info-line:last-child{border-bottom:0}
+  .info-line .k{color:var(--ink-mute)}
+  .info-line .v{color:var(--ink);font-weight:600}
+
+  /* Species colors for spawn */
+  .sp-oyster{color:#e8d5a8}
+  .sp-blue_oyster{color:#96b3c9}
+  .sp-lions_mane{color:#f4e8d0}
+  .sp-pioppino{color:#8b6f47}
+  .sp-chestnut{color:#a05f3e}
+  .sp-king_trumpet{color:#d8c9a4}
+  .sp-shiitake{color:#6b4423}
+  .sp-reishi{color:#a03028}
+  .sp-cotw{color:#f4a03a}
+  .sp-cordyceps{color:#ff8c42}
+</style>
+</head>
+<body>
+
+<!-- ============ SPLASH SCREEN ============ -->
+<div id="splash">
+  <svg class="splash-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="capGrad" cx="0.35" cy="0.3">
+        <stop offset="0%" stop-color="#e8c880"/>
+        <stop offset="60%" stop-color="#c9a961"/>
+        <stop offset="100%" stop-color="#8b6f47"/>
+      </radialGradient>
+      <linearGradient id="stemGrad" x1="0" x2="1">
+        <stop offset="0%" stop-color="#d4c19a"/>
+        <stop offset="100%" stop-color="#a89170"/>
+      </linearGradient>
+    </defs>
+    <ellipse cx="50" cy="35" rx="34" ry="26" fill="url(#capGrad)"/>
+    <path d="M 22 42 Q 50 62 78 42 L 78 46 Q 50 62 22 46 Z" fill="#4a3728" opacity=".3"/>
+    <path d="M 36 55 Q 38 78 34 88 Q 42 90 46 85 L 54 85 Q 58 90 66 88 Q 62 78 64 55 Z" fill="url(#stemGrad)"/>
+    <ellipse cx="50" cy="90" rx="18" ry="3" fill="#0a0805" opacity=".5"/>
+  </svg>
+  <h1 class="splash-title">Substrate to Harvest</h1>
+  <p class="splash-tagline">A commercial mushroom cultivation game. Real science, real business, real fun.</p>
+  <button class="splash-cta" id="startCareer">Begin Career</button>
+  <div class="splash-mode-row">
+    <button class="splash-mode" id="startSandbox">Sandbox</button>
+    <button class="splash-mode" id="startImport">Import Save</button>
+  </div>
+  <div class="splash-brand">
+    <div>A Game by <strong>Southwest Mushrooms</strong></div>
+    <div style="margin-top:4px;opacity:.6">Crowe Logic, Inc. · v1.0.0</div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app">
+
+  <!-- Top Status Bar -->
+  <header class="status-bar">
+    <div class="status-left">
+      <div class="stat money">$<span id="stMoney" class="num">200</span></div>
+      <div class="stat rep">★ <span id="stRep" class="num">0</span></div>
+    </div>
+    <div class="status-center">
+      <div class="brand-mark">
+        <svg viewBox="0 0 32 32"><circle cx="16" cy="12" r="10" fill="#c9a961"/><rect x="12" y="16" width="8" height="12" rx="3" fill="#f4e8d0"/></svg>
+        <span class="name">SW Mushrooms</span>
+      </div>
+      <div class="time-controls">
+        <button data-speed="0" id="spd0" title="Pause">‖‖</button>
+        <button data-speed="1" id="spd1" class="active" title="Normal">1×</button>
+        <button data-speed="4" id="spd4" title="Fast">4×</button>
+        <button data-speed="16" id="spd16" title="Ultra">16×</button>
+      </div>
+    </div>
+    <div class="status-right">
+      <div class="stat day"><span class="lbl">Day</span><span id="stDay" class="num">1</span></div>
+      <div class="stat"><span class="lbl">°F</span><span id="stTemp" class="num">85</span></div>
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <main class="main">
+
+    <!-- ===== GROW VIEW ===== -->
+    <section id="viewGrow" class="view active">
+      <div class="view-title">
+        <div><h2>Grow Room</h2><div class="sub" id="growSub">Phoenix Garage · Tier 1</div></div>
+        <button class="btn primary" id="newBatchBtn">＋ New Batch</button>
+      </div>
+      <div id="batchList"></div>
+      <div id="growEmpty" class="empty-state">
+        <svg viewBox="0 0 100 100"><ellipse cx="50" cy="70" rx="30" ry="8" fill="#c9a961" opacity=".3"/><path d="M 30 60 Q 50 20 70 60 Z" fill="#8b6f47"/></svg>
+        <div><strong>No batches growing.</strong></div>
+        <div>Tap "＋ New Batch" to inoculate your first substrate.</div>
+      </div>
+    </section>
+
+    <!-- ===== SHOP VIEW ===== -->
+    <section id="viewShop" class="view">
+      <div class="view-title">
+        <div><h2>Supplies & Equipment</h2><div class="sub">Cultures · Substrates · Gear</div></div>
+      </div>
+      <h3 style="font-size:13px;color:var(--ink-mute);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 6px">Cultures & Spawn</h3>
+      <div id="shopCultures" class="grid grid-3"></div>
+      <h3 style="font-size:13px;color:var(--ink-mute);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 6px">Substrates</h3>
+      <div id="shopSubstrates" class="grid grid-3"></div>
+      <h3 style="font-size:13px;color:var(--ink-mute);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 6px">Equipment</h3>
+      <div id="shopEquipment" class="grid grid-2"></div>
+    </section>
+
+    <!-- ===== SELL VIEW ===== -->
+    <section id="viewSell" class="view">
+      <div class="view-title">
+        <div><h2>Market</h2><div class="sub" id="sellSub">Inventory · Channels · Contracts</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Fresh Inventory <span class="chip">Perishable</span></div>
+        <div id="inventoryList" class="mt"></div>
+      </div>
+      <div class="divider"></div>
+      <h3 style="font-size:13px;color:var(--ink-mute);text-transform:uppercase;letter-spacing:.06em;margin:0 0 6px">Sales Channels</h3>
+      <div id="channelList"></div>
+      <div class="divider"></div>
+      <h3 style="font-size:13px;color:var(--ink-mute);text-transform:uppercase;letter-spacing:.06em;margin:0 0 6px">Active Contracts</h3>
+      <div id="contractList"></div>
+    </section>
+
+    <!-- ===== CODEX VIEW ===== -->
+    <section id="viewCodex" class="view">
+      <div class="view-title">
+        <div><h2>Grower's Codex</h2><div class="sub" id="codexSub">0 entries unlocked</div></div>
+      </div>
+      <div class="codex-list" id="codexList"></div>
+      <div class="mt-lg center" style="color:var(--ink-mute);font-size:11px;line-height:1.6;padding:16px">
+        For the full science, see<br>
+        <em style="color:var(--tan)">The Mushroom Grower</em>
+        <br>by Michael Crowe
+      </div>
+    </section>
+
+    <!-- ===== MENU VIEW ===== -->
+    <section id="viewMenu" class="view">
+      <div class="view-title">
+        <div><h2>Menu</h2><div class="sub">Stats · Save · Info</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Career Stats</div>
+        <div class="mt">
+          <div class="info-line"><span class="k">Days played</span><span class="v num" id="mDay">1</span></div>
+          <div class="info-line"><span class="k">Total harvested</span><span class="v num" id="mHarv">0 lb</span></div>
+          <div class="info-line"><span class="k">Total revenue</span><span class="v money-hint num" id="mRev">$0</span></div>
+          <div class="info-line"><span class="k">Batches completed</span><span class="v num" id="mBatch">0</span></div>
+          <div class="info-line"><span class="k">Contamination events</span><span class="v num" id="mContam">0</span></div>
+          <div class="info-line"><span class="k">Reputation</span><span class="v num" id="mRep">0</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Save Game</div>
+        <div class="card-sub">Copy your save code to preserve your farm. Paste one to resume anywhere.</div>
+        <div class="btn-row mt">
+          <button class="btn primary" id="exportBtn">Export Save</button>
+          <button class="btn ghost" id="importBtn">Import Save</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">About</div>
+        <div class="card-sub">
+          A commercial mushroom cultivation simulator by <strong style="color:var(--tan)">Southwest Mushrooms</strong>.
+          Built to teach real cultivation science through play.
+        </div>
+        <div class="mt" style="font-size:11px;color:var(--ink-mute)">
+          <div>© Crowe Logic, Inc. · Michael Crowe</div>
+          <div style="margin-top:6px">Ready to grow for real? <a href="https://www.skool.com/mushroom-collective" target="_blank" rel="noopener" style="color:var(--gold-hi)">Learn from Michael on Skool ↗</a></div>
+        </div>
+      </div>
+      <div class="card bad">
+        <div class="card-title">Reset Career</div>
+        <div class="card-sub">This will wipe your farm. Cannot be undone.</div>
+        <button class="btn danger full mt" id="resetBtn">Reset Everything</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Nav -->
+  <nav class="nav">
+    <button data-view="Grow" class="active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M6 12h12M8 8h8M8 16h8" stroke-linecap="round"/></svg>
+      Grow
+    </button>
+    <button data-view="Shop">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11a2 2 0 0 1-2 1.7H7.5a2 2 0 0 1-2-1.7L4 7z" stroke-linejoin="round"/><path d="M8 7V5a4 4 0 0 1 8 0v2" stroke-linecap="round"/></svg>
+      Shop
+    </button>
+    <button data-view="Sell">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 6v12M8 8h5a2 2 0 1 1 0 4H10a2 2 0 1 0 0 4h6" stroke-linecap="round"/></svg>
+      Sell
+    </button>
+    <button data-view="Codex">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h11a2 2 0 0 1 2 2v14a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2V5a1 1 0 0 1 1-1z" stroke-linejoin="round"/><path d="M9 8h7M9 12h7M9 16h4" stroke-linecap="round"/></svg>
+      Codex
+    </button>
+    <button data-view="Menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" stroke-linecap="round"/></svg>
+      Menu
+    </button>
+  </nav>
+
+</div>
+
+<!-- Toast stack -->
+<div class="toast-stack" id="toastStack"></div>
+
+<!-- Achievement popup -->
+<div class="achievement-pop" id="achievementPop">
+  <div class="ttl">Achievement</div>
+  <div class="nm" id="achNm">—</div>
+  <div class="rw" id="achRw">—</div>
+</div>
+
+<!-- Modal -->
+<div class="modal-scrim" id="modalScrim">
+  <div class="modal" id="modal">
+    <div class="modal-handle"></div>
+    <button class="close-x" id="modalClose">✕</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script>
+/* ==========================================================================
+   SUBSTRATE TO HARVEST · Game Engine
+   Southwest Mushrooms · Crowe Logic, Inc.
+   ========================================================================== */
+
+'use strict';
+
+// ============================================================================
+// GAME DATA · SPECIES
+// Real cultivation parameters. Temps in °F, humidity in %.
+// ============================================================================
+const SPECIES = {
+  oyster: {
+    id: 'oyster',
+    name: 'Pearl Oyster',
+    scientific: 'Pleurotus ostreatus',
+    difficulty: 1,
+    substrates: ['straw','hardwood','masters_mix'],
+    colonization: { tempIdeal:[72,78], hours:[240,336] }, // 10-14 days
+    fruiting: { tempIdeal:[55,65], humidityIdeal:[85,95], faeIdeal:4, lightHours:12, hours:[96,168] },
+    yieldBE: [0.75, 1.0], // biological efficiency
+    pricePerLb: 12,
+    unlockCost: 0,
+    color: '#e8d5a8',
+    tip: 'The gateway drug of mycology. Fast, forgiving, and prolific. Perfect for straw.'
+  },
+  blue_oyster: {
+    id: 'blue_oyster',
+    name: 'Blue Oyster',
+    scientific: 'P. ostreatus var. columbinus',
+    difficulty: 2,
+    substrates: ['straw','hardwood','masters_mix'],
+    colonization: { tempIdeal:[65,75], hours:[240,336] },
+    fruiting: { tempIdeal:[45,60], humidityIdeal:[85,95], faeIdeal:4, lightHours:12, hours:[96,168] },
+    yieldBE: [0.75, 1.0],
+    pricePerLb: 14,
+    unlockCost: 200,
+    unlockRep: 40,
+    color: '#96b3c9',
+    tip: 'Loves the cold. In Phoenix you\'ll need real cooling to run these year-round.'
+  },
+  lions_mane: {
+    id: 'lions_mane',
+    name: "Lion's Mane",
+    scientific: 'Hericium erinaceus',
+    difficulty: 2,
+    substrates: ['hardwood','masters_mix'],
+    colonization: { tempIdeal:[70,75], hours:[336,504] }, // 14-21 days
+    fruiting: { tempIdeal:[60,65], humidityIdeal:[85,92], faeIdeal:3, lightHours:12, hours:[120,192] },
+    yieldBE: [0.5, 0.75],
+    pricePerLb: 22,
+    unlockCost: 500,
+    unlockRep: 15,
+    color: '#f4e8d0',
+    tip: 'Slow, cottony, worth every day. Loved by high-end restaurants.'
+  },
+  chestnut: {
+    id: 'chestnut',
+    name: 'Chestnut',
+    scientific: 'Pholiota adiposa',
+    difficulty: 2,
+    substrates: ['hardwood','masters_mix'],
+    colonization: { tempIdeal:[72,78], hours:[336,504] },
+    fruiting: { tempIdeal:[55,65], humidityIdeal:[85,90], faeIdeal:3, lightHours:12, hours:[120,192] },
+    yieldBE: [0.6, 0.8],
+    pricePerLb: 18,
+    unlockCost: 1000,
+    unlockRep: 40,
+    color: '#a05f3e',
+    tip: 'Beautiful bronze caps that sell themselves at the market. Meaty texture.'
+  },
+  pioppino: {
+    id: 'pioppino',
+    name: 'Pioppino',
+    scientific: 'Cyclocybe aegerita',
+    difficulty: 2,
+    substrates: ['hardwood','masters_mix'],
+    colonization: { tempIdeal:[72,78], hours:[336,504] },
+    fruiting: { tempIdeal:[55,65], humidityIdeal:[85,90], faeIdeal:3, lightHours:12, hours:[120,192] },
+    yieldBE: [0.6, 0.8],
+    pricePerLb: 20,
+    unlockCost: 1500,
+    unlockRep: 60,
+    color: '#8b6f47',
+    tip: 'Italian classic. Delicate flavor, chef favorite. Sensitive to CO2.'
+  },
+  king_trumpet: {
+    id: 'king_trumpet',
+    name: 'King Trumpet',
+    scientific: 'Pleurotus eryngii',
+    difficulty: 3,
+    substrates: ['hardwood','masters_mix','supplemented'],
+    colonization: { tempIdeal:[72,78], hours:[336,504] },
+    fruiting: { tempIdeal:[55,65], humidityIdeal:[85,92], faeIdeal:2, lightHours:12, hours:[120,192] },
+    yieldBE: [0.6, 0.9],
+    pricePerLb: 24,
+    unlockCost: 3000,
+    unlockRep: 100,
+    color: '#d8c9a4',
+    tip: 'Thick stems, mild flavor. Modified atmosphere fruiting (lower FAE) grows the meaty stems buyers want.'
+  },
+  shiitake: {
+    id: 'shiitake',
+    name: 'Shiitake',
+    scientific: 'Lentinula edodes',
+    difficulty: 3,
+    substrates: ['hardwood','supplemented'],
+    colonization: { tempIdeal:[70,78], hours:[720,1440] }, // 30-60 days
+    fruiting: { tempIdeal:[55,65], humidityIdeal:[80,90], faeIdeal:3, lightHours:12, hours:[168,240] },
+    yieldBE: [0.5, 0.75],
+    pricePerLb: 20,
+    unlockCost: 5000,
+    unlockRep: 200,
+    color: '#6b4423',
+    tip: 'Patience test. 30-60 days of colonization. Blocks brown before fruiting — this is normal.'
+  },
+  reishi: {
+    id: 'reishi',
+    name: 'Reishi',
+    scientific: 'Ganoderma lucidum',
+    difficulty: 4,
+    substrates: ['hardwood','supplemented'],
+    colonization: { tempIdeal:[78,85], hours:[504,720] },
+    fruiting: { tempIdeal:[75,85], humidityIdeal:[90,95], faeIdeal:1, lightHours:8, hours:[336,720] }, // low FAE for antlers
+    yieldBE: [0.3, 0.5],
+    pricePerLb: 45,
+    unlockCost: 15000,
+    unlockRep: 400,
+    color: '#a03028',
+    tip: 'Medicinal, high margin. Low FAE grows the ornate antlers buyers pay premium for.'
+  },
+  cotw: {
+    id: 'cotw',
+    name: 'Chicken of the Woods',
+    scientific: 'Laetiporus sulphureus',
+    difficulty: 4,
+    substrates: ['hardwood','supplemented'],
+    colonization: { tempIdeal:[75,85], hours:[720,1080] },
+    fruiting: { tempIdeal:[65,75], humidityIdeal:[85,90], faeIdeal:3, lightHours:10, hours:[192,336] },
+    yieldBE: [0.4, 0.7],
+    pricePerLb: 32,
+    unlockCost: 25000,
+    unlockRep: 700,
+    color: '#f4a03a',
+    tip: 'Bright orange, tastes like chicken. Rare in cultivation, but a market maker.'
+  },
+  cordyceps: {
+    id: 'cordyceps',
+    name: 'Cordyceps militaris',
+    scientific: 'Cordyceps militaris',
+    difficulty: 5,
+    substrates: ['grain_jar','cordy_media'],
+    colonization: { tempIdeal:[68,72], hours:[504,720] },
+    fruiting: { tempIdeal:[68,72], humidityIdeal:[90,95], faeIdeal:1, lightHours:16, hours:[336,720] },
+    yieldBE: [0.1, 0.25],
+    pricePerLb: 180,
+    unlockCost: 40000,
+    unlockRep: 1200,
+    color: '#ff8c42',
+    tip: 'Grown on grain, needs strong light, tiny yields, huge margins. Pharmaceutical-grade discipline required.'
+  },
+};
+
+// ============================================================================
+// SUBSTRATES
+// ============================================================================
+const SUBSTRATES = {
+  straw: {
+    id:'straw', name:'Pasteurized Straw', cost:8, prepHours:6, contamMod:5, yieldMod:-10,
+    tip:'Simple. Pasteurize at 160°F. Oysters love it. No pressure cooker needed.',
+    unlockCost:0,
+  },
+  hardwood: {
+    id:'hardwood', name:'Hardwood Sawdust', cost:15, prepHours:24, contamMod:0, yieldMod:0,
+    tip:'Workhorse of commercial cultivation. Must be sterilized in a pressure cooker.',
+    unlockCost:0,
+  },
+  masters_mix: {
+    id:'masters_mix', name:'Masters Mix (50/50)', cost:28, prepHours:24, contamMod:-5, yieldMod:25,
+    tip:'50% hardwood + 50% soy hull. Best yields, but supplemented — one contamination and it\'s toast.',
+    unlockCost:400,
+  },
+  supplemented: {
+    id:'supplemented', name:'Supplemented Hardwood', cost:22, prepHours:24, contamMod:15, yieldMod:30,
+    tip:'Nutritious. Great yields IF your sterile technique is dialed. Otherwise, disaster.',
+    unlockCost:1500,
+  },
+  grain_jar: {
+    id:'grain_jar', name:'Sterile Grain Jar', cost:12, prepHours:36, contamMod:8, yieldMod:0,
+    tip:'For cordyceps and spawn production. Autoclave preferred.',
+    unlockCost:15000,
+  },
+  cordy_media: {
+    id:'cordy_media', name:'Cordyceps Media (rice+nutrients)', cost:35, prepHours:36, contamMod:8, yieldMod:0,
+    tip:'Custom liquid media for cordyceps. Precise formulation matters.',
+    unlockCost:40000,
+  },
+};
+
+// ============================================================================
+// EQUIPMENT
+// ============================================================================
+const EQUIPMENT = {
+  shoebox_tub: { id:'shoebox_tub', name:'Shoebox Tub', desc:'A rubbermaid tote. It grows mushrooms. Barely.',
+    cost:0, capacity:1, contamReduce:0, coolingCost:0, owned:true, tier:1 },
+  still_air_box: { id:'still_air_box', name:'Still Air Box', desc:'A cheap plastic tote with arm holes. Cuts contamination.',
+    cost:40, capacity:0, contamReduce:8, coolingCost:0, tier:1 },
+  pressure_cooker: { id:'pressure_cooker', name:'Pressure Cooker', desc:'The single best cultivation investment. Real sterilization.',
+    cost:180, capacity:0, contamReduce:15, coolingCost:0, tier:1 },
+  grow_tent: { id:'grow_tent', name:'4×4 Grow Tent', desc:'Real fruiting chamber. Controlled environment.',
+    cost:250, capacity:4, contamReduce:5, coolingCost:2, tier:2 },
+  flow_hood: { id:'flow_hood', name:'Laminar Flow Hood', desc:'HEPA-filtered clean air. Contamination collapses.',
+    cost:900, capacity:0, contamReduce:35, coolingCost:0, tier:2 },
+  climate_room: { id:'climate_room', name:'Climate-Controlled Room', desc:'Dedicated space with HVAC. Serious business.',
+    cost:4500, capacity:12, contamReduce:12, coolingCost:8, tier:3 },
+  autoclave: { id:'autoclave', name:'Autoclave', desc:'Lab-grade sterilization. Cordyceps-ready.',
+    cost:6000, capacity:0, contamReduce:25, coolingCost:2, tier:3 },
+  multi_room: { id:'multi_room', name:'Multi-Room Facility', desc:'Separate rooms per species. Real commercial setup.',
+    cost:18000, capacity:40, contamReduce:20, coolingCost:20, tier:4 },
+  automation: { id:'automation', name:'Sensor Automation', desc:'Automatic humidity, temp, FAE. Fewer human errors.',
+    cost:9000, capacity:0, contamReduce:15, coolingCost:6, tier:4 },
+};
+
+// ============================================================================
+// CONTAMINANTS
+// ============================================================================
+const CONTAMINANTS = {
+  trichoderma: { name:'Trichoderma', color:'#5abf6e', signs:'Bright emerald green patches, spreading fast',
+    cause:'Poor sterile technique, contaminated substrate, or dirty tools',
+    saveable:false,
+    lesson:'The #1 killer. Never open sterile substrate outside a flow hood or SAB. Alcohol everything. Long sleeves.'
+  },
+  cobweb: { name:'Cobweb Mold', color:'#a89b8a', signs:'Gray, fuzzy, wispy — grows on top of pins',
+    cause:'High humidity + poor air exchange',
+    saveable:true,
+    lesson:'Drop humidity to 75%, blast the FAE. Often survives — cobweb rides the moisture layer.'
+  },
+  bacterial_blotch: { name:'Bacterial Blotch', color:'#c9a940', signs:'Yellow-brown wet spots on caps',
+    cause:'Wet caps + stale air',
+    saveable:true,
+    lesson:'Never mist directly on caps. Let air move so surfaces dry between mistings.'
+  },
+  wet_rot: { name:'Bacterial Wet Rot', color:'#8b5c40', signs:'Dark wet patches, sour cabbage smell',
+    cause:'Over-watered substrate or field-strength contamination',
+    saveable:false,
+    lesson:'Squeeze test your substrate before inoculation. If water drips out, it\'s too wet.'
+  },
+  neurospora: { name:'Neurospora (Orange Mold)', color:'#e88a3c', signs:'Bright orange, spore clouds when touched',
+    cause:'Airborne, catastrophic. Often from bakery or grain source',
+    saveable:false,
+    lesson:'Evacuate. Bleach everything. Isolate substrate storage from your grow area.'
+  },
+  aspergillus: { name:'Aspergillus/Penicillium', color:'#7a8a5c', signs:'Small dark speckles, dusty appearance',
+    cause:'Airborne spores — anywhere and everywhere',
+    saveable:false,
+    lesson:'A flow hood pays for itself in prevented contamination within 6 months.'
+  },
+};
+
+// ============================================================================
+// SALES CHANNELS
+// ============================================================================
+const CHANNELS = {
+  farmers_market: {
+    id:'farmers_market', name:'Farmers Market', margin:1.0, reliability:0.85,
+    schedule:'Saturday only', dayModulo:7, dayOffset:6, capacity:20,
+    tip:'Retail prices, cash and connection. Perishable pressure.',
+    tier:1,
+  },
+  restaurant: {
+    id:'restaurant', name:'Restaurant Contracts', margin:0.80, reliability:0.95,
+    schedule:'Contract-based', dayModulo:0, capacity:50, contractBased:true,
+    tip:'Weekly commitments. Miss a delivery and you lose the account.',
+    tier:2,
+  },
+  online: {
+    id:'online', name:'Online Fresh Orders', margin:1.05, reliability:0.75,
+    schedule:'Daily', dayModulo:1, capacity:8,
+    tip:'Higher price + shipping. Small volume, high margin.',
+    tier:3,
+  },
+  grow_kits: {
+    id:'grow_kits', name:'Grow Kits (retail)', margin:2.5, reliability:1.0,
+    schedule:'Weekly', dayModulo:7, dayOffset:3, capacity:5, passive:true,
+    tip:'Sell fully colonized blocks as ready-to-fruit kits. Best margin in the business.',
+    tier:3,
+  },
+  wholesale: {
+    id:'wholesale', name:'Wholesale Distributor', margin:0.50, reliability:0.98,
+    schedule:'Daily', dayModulo:1, capacity:200, contractBased:true,
+    tip:'Low margin, high volume, reliable payment. Backbone of a commercial op.',
+    tier:4,
+  },
+  regional_ship: {
+    id:'regional_ship', name:'Regional Shipping', margin:0.90, reliability:0.85,
+    schedule:'Every 2 days', dayModulo:2, capacity:40,
+    tip:'Ship to 3 states. Cold chain matters.',
+    tier:4,
+  },
+  intl_ship: {
+    id:'intl_ship', name:'International Shipping', margin:1.4, reliability:0.7,
+    schedule:'Weekly', dayModulo:7, dayOffset:2, capacity:80,
+    tip:'Global reach. Complex logistics.',
+    tier:5,
+  },
+};
+
+// ============================================================================
+// CODEX (unlocks as player experiences things)
+// ============================================================================
+const CODEX = {
+  welcome: {
+    id:'welcome', category:'Foundations', title:'Welcome to Cultivation',
+    body: `<p>Mushroom cultivation is <em>agriculture at the microbial scale</em>. You are the caretaker of a living organism — the mycelium — and your job is to give it exactly what it needs and nothing else.</p>
+    <h4>The Four Stages</h4>
+    <ul>
+      <li><strong>Spawn:</strong> living mycelium on grain, ready to colonize substrate.</li>
+      <li><strong>Colonization:</strong> mycelium consumes the substrate. Warm, dark, clean.</li>
+      <li><strong>Fruiting:</strong> mycelium responds to environmental triggers (temp drop, light, fresh air) and produces mushrooms.</li>
+      <li><strong>Harvest:</strong> cut at maturity, before spore drop.</li>
+    </ul>
+    <p><em>Master these four and you're 80% of the way to a real farm.</em></p>`,
+    tip:'For the full protocol, see The Mushroom Grower Vol. 1.',
+  },
+  contamination_101: {
+    id:'contamination_101', category:'Foundations', title:'Contamination 101',
+    body: `<p>Every cultivator loses batches. The difference between hobbyists and pros is that <em>pros lose fewer, and they know why</em>.</p>
+    <h4>The Big Three Prevention Habits</h4>
+    <ul>
+      <li><strong>Alcohol first:</strong> 70% isopropyl on hands, gloves, tools, work surface. Every time.</li>
+      <li><strong>Still air or flow hood:</strong> when opening sterile substrate, air movement is your enemy.</li>
+      <li><strong>Overcolonize before opening:</strong> mycelium wins by getting there first. A fully white block resists contamination far better than one still colonizing.</li>
+    </ul>
+    <p>Every contamination event in this game is a real one you will face on a real farm.</p>`,
+  },
+  phoenix_heat: {
+    id:'phoenix_heat', category:'Environment', title:'The Phoenix Problem',
+    body: `<p>Growing mushrooms in the Sonoran Desert is fighting nature — nature that runs at 115°F in July.</p>
+    <p>You have two options: <strong>cooling equipment</strong> (expensive but consistent) or <strong>growing on the seasonal cycle</strong> (October through April is a gift). Michael built Southwest Mushrooms by leaning into the cold months hard and using the summer to build strain libraries and infrastructure.</p>
+    <p>In-game: your cooling costs scale with outdoor temperature. Watch the temperature indicator in the status bar.</p>`,
+  },
+  sterile_vs_pasteurize: {
+    id:'sterile_vs_pasteurize', category:'Foundations', title:'Sterilize vs. Pasteurize',
+    body: `<p>Two ways to prepare substrate. They are <em>not</em> interchangeable.</p>
+    <h4>Pasteurization (140-170°F, 1-2 hours)</h4>
+    <ul>
+      <li>Kills most competitors but leaves some beneficial microbes alive</li>
+      <li>Fine for straw, coco coir</li>
+      <li>Fast, cheap, no pressure equipment</li>
+    </ul>
+    <h4>Sterilization (250°F+ at 15 PSI, 2.5+ hours)</h4>
+    <ul>
+      <li>Kills everything, including bacterial spores</li>
+      <li>Required for hardwood, masters mix, supplemented substrates</li>
+      <li>Requires pressure cooker or autoclave</li>
+    </ul>
+    <p><em>Rule of thumb: the more nutritious the substrate, the more strict the sterilization must be.</em></p>`,
+  },
+};
+
+// ============================================================================
+// ACHIEVEMENTS
+// ============================================================================
+const ACHIEVEMENTS = {
+  first_batch: { name:'First Steps', desc:'Started your first batch', reward:{ money:50 } },
+  first_harvest: { name:'First Flush', desc:'Harvested your first mushrooms', reward:{ money:100, rep:10 } },
+  first_sale: { name:'Cash Money', desc:'Made your first sale', reward:{ rep:5 } },
+  first_contam: { name:'Welcome to the Club', desc:'Every grower loses their first batch', reward:{ money:25 } },
+  five_batches: { name:'Getting the Hang', desc:'Completed 5 successful batches', reward:{ rep:25 } },
+  lions_mane_unlock: { name:'Chef\'s Choice', desc:'Unlocked Lion\'s Mane', reward:{ money:200 } },
+  first_thousand: { name:'Four Figures', desc:'Earned $1,000 lifetime', reward:{ rep:20 } },
+  first_10k: { name:'Real Business', desc:'Earned $10,000 lifetime', reward:{ rep:100 } },
+  first_100k: { name:'Six Figures', desc:'Earned $100,000 lifetime', reward:{ rep:500 } },
+  tier2: { name:'Basement Operation', desc:'Reached Tier 2', reward:{ money:500 } },
+  tier3: { name:'Dedicated Grow Room', desc:'Reached Tier 3', reward:{ money:2000 } },
+  tier4: { name:'Commercial Facility', desc:'Reached Tier 4', reward:{ money:10000 } },
+  tier5: { name:'Global Brand', desc:'Reached Tier 5', reward:{ money:50000 } },
+  all_species: { name:'Mycophile', desc:'Cultivated every available species', reward:{ money:5000, rep:500 } },
+  no_contam_10: { name:'Sterile Master', desc:'10 successful batches without contamination', reward:{ money:1000, rep:100 } },
+};
+
+// ============================================================================
+// GAME STATE
+// ============================================================================
+let state = null;
+
+function makeDefaultState() {
+  return {
+    version: '1.0.0',
+    mode: 'career',
+    day: 1,
+    hour: 8,
+    speed: 1,
+    money: 200,
+    reputation: 0,
+    tier: 1,
+    location: 'Phoenix Garage',
+    ambientTemp: 85, // updated by season sim
+    coolingUsed: 0,
+    unlockedSpecies: ['oyster'],
+    unlockedSubstrates: ['straw','hardwood'],
+    unlockedChannels: ['farmers_market'],
+    ownedEquipment: ['shoebox_tub'],
+    cultures: { oyster: 2 },
+    substrates: { straw: 2, hardwood: 0 },
+    batches: [],
+    inventory: {},
+    contracts: [],
+    codexUnlocked: ['welcome','phoenix_heat'],
+    achievements: [],
+    consecutiveNoContam: 0,
+    nextBatchId: 1,
+    nextContractId: 1,
+    stats: {
+      totalHarvested: 0,
+      totalRevenue: 0,
+      successfulBatches: 0,
+      contaminationEvents: 0,
+    },
+  };
+}
+
+function makeSandboxState() {
+  const s = makeDefaultState();
+  s.mode = 'sandbox';
+  s.money = 999999;
+  s.reputation = 9999;
+  s.tier = 5;
+  s.unlockedSpecies = Object.keys(SPECIES);
+  s.unlockedSubstrates = Object.keys(SUBSTRATES);
+  s.unlockedChannels = Object.keys(CHANNELS);
+  s.ownedEquipment = Object.keys(EQUIPMENT);
+  Object.keys(SPECIES).forEach(k => { s.cultures[k] = 10; });
+  Object.keys(SUBSTRATES).forEach(k => { s.substrates[k] = 20; });
+  return s;
+}
+
+// ============================================================================
+// UTILITIES
+// ============================================================================
+const $ = sel => document.querySelector(sel);
+const $$ = sel => document.querySelectorAll(sel);
+const clamp = (n,min,max) => Math.max(min, Math.min(max, n));
+const rand = (min,max) => min + Math.random() * (max - min);
+const irand = (min,max) => Math.floor(rand(min,max+1));
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const fmt = n => n.toLocaleString('en-US', { maximumFractionDigits: n < 10 ? 1 : 0 });
+const fmt$ = n => '$' + fmt(n);
+
+function inRange(v, [lo, hi]) { return v >= lo && v <= hi; }
+
+// Distance from ideal range as normalized 0-1 (0 = ideal, 1 = terrible)
+function rangeDeviation(v, [lo, hi]) {
+  if (v >= lo && v <= hi) return 0;
+  const dist = v < lo ? lo - v : v - hi;
+  const width = Math.max(hi - lo, 5);
+  return clamp(dist / width, 0, 1);
+}
+
+// ============================================================================
+// GAME LOOP (time tick)
+// ============================================================================
+let lastTs = 0;
+let accumTicks = 0;
+
+function loop(ts) {
+  if (!lastTs) lastTs = ts;
+  const dt = ts - lastTs;
+  lastTs = ts;
+
+  if (state && state.speed > 0) {
+    // 1 real second = 4 * speed game hours
+    // At speed=1: 1 real second = 4 game hours
+    // A day (24 game hours) = 6 real seconds at speed 1
+    accumTicks += (dt / 1000) * 4 * state.speed;
+    while (accumTicks >= 1) {
+      tickHour();
+      accumTicks -= 1;
+    }
+  }
+
+  requestAnimationFrame(loop);
+}
+
+function tickHour() {
+  state.hour += 1;
+  if (state.hour >= 24) {
+    state.hour = 0;
+    state.day += 1;
+    onDayStart();
+  }
+  onHourTick();
+  // Only re-render current view periodically to reduce jank
+  if (state.hour % 2 === 0) renderStatus();
+  renderCurrentView(true); // light re-render
+}
+
+// ============================================================================
+// SEASON / AMBIENT TEMPERATURE (Phoenix real-ish)
+// ============================================================================
+function computeAmbientTemp() {
+  // Day 1 = start of March, cycle every 365 days
+  const dayOfYear = ((state.day + 60) % 365 + 365) % 365;
+  const monthProgress = dayOfYear / 30.4; // 0-12
+  // Sinusoidal: min ~55 in Jan, max ~110 in July
+  const baseTemp = 82 + Math.sin((monthProgress - 3) * Math.PI / 6) * 25;
+  // Daily variation
+  const hourFactor = Math.sin((state.hour - 6) * Math.PI / 12);
+  const dailySwing = 15;
+  return Math.round(baseTemp + hourFactor * dailySwing / 2);
+}
+
+// ============================================================================
+// PER-HOUR LOGIC
+// ============================================================================
+function onHourTick() {
+  state.ambientTemp = computeAmbientTemp();
+
+  // Compute cooling load
+  const equipCap = state.ownedEquipment.reduce((a,e) => a + EQUIPMENT[e].capacity, 0);
+  const growSpaces = Math.max(1, equipCap);
+  const heatOverIdeal = Math.max(0, state.ambientTemp - 72);
+  const coolingRatePerHr = growSpaces * heatOverIdeal * 0.01;
+  state.coolingUsed = (state.coolingUsed || 0) + coolingRatePerHr;
+  state.money = Math.max(0, state.money - coolingRatePerHr);
+
+  // Process each batch
+  state.batches.forEach(processBatch);
+
+  // Remove finished/dead batches after harvest
+  state.batches = state.batches.filter(b => b.stage !== 'removed');
+
+  // Expire fresh inventory (perishable)
+  Object.keys(state.inventory).forEach(sp => {
+    const inv = state.inventory[sp];
+    if (inv && inv.weight > 0) {
+      inv.freshHours = (inv.freshHours || 0) + 1;
+      if (inv.freshHours > 96) { // 4 days
+        const lost = inv.weight * 0.05;
+        inv.weight = Math.max(0, inv.weight - lost);
+      }
+    }
+  });
+}
+
+function onDayStart() {
+  // Auto-sell to scheduled channels
+  Object.values(CHANNELS).forEach(ch => {
+    if (!state.unlockedChannels.includes(ch.id)) return;
+    if (ch.dayModulo && ch.dayModulo > 0) {
+      const isSaleDay = (state.day % ch.dayModulo) === (ch.dayOffset || 0);
+      if (isSaleDay && !ch.contractBased) {
+        autoSell(ch);
+      }
+    }
+  });
+
+  // Progress contracts & check deadlines
+  state.contracts.forEach(c => {
+    c.daysLeft -= 1;
+    if (c.daysLeft <= 0 && !c.fulfilled) {
+      // Missed deadline!
+      state.reputation = Math.max(0, state.reputation - 30);
+      c.failed = true;
+      toast('bad', 'Missed Contract', `${c.buyer} was expecting ${fmt(c.weight)}lb of ${SPECIES[c.species].name}. Reputation −30.`);
+    }
+  });
+  state.contracts = state.contracts.filter(c => !c.fulfilled && !c.failed);
+
+  // Chance of new contract offer at tier 2+
+  if (state.tier >= 2 && Math.random() < 0.25 && state.contracts.length < 3) {
+    offerContract();
+  }
+
+  // Tier check
+  checkTierProgression();
+
+  // Achievements
+  checkAchievements();
+}
+
+// ============================================================================
+// BATCH PROCESSING
+// ============================================================================
+function processBatch(b) {
+  const sp = SPECIES[b.species];
+  const sub = SUBSTRATES[b.substrate];
+
+  if (b.stage === 'colonizing') {
+    const targetHours = (sp.colonization.hours[0] + sp.colonization.hours[1]) / 2;
+    b.progress = clamp((b.hoursElapsed / targetHours) * 100, 0, 100);
+    b.hoursElapsed += 1;
+
+    // Contamination risk accumulation
+    const tempDev = rangeDeviation(b.conditions.temp, sp.colonization.tempIdeal);
+    const equipReduce = state.ownedEquipment.reduce((a,e) => a + (EQUIPMENT[e].contamReduce || 0), 0);
+    const baseRisk = 0.15 + (sub.contamMod / 100) + (tempDev * 0.3);
+    const finalRisk = Math.max(0.02, baseRisk - equipReduce/200);
+    b.contamRisk = clamp((b.contamRisk || 0) + finalRisk, 0, 100);
+
+    // Contamination event trigger
+    if (b.contamRisk > 25 && !b.contamType && Math.random() < 0.008) {
+      contaminateBatch(b);
+    }
+
+    if (b.progress >= 100) {
+      b.stage = 'ready_to_fruit';
+      b.progress = 100;
+      toast('ok', `${sp.name} fully colonized`, 'Move to fruiting or sell as grow kit.');
+    }
+  }
+  else if (b.stage === 'fruiting') {
+    const targetHours = (sp.fruiting.hours[0] + sp.fruiting.hours[1]) / 2;
+    b.progress = clamp((b.fruitHoursElapsed / targetHours) * 100, 0, 100);
+    b.fruitHoursElapsed += 1;
+
+    // Environmental quality
+    const tempDev = rangeDeviation(b.conditions.temp, sp.fruiting.tempIdeal);
+    const humDev = rangeDeviation(b.conditions.humidity, sp.fruiting.humidityIdeal);
+    const faeDev = Math.abs(b.conditions.fae - sp.fruiting.faeIdeal) / 5;
+    const envQuality = 1 - (tempDev * 0.4 + humDev * 0.4 + faeDev * 0.2);
+    b.qualityAccum = (b.qualityAccum || 100) - (1 - envQuality) * 2;
+    b.qualityAccum = clamp(b.qualityAccum, 20, 100);
+
+    // Late fruiting contamination (cobweb, bacterial blotch)
+    if (b.contamRisk < 100 && Math.random() < 0.005 && (humDev > 0.3 || faeDev > 0.5)) {
+      const contamType = humDev > 0.5 ? 'cobweb' : 'bacterial_blotch';
+      contaminateBatch(b, contamType);
+    }
+
+    if (b.progress >= 100) {
+      b.stage = 'ready_to_harvest';
+      b.progress = 100;
+      toast('ok', `${sp.name} ready to harvest!`, 'Tap the batch to snip.');
+    }
+  }
+}
+
+function contaminateBatch(b, forceType) {
+  const options = ['trichoderma','cobweb','bacterial_blotch','wet_rot','aspergillus'];
+  if (Math.random() < 0.03) options.push('neurospora');
+  b.contamType = forceType || pick(options);
+  b.stage = 'contaminated';
+  state.stats.contaminationEvents += 1;
+  state.consecutiveNoContam = 0;
+  const c = CONTAMINANTS[b.contamType];
+  unlockCodex('contamination_101');
+  toast('bad', `Contamination: ${c.name}`, c.signs);
+  checkAchievement('first_contam');
+}
+
+// ============================================================================
+// TIER PROGRESSION
+// ============================================================================
+function checkTierProgression() {
+  const revenue = state.stats.totalRevenue;
+  let newTier = state.tier;
+  if (state.tier < 5 && revenue >= 100000 && state.reputation >= 1200) newTier = 5;
+  else if (state.tier < 4 && revenue >= 25000 && state.reputation >= 400) newTier = 4;
+  else if (state.tier < 3 && revenue >= 5000 && state.reputation >= 100) newTier = 3;
+  else if (state.tier < 2 && revenue >= 500 && state.reputation >= 15) newTier = 2;
+
+  if (newTier > state.tier) {
+    state.tier = newTier;
+    // Unlock channels at each tier
+    Object.values(CHANNELS).forEach(ch => {
+      if (ch.tier <= state.tier && !state.unlockedChannels.includes(ch.id)) {
+        state.unlockedChannels.push(ch.id);
+      }
+    });
+    if (state.tier >= 3) state.location = 'Dedicated Grow Room';
+    if (state.tier >= 4) state.location = 'Commercial Facility';
+    if (state.tier >= 5) state.location = 'Global HQ';
+    checkAchievement('tier'+state.tier);
+  }
+}
+
+// ============================================================================
+// CONTRACTS
+// ============================================================================
+function offerContract() {
+  const availSpecies = state.unlockedSpecies.filter(s => SPECIES[s].difficulty <= state.tier);
+  const species = pick(availSpecies);
+  const sp = SPECIES[species];
+  const weight = irand(2, Math.min(20, state.tier * 4));
+  const pricePerLb = Math.round(sp.pricePerLb * 0.85);
+  const daysLeft = irand(4, 8);
+  const buyers = ['The Copper Fork','Nopal Bistro','Sonoran Table','El Chorro Lodge','Bacchus & Vine','Farmhouse Kitchen','Cactus Roots Cafe'];
+  const contract = {
+    id: state.nextContractId++,
+    buyer: pick(buyers),
+    species, weight, pricePerLb, daysLeft,
+    totalValue: weight * pricePerLb,
+    fulfilled: false,
+  };
+  state.contracts.push(contract);
+  toast('info', 'New Contract Offer', `${contract.buyer} wants ${fmt(weight)}lb of ${sp.name} in ${daysLeft} days · ${fmt$(contract.totalValue)}`);
+}
+
+function fulfillContract(cid) {
+  const c = state.contracts.find(x => x.id === cid);
+  if (!c) return;
+  const inv = state.inventory[c.species];
+  if (!inv || inv.weight < c.weight) {
+    toast('warn', 'Not enough inventory', `Need ${fmt(c.weight)}lb of ${SPECIES[c.species].name}. You have ${fmt(inv?.weight || 0)}lb.`);
+    return;
+  }
+  inv.weight -= c.weight;
+  state.money += c.totalValue;
+  state.reputation += Math.round(c.totalValue / 30);
+  state.stats.totalRevenue += c.totalValue;
+  c.fulfilled = true;
+  toast('ok', 'Contract Fulfilled', `${c.buyer} paid ${fmt$(c.totalValue)}. Reputation +${Math.round(c.totalValue / 30)}.`);
+  render();
+}
+
+// ============================================================================
+// AUTO-SELL (scheduled channels)
+// ============================================================================
+function autoSell(ch) {
+  let totalSold = 0;
+  let totalRev = 0;
+  const cap = ch.capacity || 20;
+  let capLeft = cap;
+
+  const sortedSpecies = Object.keys(state.inventory).sort((a,b) =>
+    SPECIES[b].pricePerLb - SPECIES[a].pricePerLb
+  );
+
+  for (const sp of sortedSpecies) {
+    if (capLeft <= 0) break;
+    const inv = state.inventory[sp];
+    if (!inv || inv.weight <= 0) continue;
+
+    const sellAmt = Math.min(inv.weight, capLeft);
+    const soldAmt = sellAmt * ch.reliability;
+    const price = SPECIES[sp].pricePerLb * ch.margin;
+    const revenue = soldAmt * price * (0.8 + Math.random() * 0.4);
+
+    inv.weight -= sellAmt;
+    state.money += revenue;
+    state.stats.totalRevenue += revenue;
+    state.reputation += Math.round(revenue / 100);
+    totalSold += soldAmt;
+    totalRev += revenue;
+    capLeft -= sellAmt;
+  }
+
+  if (totalSold > 0) {
+    toast('ok', `${ch.name} · ${fmt$(totalRev)}`, `Sold ${fmt(totalSold)}lb`);
+    checkAchievement('first_sale');
+  }
+}
+
+// ============================================================================
+// ACTIONS
+// ============================================================================
+function harvest(batchId) {
+  const b = state.batches.find(x => x.id === batchId);
+  if (!b || b.stage !== 'ready_to_harvest') return;
+  const sp = SPECIES[b.species];
+  const sub = SUBSTRATES[b.substrate];
+
+  const baseYield = b.weight * rand(sp.yieldBE[0], sp.yieldBE[1]);
+  const yieldMod = 1 + (sub.yieldMod / 100);
+  const qualityMod = (b.qualityAccum || 100) / 100;
+  const finalYield = baseYield * yieldMod * qualityMod;
+
+  if (!state.inventory[b.species]) state.inventory[b.species] = { weight:0, freshHours:0 };
+  state.inventory[b.species].weight += finalYield;
+  state.inventory[b.species].freshHours = 0;
+
+  state.stats.totalHarvested += finalYield;
+  state.stats.successfulBatches += 1;
+  state.consecutiveNoContam += 1;
+
+  toast('ok', `Harvested ${fmt(finalYield)}lb of ${sp.name}`, `Quality: ${Math.round(qualityMod * 100)}%`);
+  b.stage = 'removed';
+  checkAchievement('first_harvest');
+  if (state.consecutiveNoContam >= 10) checkAchievement('no_contam_10');
+  if (state.stats.successfulBatches >= 5) checkAchievement('five_batches');
+  render();
+}
+
+function sellFresh(species, weight, channelId) {
+  const inv = state.inventory[species];
+  if (!inv || inv.weight < weight) return;
+  const ch = CHANNELS[channelId];
+  const sp = SPECIES[species];
+  const price = sp.pricePerLb * ch.margin;
+  const revenue = weight * price;
+  inv.weight -= weight;
+  state.money += revenue;
+  state.stats.totalRevenue += revenue;
+  state.reputation += Math.round(revenue / 100);
+  toast('ok', `+${fmt$(revenue)}`, `Sold ${fmt(weight)}lb of ${sp.name}`);
+  checkAchievement('first_sale');
+  render();
+}
+
+function tossBatch(batchId) {
+  const b = state.batches.find(x => x.id === batchId);
+  if (!b) return;
+  b.stage = 'removed';
+  render();
+}
+
+function createBatch(species, substrate, weight) {
+  const sp = SPECIES[species];
+  const sub = SUBSTRATES[substrate];
+  const cultureCost = 30;
+  const totalCost = sub.cost * (weight/5) + cultureCost;
+  if (state.money < totalCost) { toast('bad', 'Not enough money', `Need ${fmt$(totalCost)}`); return; }
+  if ((state.cultures[species] || 0) < 1) { toast('bad', 'No culture', `Buy ${sp.name} culture first.`); return; }
+  if ((state.substrates[substrate] || 0) < weight/5) { toast('bad', 'Not enough substrate', ''); return; }
+
+  state.money -= totalCost;
+  state.cultures[species] -= 1;
+  state.substrates[substrate] -= weight/5;
+
+  const batch = {
+    id: state.nextBatchId++,
+    species, substrate,
+    weight, // lbs dry
+    stage: 'colonizing',
+    progress: 0,
+    hoursElapsed: 0,
+    fruitHoursElapsed: 0,
+    contamRisk: 0,
+    contamType: null,
+    qualityAccum: 100,
+    conditions: {
+      temp: (sp.colonization.tempIdeal[0] + sp.colonization.tempIdeal[1]) / 2,
+      humidity: 55,
+      fae: 1,
+      light: 0,
+    },
+    createdDay: state.day,
+  };
+  state.batches.push(batch);
+  toast('info', `Batch #${batch.id} started`, `${sp.name} on ${sub.name}`);
+  checkAchievement('first_batch');
+  unlockCodex('welcome');
+  render();
+}
+
+function moveToFruiting(batchId) {
+  const b = state.batches.find(x => x.id === batchId);
+  if (!b || b.stage !== 'ready_to_fruit') return;
+  const sp = SPECIES[b.species];
+  b.stage = 'fruiting';
+  // reset conditions to fruiting defaults (player then adjusts)
+  b.conditions.temp = (sp.fruiting.tempIdeal[0] + sp.fruiting.tempIdeal[1]) / 2;
+  b.conditions.humidity = (sp.fruiting.humidityIdeal[0] + sp.fruiting.humidityIdeal[1]) / 2;
+  b.conditions.fae = sp.fruiting.faeIdeal;
+  b.conditions.light = sp.fruiting.lightHours;
+  render();
+}
+
+function sellAsKit(batchId) {
+  const b = state.batches.find(x => x.id === batchId);
+  if (!b || b.stage !== 'ready_to_fruit') return;
+  if (!state.unlockedChannels.includes('grow_kits')) {
+    toast('warn', 'Grow Kit sales locked', 'Reach Tier 3 to sell colonized blocks as grow kits.');
+    return;
+  }
+  const price = 45 + SPECIES[b.species].pricePerLb * 2;
+  state.money += price;
+  state.stats.totalRevenue += price;
+  state.reputation += 3;
+  toast('ok', `Grow Kit sold: +${fmt$(price)}`, `Fully colonized ${SPECIES[b.species].name} block`);
+  b.stage = 'removed';
+  render();
+}
+
+// ============================================================================
+// SHOP ACTIONS
+// ============================================================================
+function buyCulture(spId) {
+  const sp = SPECIES[spId];
+  const cost = 30;
+  if (state.money < cost) { toast('bad', 'Not enough money', ''); return; }
+  state.money -= cost;
+  state.cultures[spId] = (state.cultures[spId] || 0) + 1;
+  toast('ok', `Bought ${sp.name} culture`, `+1 in stock`);
+  render();
+}
+
+function buySubstrate(sbId) {
+  const sb = SUBSTRATES[sbId];
+  if (state.money < sb.cost) { toast('bad', 'Not enough money', ''); return; }
+  state.money -= sb.cost;
+  state.substrates[sbId] = (state.substrates[sbId] || 0) + 1; // one "unit" = 5lb bag
+  toast('ok', `Bought ${sb.name}`, `+1 bag (5lb) in stock`);
+  render();
+}
+
+function buyEquipment(eqId) {
+  const eq = EQUIPMENT[eqId];
+  if (state.ownedEquipment.includes(eqId)) return;
+  if (state.money < eq.cost) { toast('bad', 'Not enough money', ''); return; }
+  state.money -= eq.cost;
+  state.ownedEquipment.push(eqId);
+  toast('ok', `Purchased ${eq.name}`, eq.desc);
+  render();
+}
+
+function unlockSpecies(spId) {
+  const sp = SPECIES[spId];
+  if (state.unlockedSpecies.includes(spId)) return;
+  if (state.money < sp.unlockCost) { toast('bad', 'Not enough money', ''); return; }
+  if (state.reputation < (sp.unlockRep || 0)) { toast('bad', 'Not enough reputation', ''); return; }
+  state.money -= sp.unlockCost;
+  state.unlockedSpecies.push(spId);
+  toast('ok', `Unlocked ${sp.name}`, sp.tip);
+  if (spId === 'lions_mane') checkAchievement('lions_mane_unlock');
+  if (state.unlockedSpecies.length === Object.keys(SPECIES).length) checkAchievement('all_species');
+  render();
+}
+
+function unlockSubstrate(sbId) {
+  const sb = SUBSTRATES[sbId];
+  if (state.unlockedSubstrates.includes(sbId)) return;
+  if (state.money < sb.unlockCost) { toast('bad', 'Not enough money', ''); return; }
+  state.money -= sb.unlockCost;
+  state.unlockedSubstrates.push(sbId);
+  toast('ok', `Unlocked ${sb.name}`, sb.tip);
+  render();
+}
+
+// ============================================================================
+// CODEX + ACHIEVEMENTS
+// ============================================================================
+function unlockCodex(id) {
+  if (state.codexUnlocked.includes(id)) return;
+  state.codexUnlocked.push(id);
+  const c = CODEX[id];
+  if (c) toast('info', `Codex: ${c.title}`, 'New entry unlocked');
+}
+
+function checkAchievement(id) {
+  if (!ACHIEVEMENTS[id]) return;
+  if (state.achievements.includes(id)) return;
+  state.achievements.push(id);
+  const a = ACHIEVEMENTS[id];
+  if (a.reward.money) state.money += a.reward.money;
+  if (a.reward.rep) state.reputation += a.reward.rep;
+  showAchievement(a);
+}
+
+function checkAchievements() {
+  if (state.stats.totalRevenue >= 1000) checkAchievement('first_thousand');
+  if (state.stats.totalRevenue >= 10000) checkAchievement('first_10k');
+  if (state.stats.totalRevenue >= 100000) checkAchievement('first_100k');
+  if (state.stats.successfulBatches >= 5) checkAchievement('five_batches');
+}
+
+function showAchievement(a) {
+  $('#achNm').textContent = a.name;
+  $('#achRw').textContent = a.desc + (a.reward.money ? ` · +${fmt$(a.reward.money)}` : '') + (a.reward.rep ? ` · +${a.reward.rep}★` : '');
+  const el = $('#achievementPop');
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+// ============================================================================
+// TOAST
+// ============================================================================
+function toast(kind, title, msg) {
+  const el = document.createElement('div');
+  el.className = 'toast ' + kind;
+  el.innerHTML = `<div class="t">${title}</div>${msg ? `<div class="m">${msg}</div>` : ''}`;
+  $('#toastStack').appendChild(el);
+  setTimeout(() => el.remove(), 4200);
+}
+
+// ============================================================================
+// SAVE / LOAD
+// ============================================================================
+function exportSave() {
+  try {
+    const json = JSON.stringify(state);
+    const b64 = btoa(unescape(encodeURIComponent(json)));
+    return b64;
+  } catch(e) { return ''; }
+}
+
+function importSave(code) {
+  try {
+    const json = decodeURIComponent(escape(atob(code.trim())));
+    const parsed = JSON.parse(json);
+    if (!parsed.version) throw new Error('Invalid');
+    state = parsed;
+    // Backfill fields if missing (for forward compat)
+    if (!state.contracts) state.contracts = [];
+    if (!state.stats) state.stats = { totalHarvested:0, totalRevenue:0, successfulBatches:0, contaminationEvents:0 };
+    render();
+    toast('ok', 'Save loaded', `Day ${state.day} · ${fmt$(state.money)}`);
+    return true;
+  } catch(e) {
+    toast('bad', 'Invalid save code', 'Check the code and try again.');
+    return false;
+  }
+}
+
+// ============================================================================
+// SVG · Mushroom rendering
+// ============================================================================
+function speciesSVG(spId, size=44) {
+  const sp = SPECIES[spId];
+  const c = sp.color;
+  // Base per-species mushroom illustration
+  if (spId === 'lions_mane') {
+    // A puffball of "spines"
+    let spines = '';
+    for (let i = 0; i < 30; i++) {
+      const a = i * 0.2 + Math.random() * 0.1;
+      const r = 12 + Math.random() * 6;
+      const cx = 50 + Math.cos(a) * r * 0.5;
+      const cy = 45 + Math.sin(a) * r * 0.4;
+      spines += `<line x1="${cx}" y1="${cy}" x2="${cx + Math.cos(a-Math.PI/2)*8}" y2="${cy + Math.sin(a-Math.PI/2)*8}" stroke="${c}" stroke-width="2" stroke-linecap="round"/>`;
+    }
+    return `<svg viewBox="0 0 100 100" width="${size}" height="${size}"><circle cx="50" cy="50" r="22" fill="${c}" opacity=".6"/>${spines}</svg>`;
+  }
+  if (spId === 'reishi') {
+    return `<svg viewBox="0 0 100 100" width="${size}" height="${size}"><path d="M 20 60 Q 30 30 50 30 Q 70 30 80 60 Q 60 70 40 65 Z" fill="${c}"/><path d="M 45 60 L 40 90 M 55 60 L 60 90" stroke="#3a2820" stroke-width="3" stroke-linecap="round"/></svg>`;
+  }
+  if (spId === 'cordyceps') {
+    let stalks = '';
+    for (let i = 0; i < 8; i++) {
+      const x = 25 + i * 6.5 + Math.random() * 2;
+      stalks += `<rect x="${x-1.5}" y="${45+Math.random()*10}" width="3" height="${25+Math.random()*10}" rx="1.5" fill="${c}"/><circle cx="${x}" cy="${45+Math.random()*8}" r="2.5" fill="${c}"/>`;
+    }
+    return `<svg viewBox="0 0 100 100" width="${size}" height="${size}"><ellipse cx="50" cy="85" rx="30" ry="4" fill="#4a3728"/>${stalks}</svg>`;
+  }
+  if (spId === 'king_trumpet') {
+    // Thick stem, small cap
+    return `<svg viewBox="0 0 100 100" width="${size}" height="${size}"><ellipse cx="50" cy="28" rx="14" ry="8" fill="${c}"/><path d="M 40 30 L 36 85 L 64 85 L 60 30 Z" fill="${c}" opacity=".9"/><ellipse cx="50" cy="88" rx="16" ry="3" fill="#3a2820" opacity=".4"/></svg>`;
+  }
+  if (spId === 'cotw') {
+    // Shelf-like
+    return `<svg viewBox="0 0 100 100" width="${size}" height="${size}"><path d="M 15 55 Q 30 25 55 40 Q 78 30 88 55 Q 70 62 50 58 Q 30 62 15 55 Z" fill="${c}"/><path d="M 15 55 Q 30 42 55 52 Q 78 45 88 55 Q 70 70 50 65 Q 30 70 15 55 Z" fill="${c}" opacity=".7"/></svg>`;
+  }
+  // Generic mushroom (oysters, chestnut, pioppino, shiitake, blue oyster)
+  return `<svg viewBox="0 0 100 100" width="${size}" height="${size}">
+    <ellipse cx="50" cy="40" rx="30" ry="20" fill="${c}"/>
+    <path d="M 22 45 Q 50 55 78 45 L 78 48 Q 50 58 22 48 Z" fill="#3a2820" opacity=".3"/>
+    <path d="M 40 55 Q 42 78 38 88 L 62 88 Q 58 78 60 55 Z" fill="${c}" opacity=".85"/>
+    <ellipse cx="50" cy="88" rx="14" ry="3" fill="#3a2820" opacity=".4"/>
+  </svg>`;
+}
+
+function equipmentSVG(eqId, size=44) {
+  const paths = {
+    shoebox_tub: '<rect x="20" y="35" width="60" height="45" rx="4" fill="#8b6f47" stroke="#4a3728"/><rect x="15" y="30" width="70" height="8" rx="3" fill="#c9a961"/>',
+    still_air_box: '<rect x="15" y="30" width="70" height="55" rx="4" fill="#a89b7f" opacity=".8"/><circle cx="35" cy="55" r="8" fill="#1a1410"/><circle cx="65" cy="55" r="8" fill="#1a1410"/>',
+    pressure_cooker: '<circle cx="50" cy="60" r="28" fill="#8a8a8a"/><rect x="45" y="20" width="10" height="16" fill="#5a5a5a"/><circle cx="50" cy="60" r="20" fill="#3a3a3a"/>',
+    grow_tent: '<rect x="15" y="25" width="70" height="60" fill="#2a2a2a" stroke="#c9a961" stroke-width="1"/><path d="M 15 25 L 30 25 M 55 25 L 85 25" stroke="#c9a961" stroke-width="2"/>',
+    flow_hood: '<rect x="15" y="30" width="70" height="50" rx="3" fill="#d0d0d0"/><rect x="20" y="35" width="60" height="30" fill="#e8e8e8"/><path d="M 20 35 L 80 35 M 20 40 L 80 40" stroke="#a0a0a0" stroke-width=".5"/>',
+    climate_room: '<rect x="10" y="20" width="80" height="70" fill="#3a2b1e"/><rect x="20" y="30" width="60" height="50" fill="#5a4a3a"/><rect x="45" y="30" width="10" height="50" fill="#c9a961"/>',
+    autoclave: '<rect x="20" y="35" width="60" height="50" rx="6" fill="#c0c0c0"/><circle cx="50" cy="60" r="18" fill="#3a3a3a"/><circle cx="50" cy="60" r="12" fill="#1a1410"/><rect x="40" y="20" width="20" height="15" fill="#8a8a8a"/>',
+    multi_room: '<rect x="10" y="20" width="80" height="70" fill="#3a2b1e"/><rect x="15" y="25" width="30" height="60" fill="#5a4a3a"/><rect x="55" y="25" width="30" height="60" fill="#5a4a3a"/><rect x="49" y="25" width="2" height="60" fill="#c9a961"/>',
+    automation: '<rect x="15" y="30" width="70" height="50" rx="6" fill="#1a1410" stroke="#c9a961"/><circle cx="30" cy="50" r="4" fill="#7ec876"/><circle cx="50" cy="50" r="4" fill="#c9a961"/><circle cx="70" cy="50" r="4" fill="#c8615c"/><rect x="20" y="65" width="60" height="8" fill="#3a2b1e"/>',
+  };
+  return `<svg viewBox="0 0 100 100" width="${size}" height="${size}">${paths[eqId] || paths.shoebox_tub}</svg>`;
+}
+
+function substrateSVG(sbId, size=44) {
+  const colors = {
+    straw: '#d4a850', hardwood: '#8b6f47', masters_mix: '#a08560',
+    supplemented: '#7a5e3f', grain_jar: '#e8d5a8', cordy_media: '#f0c880',
+  };
+  return `<svg viewBox="0 0 100 100" width="${size}" height="${size}">
+    <rect x="20" y="30" width="60" height="55" rx="6" fill="${colors[sbId]||'#8b6f47'}"/>
+    <path d="M 25 40 L 35 38 M 40 42 L 50 40 M 55 45 L 65 43 M 30 55 L 40 53 M 45 58 L 55 56 M 60 60 L 70 58 M 28 68 L 38 66 M 45 72 L 55 70 M 60 75 L 70 73" stroke="#3a2820" stroke-width="1.2" stroke-linecap="round" opacity=".5"/>
+  </svg>`;
+}
+
+function batchVisualSVG(b) {
+  const sp = SPECIES[b.species];
+  const c = sp.color;
+  // Substrate block
+  const width = 260, height = 100;
+  const blockW = 160, blockH = 55, blockX = (width - blockW)/2, blockY = 35;
+  let contentHtml = `<rect class="substrate-block" x="${blockX}" y="${blockY}" width="${blockW}" height="${blockH}" rx="4"/>`;
+
+  // Mycelium colonization overlay
+  if (b.stage === 'colonizing' || b.stage === 'ready_to_fruit' || b.stage === 'fruiting' || b.stage === 'ready_to_harvest' || b.stage === 'contaminated') {
+    const colonPct = b.stage === 'colonizing' ? b.progress / 100 : 1;
+    const fillW = blockW * colonPct;
+    contentHtml += `<rect class="mycelium-fill" x="${blockX}" y="${blockY}" width="${fillW}" height="${blockH}" rx="4"/>`;
+
+    // Scattered mycelium texture
+    for (let i = 0; i < Math.floor(colonPct * 20); i++) {
+      const cx = blockX + Math.random() * blockW;
+      const cy = blockY + Math.random() * blockH;
+      contentHtml += `<circle cx="${cx}" cy="${cy}" r="${1 + Math.random() * 2}" fill="#f4e8d0" opacity=".7"/>`;
+    }
+  }
+
+  // Mushrooms during fruiting
+  if (b.stage === 'fruiting' || b.stage === 'ready_to_harvest') {
+    const mushCount = Math.floor((b.progress / 100) * 8) + (b.stage === 'ready_to_harvest' ? 4 : 0);
+    for (let i = 0; i < mushCount; i++) {
+      const mx = blockX + 15 + (i / (mushCount+1)) * (blockW - 30) + (Math.random() - .5) * 8;
+      const my = blockY - 5 - Math.random() * 8;
+      const growHeight = (b.stage === 'ready_to_harvest' ? 22 : 8 + (b.progress / 100) * 14);
+      const stemH = growHeight * 0.6;
+      const capR = growHeight * 0.35;
+      contentHtml += `<rect x="${mx-1.5}" y="${my - stemH + growHeight*.4}" width="3" height="${stemH}" fill="${c}" opacity=".9" rx="1.5"/>`;
+      contentHtml += `<ellipse cx="${mx}" cy="${my - stemH + growHeight*.4}" rx="${capR}" ry="${capR*.6}" fill="${c}"/>`;
+    }
+  }
+
+  // Contamination
+  if (b.stage === 'contaminated' && b.contamType) {
+    const cc = CONTAMINANTS[b.contamType].color;
+    for (let i = 0; i < 10; i++) {
+      const cx = blockX + 10 + Math.random() * (blockW - 20);
+      const cy = blockY + 5 + Math.random() * (blockH - 10);
+      const r = 4 + Math.random() * 8;
+      contentHtml += `<circle class="contam-blob" cx="${cx}" cy="${cy}" r="${r}" fill="${cc}"/>`;
+    }
+  }
+
+  return `<svg viewBox="0 0 ${width} ${height}">${contentHtml}</svg>`;
+}
+
+// ============================================================================
+// RENDERING
+// ============================================================================
+let currentView = 'Grow';
+
+function switchView(name) {
+  currentView = name;
+  ['Grow','Shop','Sell','Codex','Menu'].forEach(v => {
+    $('#view'+v).classList.toggle('active', v === name);
+  });
+  $$('.nav button').forEach(b => {
+    b.classList.toggle('active', b.dataset.view === name);
+  });
+  render();
+}
+
+function renderCurrentView(light) {
+  if (!state) return;
+  switch(currentView) {
+    case 'Grow': renderGrow(); break;
+    case 'Shop': if (!light) renderShop(); break;
+    case 'Sell': renderSell(); break;
+    case 'Codex': if (!light) renderCodex(); break;
+    case 'Menu': renderMenu(); break;
+  }
+}
+
+function render() {
+  if (!state) return;
+  renderStatus();
+  renderCurrentView(false);
+}
+
+function renderStatus() {
+  $('#stMoney').textContent = fmt(Math.floor(state.money));
+  $('#stRep').textContent = state.reputation;
+  $('#stDay').textContent = state.day;
+  $('#stTemp').textContent = state.ambientTemp;
+  $$('.time-controls button').forEach(b => {
+    b.classList.toggle('active', +b.dataset.speed === state.speed);
+  });
+}
+
+// ===== GROW VIEW =====
+function renderGrow() {
+  $('#growSub').textContent = `${state.location} · Tier ${state.tier}`;
+  const list = $('#batchList');
+  list.innerHTML = '';
+
+  if (state.batches.length === 0) {
+    $('#growEmpty').style.display = 'block';
+    return;
+  }
+  $('#growEmpty').style.display = 'none';
+
+  state.batches.forEach(b => {
+    const sp = SPECIES[b.species];
+    const sub = SUBSTRATES[b.substrate];
+    const stageLabel = {
+      colonizing: 'Colonizing',
+      ready_to_fruit: 'Ready to Fruit',
+      fruiting: 'Fruiting',
+      ready_to_harvest: 'Harvest Ready!',
+      contaminated: 'Contaminated'
+    }[b.stage];
+    const stageClass = {
+      colonizing: 'stage-colonizing',
+      ready_to_fruit: 'stage-ready',
+      fruiting: 'stage-fruiting',
+      ready_to_harvest: 'stage-ready',
+      contaminated: 'bad'
+    }[b.stage];
+
+    const card = document.createElement('div');
+    card.className = 'card' + (b.stage === 'contaminated' ? ' bad' : b.stage === 'ready_to_harvest' ? ' hi' : '');
+    let actionsHtml = '';
+    if (b.stage === 'ready_to_fruit') {
+      actionsHtml = `<div class="btn-row">
+        <button class="btn primary" data-action="fruit" data-id="${b.id}">Move to Fruiting</button>
+        <button class="btn ghost" data-action="kit" data-id="${b.id}">Sell as Kit</button>
+      </div>`;
+    } else if (b.stage === 'ready_to_harvest') {
+      actionsHtml = `<div class="btn-row">
+        <button class="btn primary" data-action="harvest" data-id="${b.id}">Harvest ✂</button>
+      </div>`;
+    } else if (b.stage === 'contaminated') {
+      const c = CONTAMINANTS[b.contamType];
+      actionsHtml = `<div class="mt" style="background:rgba(200,97,92,.1);border-radius:8px;padding:10px;font-size:12px;">
+        <strong style="color:${c.color}">${c.name}</strong>
+        <div style="color:var(--ink-mute);margin-top:4px">${c.signs}</div>
+        <div style="color:var(--ink-dim);margin-top:6px"><strong style="color:var(--gold-hi)">Lesson:</strong> ${c.lesson}</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn danger full" data-action="toss" data-id="${b.id}">Toss & Sanitize</button>
+      </div>`;
+    } else {
+      // Show sliders for adjusting conditions during fruiting; or just info during colonization
+      if (b.stage === 'fruiting') {
+        const idealT = sp.fruiting.tempIdeal;
+        const idealH = sp.fruiting.humidityIdeal;
+        const idealF = sp.fruiting.faeIdeal;
+        actionsHtml = `
+        <div class="slider-row">
+          <div class="top"><span>Temperature</span><strong>${b.conditions.temp}°F</strong><span style="color:var(--ink-mute)">ideal ${idealT[0]}-${idealT[1]}</span></div>
+          <input type="range" min="40" max="95" value="${b.conditions.temp}" data-cond="temp" data-id="${b.id}"/>
+        </div>
+        <div class="slider-row">
+          <div class="top"><span>Humidity</span><strong>${b.conditions.humidity}%</strong><span style="color:var(--ink-mute)">ideal ${idealH[0]}-${idealH[1]}</span></div>
+          <input type="range" min="40" max="99" value="${b.conditions.humidity}" data-cond="humidity" data-id="${b.id}"/>
+        </div>
+        <div class="slider-row">
+          <div class="top"><span>Fresh Air Exchange</span><strong>${b.conditions.fae}/hr</strong><span style="color:var(--ink-mute)">ideal ${idealF}</span></div>
+          <input type="range" min="0" max="8" step="1" value="${b.conditions.fae}" data-cond="fae" data-id="${b.id}"/>
+        </div>`;
+      }
+    }
+
+    // Condition indicators
+    const target = b.stage === 'fruiting' ? sp.fruiting : sp.colonization;
+    const tempOk = target.tempIdeal ? inRange(b.conditions.temp, target.tempIdeal) : true;
+    const humOk = target.humidityIdeal ? inRange(b.conditions.humidity, target.humidityIdeal) : true;
+    const faeOk = target.faeIdeal !== undefined ? Math.abs(b.conditions.fae - target.faeIdeal) < 2 : true;
+    const condsHtml = `<div class="conditions">
+      <div class="cond ${tempOk ? 'ok' : 'warn'}"><div class="k">Temp</div><div class="v">${b.conditions.temp}</div><div class="u">°F</div></div>
+      <div class="cond ${humOk ? 'ok' : 'warn'}"><div class="k">Humidity</div><div class="v">${b.conditions.humidity}</div><div class="u">%</div></div>
+      <div class="cond ${faeOk ? 'ok' : 'warn'}"><div class="k">FAE</div><div class="v">${b.conditions.fae}</div><div class="u">/hr</div></div>
+      <div class="cond"><div class="k">Quality</div><div class="v">${Math.round(b.qualityAccum || 100)}</div><div class="u">%</div></div>
+    </div>`;
+
+    card.innerHTML = `
+      <div class="card-header">
+        <div style="display:flex;gap:10px;align-items:center">
+          ${speciesSVG(b.species, 40)}
+          <div>
+            <div class="card-title">${sp.name} <span style="color:var(--ink-mute);font-weight:400;font-size:11px">#${b.id}</span></div>
+            <div class="card-sub">${sub.name} · ${b.weight}lb block · Day ${state.day - b.createdDay + 1}</div>
+          </div>
+        </div>
+        <div class="chip ${stageClass}">${stageLabel}</div>
+      </div>
+      <div class="batch-visual">${batchVisualSVG(b)}</div>
+      <div class="bar"><span style="width:${b.progress}%"></span></div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--ink-mute);margin-top:4px">
+        <span>${b.stage === 'colonizing' ? `${Math.floor(b.hoursElapsed/24)}d ${b.hoursElapsed%24}h elapsed` : b.stage === 'fruiting' ? `${Math.floor(b.fruitHoursElapsed/24)}d ${b.fruitHoursElapsed%24}h fruiting` : ''}</span>
+        <span>Contam risk: ${Math.round(b.contamRisk)}%</span>
+      </div>
+      ${b.contamRisk > 0 ? `<div class="bar contam small mt"><span style="width:${b.contamRisk}%"></span></div>` : ''}
+      ${condsHtml}
+      ${actionsHtml}
+    `;
+    list.appendChild(card);
+  });
+
+  // Bind buttons
+  list.querySelectorAll('button[data-action]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = +btn.dataset.id;
+      const action = btn.dataset.action;
+      if (action === 'harvest') harvest(id);
+      else if (action === 'fruit') moveToFruiting(id);
+      else if (action === 'kit') sellAsKit(id);
+      else if (action === 'toss') tossBatch(id);
+    });
+  });
+  // Bind sliders
+  list.querySelectorAll('input[type=range][data-cond]').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const b = state.batches.find(x => x.id === +inp.dataset.id);
+      if (!b) return;
+      b.conditions[inp.dataset.cond] = +inp.value;
+      // Update sibling label
+      const strong = inp.previousElementSibling.querySelector('strong');
+      if (strong) strong.textContent = inp.dataset.cond === 'humidity' ? inp.value + '%' : inp.dataset.cond === 'temp' ? inp.value + '°F' : inp.value + '/hr';
+    });
+  });
+}
+
+// ===== SHOP =====
+function renderShop() {
+  // Cultures
+  const cul = $('#shopCultures');
+  cul.innerHTML = '';
+  Object.values(SPECIES).forEach(sp => {
+    const unlocked = state.unlockedSpecies.includes(sp.id);
+    const canUnlock = state.money >= sp.unlockCost && state.reputation >= (sp.unlockRep || 0);
+    const stock = state.cultures[sp.id] || 0;
+    const el = document.createElement('div');
+    el.className = 'shop-item' + (unlocked ? '' : ' locked');
+    el.innerHTML = `
+      <div class="icn">${speciesSVG(sp.id, 44)}</div>
+      <div class="nm sp-${sp.id}">${sp.name}</div>
+      <div class="dsc">${'★'.repeat(sp.difficulty)}${'☆'.repeat(5-sp.difficulty)} · ${sp.tip.substring(0, 60)}${sp.tip.length > 60 ? '…' : ''}</div>
+      ${unlocked
+        ? `<div class="pr">$30 / culture · <span style="color:var(--ink-mute)">${stock} owned</span></div>
+           <button class="btn primary" data-buy-culture="${sp.id}">Buy Culture</button>`
+        : `<div class="pr">Unlock ${fmt$(sp.unlockCost)}</div>
+           <div class="lock-note">${sp.unlockRep ? `★${sp.unlockRep} rep required` : ''}</div>
+           <button class="btn ghost" data-unlock-species="${sp.id}" ${canUnlock ? '' : 'disabled'}>Unlock Species</button>`
+      }
+    `;
+    cul.appendChild(el);
+  });
+
+  // Substrates
+  const sub = $('#shopSubstrates');
+  sub.innerHTML = '';
+  Object.values(SUBSTRATES).forEach(sb => {
+    const unlocked = state.unlockedSubstrates.includes(sb.id);
+    const canUnlock = state.money >= sb.unlockCost;
+    const stock = state.substrates[sb.id] || 0;
+    const el = document.createElement('div');
+    el.className = 'shop-item' + (unlocked ? '' : ' locked');
+    el.innerHTML = `
+      <div class="icn">${substrateSVG(sb.id, 44)}</div>
+      <div class="nm">${sb.name}</div>
+      <div class="dsc">${sb.tip}</div>
+      ${unlocked
+        ? `<div class="pr">${fmt$(sb.cost)} · <span style="color:var(--ink-mute)">${stock} bags</span></div>
+           <button class="btn primary" data-buy-sub="${sb.id}">Buy 5lb Bag</button>`
+        : `<div class="pr">Unlock ${fmt$(sb.unlockCost)}</div>
+           <button class="btn ghost" data-unlock-sub="${sb.id}" ${canUnlock ? '' : 'disabled'}>Unlock</button>`
+      }
+    `;
+    sub.appendChild(el);
+  });
+
+  // Equipment
+  const eq = $('#shopEquipment');
+  eq.innerHTML = '';
+  Object.values(EQUIPMENT).forEach(e => {
+    const owned = state.ownedEquipment.includes(e.id);
+    const affordable = state.money >= e.cost;
+    const tierOk = e.tier <= state.tier;
+    const el = document.createElement('div');
+    el.className = 'shop-item' + (!tierOk ? ' locked' : '');
+    el.innerHTML = `
+      <div class="icn">${equipmentSVG(e.id, 44)}</div>
+      <div class="nm">${e.name}</div>
+      <div class="dsc">${e.desc}</div>
+      ${owned
+        ? `<div class="pr" style="color:var(--ok)">✓ Owned</div>`
+        : tierOk
+          ? `<div class="pr">${fmt$(e.cost)}</div>
+             <button class="btn primary" data-buy-eq="${e.id}" ${affordable ? '' : 'disabled'}>Purchase</button>`
+          : `<div class="lock-note">Requires Tier ${e.tier}</div>`
+      }
+    `;
+    eq.appendChild(el);
+  });
+
+  // Bind
+  cul.querySelectorAll('[data-buy-culture]').forEach(b => b.addEventListener('click', () => buyCulture(b.dataset.buyCulture)));
+  cul.querySelectorAll('[data-unlock-species]').forEach(b => b.addEventListener('click', () => unlockSpecies(b.dataset.unlockSpecies)));
+  sub.querySelectorAll('[data-buy-sub]').forEach(b => b.addEventListener('click', () => buySubstrate(b.dataset.buySub)));
+  sub.querySelectorAll('[data-unlock-sub]').forEach(b => b.addEventListener('click', () => unlockSubstrate(b.dataset.unlockSub)));
+  eq.querySelectorAll('[data-buy-eq]').forEach(b => b.addEventListener('click', () => buyEquipment(b.dataset.buyEq)));
+}
+
+// ===== SELL =====
+function renderSell() {
+  const inv = $('#inventoryList');
+  const totalWeight = Object.values(state.inventory).reduce((a,v) => a + (v?.weight || 0), 0);
+  if (totalWeight < 0.1) {
+    inv.innerHTML = '<div style="color:var(--ink-mute);font-size:12px;padding:8px 0">No fresh mushrooms in inventory. Harvest a batch to fill this up.</div>';
+  } else {
+    inv.innerHTML = '';
+    Object.keys(state.inventory).forEach(sp => {
+      const invItem = state.inventory[sp];
+      if (!invItem || invItem.weight < 0.05) return;
+      const speciesData = SPECIES[sp];
+      const daysOld = Math.floor(invItem.freshHours / 24);
+      const freshness = invItem.freshHours < 48 ? 'ok' : invItem.freshHours < 96 ? 'warn' : 'bad';
+      const line = document.createElement('div');
+      line.className = 'info-line';
+      line.innerHTML = `
+        <span class="k">${speciesSVG(sp, 18)} ${speciesData.name}</span>
+        <span class="v">${fmt(invItem.weight)}lb <span class="chip ${freshness}" style="margin-left:6px">${daysOld}d old</span></span>
+      `;
+      inv.appendChild(line);
+    });
+  }
+
+  // Channels
+  const chl = $('#channelList');
+  chl.innerHTML = '';
+  Object.values(CHANNELS).forEach(ch => {
+    if (!state.unlockedChannels.includes(ch.id)) return;
+    const nextDay = ch.dayModulo ? (ch.dayModulo - ((state.day - (ch.dayOffset || 0)) % ch.dayModulo) + ch.dayModulo) % ch.dayModulo : 0;
+    const nextText = ch.contractBased ? 'Contract-based' : ch.dayModulo === 1 ? 'Daily · auto' : nextDay === 0 ? 'Today!' : `In ${nextDay} day${nextDay > 1 ? 's' : ''}`;
+    const c = document.createElement('div');
+    c.className = 'channel-card';
+    c.innerHTML = `
+      <div class="flex-between">
+        <div class="hdr">${ch.name}</div>
+        <div class="rate">${Math.round(ch.margin * 100)}% price</div>
+      </div>
+      <div class="meta">${ch.tip}</div>
+      <div class="flex-between" style="margin-top:6px">
+        <span class="meta">Schedule: ${ch.schedule}</span>
+        <span class="meta" style="color:${nextText === 'Today!' ? 'var(--ok)' : 'var(--ink-mute)'}">${nextText}</span>
+      </div>
+      ${totalWeight > 0.1 && !ch.contractBased && !ch.passive ? `<button class="btn ghost mt full" data-sell-now="${ch.id}">Sell now to this channel</button>` : ''}
+    `;
+    chl.appendChild(c);
+  });
+  chl.querySelectorAll('[data-sell-now]').forEach(b => b.addEventListener('click', () => {
+    autoSell(CHANNELS[b.dataset.sellNow]);
+    render();
+  }));
+
+  // Contracts
+  const ctl = $('#contractList');
+  if (state.contracts.length === 0) {
+    ctl.innerHTML = '<div style="color:var(--ink-mute);font-size:12px;padding:8px 0">No active contracts. Reach Tier 2 and build reputation to attract restaurant accounts.</div>';
+  } else {
+    ctl.innerHTML = '';
+    state.contracts.forEach(c => {
+      const sp = SPECIES[c.species];
+      const inv = state.inventory[c.species];
+      const canFulfill = inv && inv.weight >= c.weight;
+      const el = document.createElement('div');
+      el.className = 'contract-card' + (c.daysLeft <= 1 ? ' due' : '');
+      el.innerHTML = `
+        <div class="flex-between">
+          <div><strong>${c.buyer}</strong><div class="meta">${fmt(c.weight)}lb ${sp.name} · ${fmt$(c.totalValue)}</div></div>
+          <div class="contract-timer ${c.daysLeft <= 1 ? 'urgent' : ''}">${c.daysLeft} day${c.daysLeft > 1 ? 's' : ''} left</div>
+        </div>
+        <button class="btn ${canFulfill ? 'primary' : 'ghost'} full mt" data-fulfill="${c.id}" ${canFulfill ? '' : 'disabled'}>${canFulfill ? 'Fulfill Contract' : `Need ${fmt(c.weight - (inv?.weight || 0))}lb more`}</button>
+      `;
+      ctl.appendChild(el);
+    });
+    ctl.querySelectorAll('[data-fulfill]').forEach(b => b.addEventListener('click', () => fulfillContract(+b.dataset.fulfill)));
+  }
+}
+
+// ===== CODEX =====
+function renderCodex() {
+  const list = $('#codexList');
+  list.innerHTML = '';
+  $('#codexSub').textContent = `${state.codexUnlocked.length} entries unlocked`;
+  const entries = state.codexUnlocked.map(id => CODEX[id]).filter(Boolean);
+  // Also include species entries automatically for unlocked species
+  state.unlockedSpecies.forEach(sp => {
+    entries.push({
+      id: 'species_'+sp,
+      category: 'Species',
+      title: SPECIES[sp].name,
+      species: sp,
+    });
+  });
+  entries.forEach(e => {
+    const el = document.createElement('div');
+    el.className = 'codex-entry';
+    el.innerHTML = `
+      <div class="icn">${e.species ? speciesSVG(e.species, 36) : `<svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="14" fill="#c9a961" opacity=".3"/><text x="18" y="23" text-anchor="middle" font-size="16" fill="#c9a961" font-weight="700">📖</text></svg>`}</div>
+      <div class="info">
+        <div class="nm">${e.title}</div>
+        <div class="cat">${e.category}</div>
+      </div>
+    `;
+    el.addEventListener('click', () => openCodex(e));
+    list.appendChild(el);
+  });
+}
+
+function openCodex(entry) {
+  let bodyHtml;
+  if (entry.species) {
+    const sp = SPECIES[entry.species];
+    bodyHtml = `
+      <div class="center mb">${speciesSVG(entry.species, 80)}</div>
+      <p class="serif" style="color:var(--tan);text-align:center;margin-bottom:12px;font-style:italic">${sp.scientific}</p>
+      <p>${sp.tip}</p>
+      <h4>Colonization</h4>
+      <div class="info-line"><span class="k">Ideal Temp</span><span class="v">${sp.colonization.tempIdeal[0]}-${sp.colonization.tempIdeal[1]}°F</span></div>
+      <div class="info-line"><span class="k">Duration</span><span class="v">${Math.floor(sp.colonization.hours[0]/24)}-${Math.floor(sp.colonization.hours[1]/24)} days</span></div>
+      <h4>Fruiting</h4>
+      <div class="info-line"><span class="k">Ideal Temp</span><span class="v">${sp.fruiting.tempIdeal[0]}-${sp.fruiting.tempIdeal[1]}°F</span></div>
+      <div class="info-line"><span class="k">Humidity</span><span class="v">${sp.fruiting.humidityIdeal[0]}-${sp.fruiting.humidityIdeal[1]}%</span></div>
+      <div class="info-line"><span class="k">Fresh Air Exchange</span><span class="v">${sp.fruiting.faeIdeal}/hr</span></div>
+      <div class="info-line"><span class="k">Duration</span><span class="v">${Math.floor(sp.fruiting.hours[0]/24)}-${Math.floor(sp.fruiting.hours[1]/24)} days</span></div>
+      <h4>Economics</h4>
+      <div class="info-line"><span class="k">Wholesale/farmers market</span><span class="v">${fmt$(sp.pricePerLb)}/lb</span></div>
+      <div class="info-line"><span class="k">Biological Efficiency</span><span class="v">${Math.round(sp.yieldBE[0]*100)}-${Math.round(sp.yieldBE[1]*100)}%</span></div>
+      <div class="info-line"><span class="k">Difficulty</span><span class="v">${'★'.repeat(sp.difficulty)}${'☆'.repeat(5-sp.difficulty)}</span></div>
+      <h4>Suitable Substrates</h4>
+      <p>${sp.substrates.map(s => SUBSTRATES[s].name).join(' · ')}</p>
+      <p style="color:var(--ink-mute);font-size:11px;margin-top:16px;font-style:italic">For a deep-dive on ${sp.name} in commercial production, see <em style="color:var(--tan)">The Mushroom Grower</em>.</p>
+    `;
+  } else {
+    bodyHtml = entry.body + (entry.tip ? `<p style="color:var(--ink-mute);font-size:11px;margin-top:16px;font-style:italic">${entry.tip}</p>` : '');
+  }
+  openModal(entry.title, `<div class="codex-body">${bodyHtml}</div>`);
+}
+
+// ===== MENU =====
+function renderMenu() {
+  $('#mDay').textContent = state.day;
+  $('#mHarv').textContent = fmt(state.stats.totalHarvested) + ' lb';
+  $('#mRev').textContent = fmt$(state.stats.totalRevenue);
+  $('#mBatch').textContent = state.stats.successfulBatches;
+  $('#mContam').textContent = state.stats.contaminationEvents;
+  $('#mRep').textContent = state.reputation;
+}
+
+// ============================================================================
+// MODAL
+// ============================================================================
+function openModal(title, contentHtml) {
+  $('#modalContent').innerHTML = `<h3>${title}</h3>${contentHtml}`;
+  $('#modalScrim').classList.add('open');
+}
+function closeModal() {
+  $('#modalScrim').classList.remove('open');
+}
+
+// ============================================================================
+// NEW BATCH MODAL
+// ============================================================================
+function openNewBatchModal() {
+  const avail = state.unlockedSpecies.filter(sp => (state.cultures[sp] || 0) > 0);
+  if (avail.length === 0) {
+    openModal('No cultures in stock', `
+      <p style="color:var(--ink-dim);margin:12px 0">You need at least one culture to start a batch. Head to the Shop and buy a Pearl Oyster culture ($30).</p>
+      <button class="btn primary full" onclick="document.getElementById('modalScrim').classList.remove('open'); switchView('Shop');">Go to Shop</button>
+    `);
+    return;
+  }
+
+  let selectedSp = avail[0];
+  let selectedSub = state.unlockedSubstrates.filter(s => SPECIES[selectedSp].substrates.includes(s) && (state.substrates[s] || 0) > 0)[0] || SPECIES[selectedSp].substrates[0];
+  let selectedWeight = 5;
+
+  const render = () => {
+    const availSubs = state.unlockedSubstrates.filter(s => SPECIES[selectedSp].substrates.includes(s));
+    if (!availSubs.includes(selectedSub)) selectedSub = availSubs[0];
+
+    const sp = SPECIES[selectedSp];
+    const sub = SUBSTRATES[selectedSub];
+    const cost = sub.cost * (selectedWeight/5) + 30;
+    const substrateStock = (state.substrates[selectedSub] || 0);
+    const cultureStock = (state.cultures[selectedSp] || 0);
+    const substrateNeeded = selectedWeight/5;
+    const canStart = state.money >= cost && cultureStock >= 1 && substrateStock >= substrateNeeded;
+
+    $('#modalContent').innerHTML = `
+      <h3>New Batch</h3>
+      <p style="color:var(--ink-mute);font-size:12px;margin-bottom:12px">Choose species, substrate, and block weight.</p>
+
+      <h4 style="font-size:11px;color:var(--gold-hi);text-transform:uppercase;letter-spacing:.06em;margin:12px 0 4px">Species</h4>
+      <div class="select-grid" id="spGrid"></div>
+
+      <h4 style="font-size:11px;color:var(--gold-hi);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 4px">Substrate</h4>
+      <div class="select-grid" id="subGrid"></div>
+
+      <h4 style="font-size:11px;color:var(--gold-hi);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 4px">Block Weight</h4>
+      <div class="slider-row">
+        <div class="top"><span>${selectedWeight} lbs</span><span style="color:var(--ink-mute)">bigger blocks = more yield</span></div>
+        <input type="range" id="wtSlider" min="5" max="15" step="5" value="${selectedWeight}"/>
+      </div>
+
+      <div class="divider"></div>
+      <div class="info-line"><span class="k">Culture cost</span><span class="v num">$30</span></div>
+      <div class="info-line"><span class="k">Substrate (${selectedWeight/5}× ${sub.name})</span><span class="v num">${fmt$(sub.cost * (selectedWeight/5))}</span></div>
+      <div class="info-line"><span class="k">Total</span><span class="v money-hint num">${fmt$(cost)}</span></div>
+      <div class="info-line"><span class="k">Expected yield</span><span class="v">${fmt(selectedWeight * sp.yieldBE[0] * (1+sub.yieldMod/100))}-${fmt(selectedWeight * sp.yieldBE[1] * (1+sub.yieldMod/100))} lb</span></div>
+      <div class="info-line"><span class="k">Colonization time</span><span class="v">${Math.floor(sp.colonization.hours[0]/24)}-${Math.floor(sp.colonization.hours[1]/24)} days</span></div>
+
+      <button class="btn primary full mt-lg" id="confirmBatch" ${canStart ? '' : 'disabled'}>
+        ${cultureStock < 1 ? 'No culture in stock' :
+          substrateStock < substrateNeeded ? `Need ${substrateNeeded - substrateStock} more substrate bag` :
+          state.money < cost ? 'Not enough money' :
+          `Start Batch · ${fmt$(cost)}`}
+      </button>
+    `;
+
+    // Species grid
+    const spGrid = $('#spGrid');
+    state.unlockedSpecies.forEach(sp => {
+      const stock = state.cultures[sp] || 0;
+      const el = document.createElement('div');
+      el.className = 'select-item' + (selectedSp === sp ? ' selected' : '') + (stock < 1 ? ' locked' : '');
+      el.innerHTML = `
+        <div class="ic">${speciesSVG(sp, 36)}</div>
+        <div class="n">${SPECIES[sp].name}</div>
+        <div class="p">${stock} culture${stock !== 1 ? 's' : ''}</div>
+      `;
+      if (stock >= 1) el.addEventListener('click', () => { selectedSp = sp; render(); });
+      spGrid.appendChild(el);
+    });
+
+    // Substrate grid
+    const subGrid = $('#subGrid');
+    availSubs.forEach(sb => {
+      const stock = state.substrates[sb] || 0;
+      const el = document.createElement('div');
+      el.className = 'select-item' + (selectedSub === sb ? ' selected' : '');
+      el.innerHTML = `
+        <div class="ic">${substrateSVG(sb, 30)}</div>
+        <div class="n">${SUBSTRATES[sb].name}</div>
+        <div class="p">${stock} bag${stock !== 1 ? 's' : ''} · ${fmt$(SUBSTRATES[sb].cost)}</div>
+      `;
+      el.addEventListener('click', () => { selectedSub = sb; render(); });
+      subGrid.appendChild(el);
+    });
+
+    $('#wtSlider').addEventListener('input', e => { selectedWeight = +e.target.value; render(); });
+    $('#confirmBatch').addEventListener('click', () => {
+      createBatch(selectedSp, selectedSub, selectedWeight);
+      closeModal();
+    });
+  };
+
+  openModal('New Batch', '');
+  render();
+}
+
+// ============================================================================
+// TUTORIAL
+// ============================================================================
+function showTutorial() {
+  openModal('Welcome, Grower.', `
+    <p style="color:var(--ink-dim);margin:10px 0;line-height:1.55">
+      You've got a garage in Phoenix, $200, and two Pearl Oyster cultures.
+      Your job is to grow real mushrooms and build a real business.
+    </p>
+    <h4 style="color:var(--gold-hi);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin:14px 0 6px">Quick Start</h4>
+    <ol style="color:var(--ink-dim);padding-left:20px;line-height:1.75">
+      <li>Tap <strong>＋ New Batch</strong> above</li>
+      <li>Choose Pearl Oyster on straw (5 lb)</li>
+      <li>Wait for colonization (~2 real minutes)</li>
+      <li>Move to fruiting, dial in conditions</li>
+      <li>Harvest, sell at the Saturday market</li>
+      <li>Reinvest in better equipment</li>
+    </ol>
+    <p style="color:var(--ink-mute);font-size:11px;margin-top:14px">Speed up time with the ▶ buttons at the top. Pause any time.</p>
+    <button class="btn primary full mt-lg" onclick="document.getElementById('modalScrim').classList.remove('open'); openNewBatchModal();">Start My First Batch</button>
+  `);
+}
+
+// ============================================================================
+// EVENT WIRING
+// ============================================================================
+function bindEvents() {
+  // Nav
+  $$('.nav button').forEach(b => b.addEventListener('click', () => switchView(b.dataset.view)));
+  // Speed controls
+  $$('.time-controls button').forEach(b => b.addEventListener('click', () => {
+    state.speed = +b.dataset.speed;
+    renderStatus();
+  }));
+  // Modal
+  $('#modalClose').addEventListener('click', closeModal);
+  $('#modalScrim').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+  // New batch
+  $('#newBatchBtn').addEventListener('click', openNewBatchModal);
+  // Menu buttons
+  $('#exportBtn').addEventListener('click', () => {
+    const code = exportSave();
+    openModal('Your Save Code', `
+      <p style="color:var(--ink-dim);margin:10px 0;font-size:12px">Copy this code. Paste it into "Import Save" any time to resume.</p>
+      <textarea readonly style="width:100%;height:160px;background:#1a1410;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px;font-family:monospace;font-size:11px;resize:none" onclick="this.select()">${code}</textarea>
+      <button class="btn primary full mt" onclick="navigator.clipboard&&navigator.clipboard.writeText(this.previousElementSibling.value);this.textContent='Copied ✓';setTimeout(()=>this.textContent='Copy to Clipboard',1500)">Copy to Clipboard</button>
+    `);
+  });
+  $('#importBtn').addEventListener('click', () => {
+    openModal('Import Save Code', `
+      <p style="color:var(--ink-dim);margin:10px 0;font-size:12px">Paste your save code here to resume.</p>
+      <textarea id="importCode" style="width:100%;height:160px;background:#1a1410;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px;font-family:monospace;font-size:11px;resize:none" placeholder="Paste code..."></textarea>
+      <button class="btn primary full mt" onclick="if(importSave(document.getElementById('importCode').value)) document.getElementById('modalScrim').classList.remove('open');">Load Save</button>
+    `);
+  });
+  $('#resetBtn').addEventListener('click', () => {
+    openModal('Reset Career?', `
+      <p style="color:var(--ink-dim);margin:10px 0">This wipes all progress. Are you sure?</p>
+      <button class="btn danger full mt" onclick="state = makeDefaultState(); document.getElementById('modalScrim').classList.remove('open'); render(); toast('info','Career reset','Fresh start!');">Yes, Reset Everything</button>
+      <button class="btn ghost full mt" onclick="document.getElementById('modalScrim').classList.remove('open')">Cancel</button>
+    `);
+  });
+  // Splash CTAs
+  $('#startCareer').addEventListener('click', () => {
+    state = makeDefaultState();
+    $('#splash').classList.add('hidden');
+    render();
+    setTimeout(showTutorial, 400);
+  });
+  $('#startSandbox').addEventListener('click', () => {
+    state = makeSandboxState();
+    $('#splash').classList.add('hidden');
+    render();
+    toast('info', 'Sandbox mode', 'Everything unlocked. Experiment freely.');
+  });
+  $('#startImport').addEventListener('click', () => {
+    // Show a small import prompt on splash
+    const code = prompt('Paste your save code:');
+    if (code) {
+      if (importSave(code)) {
+        $('#splash').classList.add('hidden');
+      }
+    }
+  });
+}
+
+// ============================================================================
+// INIT
+// ============================================================================
+function init() {
+  bindEvents();
+  requestAnimationFrame(loop);
+}
+
+// Expose for onclick handlers in modals
+window.importSave = importSave;
+window.openNewBatchModal = openNewBatchModal;
+window.switchView = switchView;
+window.state = state;
+window.makeDefaultState = makeDefaultState;
+window.render = render;
+window.toast = toast;
+
+init();
+</script>
+</body>
+</html>
