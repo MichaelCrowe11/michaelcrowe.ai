@@ -2293,7 +2293,7 @@ function openNewBatchModal() {
   if (avail.length === 0) {
     openModal('No cultures in stock', `
       <p style="color:var(--ink-dim);margin:12px 0">You need at least one culture to start a batch. Head to the Shop and buy a Pearl Oyster culture ($30).</p>
-      <button class="btn primary full" onclick="document.getElementById('modalScrim').classList.remove('open'); switchView('Shop');">Go to Shop</button>
+      <button class="btn primary full" data-act="close-goto-shop">Go to Shop</button>
     `);
     return;
   }
@@ -2405,7 +2405,7 @@ function showTutorial() {
       <li>Reinvest in better equipment</li>
     </ol>
     <p style="color:var(--ink-mute);font-size:11px;margin-top:14px">Speed up time with the ▶ buttons at the top. Pause any time.</p>
-    <button class="btn primary full mt-lg" onclick="document.getElementById('modalScrim').classList.remove('open'); openNewBatchModal();">Start My First Batch</button>
+    <button class="btn primary full mt-lg" data-act="close-new-batch">Start My First Batch</button>
   `);
 }
 
@@ -2423,6 +2423,40 @@ function bindEvents() {
   // Modal
   $('#modalClose').addEventListener('click', closeModal);
   $('#modalScrim').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+
+  // Delegated action handler (CSP-safe — no inline onclick anywhere)
+  document.addEventListener('click', e => {
+    const el = e.target.closest('[data-act]');
+    if (!el) return;
+    const act = el.dataset.act;
+    switch (act) {
+      case 'close-modal': closeModal(); break;
+      case 'close-goto-shop': closeModal(); switchView('Shop'); break;
+      case 'close-new-batch': closeModal(); openNewBatchModal(); break;
+      case 'select-self': el.select && el.select(); break;
+      case 'copy-save': {
+        const ta = $('#modalContent textarea');
+        if (ta && navigator.clipboard) navigator.clipboard.writeText(ta.value);
+        else if (ta) { ta.select(); document.execCommand && document.execCommand('copy'); }
+        el.textContent = 'Copied ✓';
+        setTimeout(() => { el.textContent = 'Copy to Clipboard'; }, 1500);
+        break;
+      }
+      case 'load-save': {
+        const ta = $('#importCode');
+        if (ta && importSave(ta.value)) closeModal();
+        break;
+      }
+      case 'reset-confirm': {
+        state = makeDefaultState();
+        closeModal();
+        render();
+        toast('info', 'Career reset', 'Fresh start!');
+        break;
+      }
+    }
+  });
+
   // New batch
   $('#newBatchBtn').addEventListener('click', openNewBatchModal);
   // Menu buttons
@@ -2430,22 +2464,22 @@ function bindEvents() {
     const code = exportSave();
     openModal('Your Save Code', `
       <p style="color:var(--ink-dim);margin:10px 0;font-size:12px">Copy this code. Paste it into "Import Save" any time to resume.</p>
-      <textarea readonly style="width:100%;height:160px;background:#1a1410;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px;font-family:monospace;font-size:11px;resize:none" onclick="this.select()">${code}</textarea>
-      <button class="btn primary full mt" onclick="navigator.clipboard&&navigator.clipboard.writeText(this.previousElementSibling.value);this.textContent='Copied ✓';setTimeout(()=>this.textContent='Copy to Clipboard',1500)">Copy to Clipboard</button>
+      <textarea readonly data-act="select-self" style="width:100%;height:160px;background:#1a1410;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px;font-family:monospace;font-size:11px;resize:none">${code}</textarea>
+      <button class="btn primary full mt" data-act="copy-save">Copy to Clipboard</button>
     `);
   });
   $('#importBtn').addEventListener('click', () => {
     openModal('Import Save Code', `
       <p style="color:var(--ink-dim);margin:10px 0;font-size:12px">Paste your save code here to resume.</p>
       <textarea id="importCode" style="width:100%;height:160px;background:#1a1410;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px;font-family:monospace;font-size:11px;resize:none" placeholder="Paste code..."></textarea>
-      <button class="btn primary full mt" onclick="if(importSave(document.getElementById('importCode').value)) document.getElementById('modalScrim').classList.remove('open');">Load Save</button>
+      <button class="btn primary full mt" data-act="load-save">Load Save</button>
     `);
   });
   $('#resetBtn').addEventListener('click', () => {
     openModal('Reset Career?', `
       <p style="color:var(--ink-dim);margin:10px 0">This wipes all progress. Are you sure?</p>
-      <button class="btn danger full mt" onclick="state = makeDefaultState(); document.getElementById('modalScrim').classList.remove('open'); render(); toast('info','Career reset','Fresh start!');">Yes, Reset Everything</button>
-      <button class="btn ghost full mt" onclick="document.getElementById('modalScrim').classList.remove('open')">Cancel</button>
+      <button class="btn danger full mt" data-act="reset-confirm">Yes, Reset Everything</button>
+      <button class="btn ghost full mt" data-act="close-modal">Cancel</button>
     `);
   });
   // Splash CTAs
