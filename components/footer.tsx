@@ -75,6 +75,12 @@ export function Footer() {
                   Portfolio
                 </Link>
               </li>
+              <li>
+                <Link href="/game" className="text-sm text-muted-foreground hover:text-gold transition-colors">
+                  Play the Game
+                  <span className="ml-1.5 text-[10px] font-bold text-emerald-400 uppercase tracking-wider">New</span>
+                </Link>
+              </li>
             </ul>
           </div>
 

@@ -6,6 +6,7 @@ import { HeroPolished } from "@/components/hero-polished"
 import { PremiumOffers } from "@/components/premium-offers"
 import { SocialProofPolished } from "@/components/social-proof-polished"
 import { BookingSection } from "@/components/booking-section"
+import { GamePromo } from "@/components/game-promo"
 
 // Lazy load BigBangIntroThree (uses Three.js - client-side only)
 const BigBangIntroThree = lazy(() => import("@/components/bigbang-intro-three").then(m => ({ default: m.BigBangIntroThree })))
@@ -95,6 +96,9 @@ export default function Home() {
         <Suspense fallback={<SectionLoader />}>
           <PortfolioShowcase />
         </Suspense>
+
+        {/* 4b. Game Promo - Personality piece + Southwest Mushrooms tie-in */}
+        <GamePromo />
 
         {/* 5. Process - How working together looks */}
         <Suspense fallback={<SectionLoader />}>
